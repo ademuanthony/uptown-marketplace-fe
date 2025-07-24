@@ -12,8 +12,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   UserCircleIcon,
-  TagIcon,
-  ShieldCheckIcon
+  TagIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { productService, type Product } from '@/services/product';
@@ -54,7 +53,7 @@ export default function ProductDetailPage() {
           // It's likely a permalink, try permalink first
           try {
             fetchedProduct = await productService.getProductByPermalink(productIdOrPermalink);
-          } catch (permalinkError) {
+          } catch {
             // If permalink fails, try as ID (fallback for edge cases)
             fetchedProduct = await productService.getProduct(productIdOrPermalink);
           }
@@ -127,7 +126,7 @@ export default function ProductDetailPage() {
           text: product?.description,
           url: shareUrl,
         });
-      } catch (error) {
+      } catch {
         // User cancelled sharing
       }
     } else {
@@ -135,7 +134,7 @@ export default function ProductDetailPage() {
       try {
         await navigator.clipboard.writeText(shareUrl);
         toast.success('Link copied to clipboard');
-      } catch (error) {
+      } catch {
         toast.error('Failed to copy link');
       }
     }
@@ -314,7 +313,7 @@ Let me know if you're open to offers!`;
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-          <p className="text-gray-600 mb-8">The product you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-8">The product you&apos;re looking for doesn&apos;t exist.</p>
           <button
             onClick={() => router.push('/')}
             className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700"

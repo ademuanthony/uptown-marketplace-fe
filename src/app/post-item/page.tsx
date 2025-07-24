@@ -11,8 +11,7 @@ import {
   MapPinIcon,
   CurrencyDollarIcon,
   TagIcon,
-  InformationCircleIcon,
-  ChevronDownIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { createProductSchema, type CreateProductFormData, productConditions } from '@/schemas/product';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,7 +28,7 @@ export default function PostItemPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const {

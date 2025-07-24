@@ -3,7 +3,7 @@ import { auth } from '@/lib/firebase';
 
 export interface WebSocketMessage {
   type: 'message' | 'conversation_update' | 'user_online' | 'user_offline' | 'typing' | 'message_read';
-  data: any;
+  data: unknown;
   timestamp: string;
 }
 
@@ -299,16 +299,16 @@ export class WebSocketService {
 
   // Event subscription methods
   onNewMessage(callback: (event: MessageEvent) => void): () => void {
-    return this.addEventListener('new_message', callback as any);
+    return this.addEventListener('new_message', callback as (event: RealtimeEvent) => void);
   }
 
   onConversationUpdate(callback: (event: ConversationUpdateEvent) => void): () => void {
-    return this.addEventListener('conversation_update', callback as any);
+    return this.addEventListener('conversation_update', callback as (event: RealtimeEvent) => void);
   }
 
   onUserStatusChange(callback: (event: UserStatusEvent) => void): () => void {
-    const unsubscribeOnline = this.addEventListener('user_online', callback as any);
-    const unsubscribeOffline = this.addEventListener('user_offline', callback as any);
+    const unsubscribeOnline = this.addEventListener('user_online', callback as (event: RealtimeEvent) => void);
+    const unsubscribeOffline = this.addEventListener('user_offline', callback as (event: RealtimeEvent) => void);
     
     return () => {
       unsubscribeOnline();
@@ -317,8 +317,8 @@ export class WebSocketService {
   }
 
   onTyping(callback: (event: TypingEvent) => void): () => void {
-    const unsubscribeStart = this.addEventListener('typing_start', callback as any);
-    const unsubscribeStop = this.addEventListener('typing_stop', callback as any);
+    const unsubscribeStart = this.addEventListener('typing_start', callback as (event: RealtimeEvent) => void);
+    const unsubscribeStop = this.addEventListener('typing_stop', callback as (event: RealtimeEvent) => void);
     
     return () => {
       unsubscribeStart();
@@ -327,7 +327,7 @@ export class WebSocketService {
   }
 
   onMessageRead(callback: (event: MessageReadEvent) => void): () => void {
-    return this.addEventListener('message_read', callback as any);
+    return this.addEventListener('message_read', callback as (event: RealtimeEvent) => void);
   }
 
   onConnectionChange(callback: (connected: boolean) => void): () => void {

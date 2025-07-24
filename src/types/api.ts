@@ -1,7 +1,7 @@
 // API Response Types - Generated from Go backend structs
 
 // Common Types
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
@@ -62,7 +62,7 @@ export interface Product {
   status: ProductStatus;
   images: ProductImage[];
   tags: string[];
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   location?: string;
   viewCount: number;
   favoriteCount: number;
@@ -105,7 +105,7 @@ export interface CreateProductRequest {
   categoryId: string;
   condition: ProductCondition;
   tags?: string[];
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   location?: string;
 }
 
@@ -351,7 +351,7 @@ export interface APIError {
   error: string;
   message: string;
   code?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp?: string;
 }
 

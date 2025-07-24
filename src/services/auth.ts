@@ -79,7 +79,7 @@ class AuthService {
         }
       );
       return response.ok;
-    } catch (error) {
+    } catch {
       console.warn('Backend not available, falling back to development mode');
       return false;
     }
@@ -140,7 +140,7 @@ class AuthService {
 
       try {
         // Send token to backend to create user record
-        const registerPayload: any = {
+        const registerPayload: Record<string, unknown> = {
           firebase_uid: firebaseResult.user.uid,
           email: credentials.email,
           first_name: firebaseResult.user.displayName?.split(' ')[0] || 'User',

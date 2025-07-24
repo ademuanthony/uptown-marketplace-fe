@@ -7,7 +7,6 @@ import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from 'react';
 import { favoritesService } from '@/services/favorites';
 import { categoryService } from '@/services/category';
-import { productService } from '@/services/product';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 

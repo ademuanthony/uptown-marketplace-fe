@@ -7,8 +7,6 @@ import {
   HeartIcon, 
   TrashIcon, 
   MagnifyingGlassIcon,
-  AdjustmentsHorizontalIcon,
-  StarIcon,
   MapPinIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
@@ -201,7 +199,7 @@ export default function FavoritesPage() {
                 <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No results found</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your search or filter to find what you're looking for.
+                  Try adjusting your search or filter to find what you&apos;re looking for.
                 </p>
               </div>
             )}
@@ -236,6 +234,7 @@ export default function FavoritesPage() {
                     ) : (
                       <div className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4">
                         <Link href={item.product.permalink ? `/products/${item.product.permalink}` : `/products/${item.product.id}`}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={item.product.images[0] || '/api/placeholder/150/150'}
                             alt={item.product.title}

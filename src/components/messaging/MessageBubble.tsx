@@ -78,13 +78,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             <div>
               {message.attachment_url ? (
                 <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={message.attachment_url} 
                     alt="Shared image" 
                     className="rounded max-w-full h-auto mb-2"
                     loading="lazy"
                   />
-                  {(message as any).status === 'sending' && (
+                  {message.status === 'sending' && (
                     <div className="absolute inset-0 bg-black bg-opacity-30 rounded flex items-center justify-center">
                       <div className="bg-white rounded-full p-2">
                         <div className="w-6 h-6 animate-spin rounded-full border-b-2 border-blue-600"></div>

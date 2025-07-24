@@ -2,7 +2,7 @@ import api from './api';
 
 // Message types
 export type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'offer' | 'order' | 'system';
-export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed';
+export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed' | 'sending';
 export type MessagePriority = 'low' | 'normal' | 'high' | 'urgent';
 
 // Conversation types
@@ -28,7 +28,7 @@ export interface Message {
   delivered_at?: string;
   read_at?: string;
   expires_at?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -52,7 +52,7 @@ export interface Conversation {
   unread_count: Record<string, number>;
   muted_by: string[];
   blocked_by: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -80,7 +80,7 @@ export interface SendMessageRequest {
   forwarded_from_id?: string;
   priority?: MessagePriority;
   expires_at?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SendMessageResponse {
@@ -95,7 +95,7 @@ export interface CreateConversationRequest {
   participant_ids: string[];
   product_id?: string;
   order_id?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateConversationResponse {
@@ -135,7 +135,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to send message');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending message:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to send message');
     }
@@ -165,7 +165,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to send file message');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending file message:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to send file message');
     }
@@ -190,7 +190,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to get conversation history');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting conversation history:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to get conversation history');
     }
@@ -209,7 +209,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to create conversation');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating conversation:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to create conversation');
     }
@@ -223,7 +223,7 @@ export class MessagingService {
     type?: ConversationType
   ): Promise<UserConversationsResponse> {
     try {
-      const params: any = { page, page_size: pageSize };
+      const params: Record<string, unknown> = { page, page_size: pageSize };
       if (status) params.status = status;
       if (type) params.type = type;
 
@@ -237,7 +237,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to get conversations');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting conversations:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to get conversations');
     }
@@ -255,7 +255,7 @@ export class MessagingService {
       } else {
         throw new Error(response.data.error?.message || 'Failed to mark message as read');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error marking message as read:', error);
       throw new Error(error.response?.data?.error?.message || 'Failed to mark message as read');
     }

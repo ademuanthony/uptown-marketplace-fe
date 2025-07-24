@@ -9,7 +9,7 @@ import { Product, Category } from '@/types';
 import ProductCard from '@/components/products/ProductCard';
 import Pagination from '@/components/common/Pagination';
 import SearchBar from '@/components/common/SearchBar';
-import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface SearchFilters {
@@ -68,7 +68,7 @@ function SearchContent() {
       // Track the search query
       await searchAnalyticsService.trackSearch(query);
       
-      const searchFilters: any = { ...filters };
+      const searchFilters: Record<string, unknown> = { ...filters };
       if (searchFilters.min_price) searchFilters.min_price = parseInt(searchFilters.min_price);
       if (searchFilters.max_price) searchFilters.max_price = parseInt(searchFilters.max_price);
       
@@ -150,7 +150,7 @@ function SearchContent() {
           <>
             <div className="mb-6 flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-800">
-                Search results for "{query}"
+                Search results for &quot;{query}&quot;
                 {totalResults > 0 && (
                   <span className="ml-2 text-base font-normal text-gray-600">
                     ({totalResults} results)
@@ -314,7 +314,7 @@ function SearchContent() {
                   </>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-600 mb-4">No products found for "{query}"</p>
+                    <p className="text-gray-600 mb-4">No products found for &quot;{query}&quot;</p>
                     <p className="text-sm text-gray-500">
                       Try adjusting your filters or search terms
                     </p>

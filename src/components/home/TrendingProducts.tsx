@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import ProductCard from '../products/ProductCard';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Product, productService } from '@/services/product';
@@ -15,11 +15,7 @@ export default function TrendingProducts() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchTrendingProducts();
-  }, [user]);
-
-  const fetchTrendingProducts = async () => {
+  const fetchTrendingProducts = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -44,7 +40,11 @@ export default function TrendingProducts() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchTrendingProducts();
+  }, [fetchTrendingProducts]);
 
   const handleFavoriteChange = (productId: string, isFavorited: boolean) => {
     setFavoriteStatus(prev => ({

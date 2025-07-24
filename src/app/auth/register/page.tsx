@@ -72,8 +72,9 @@ export default function RegisterPage() {
       } else {
         toast.error('Failed to create account. Please try again.');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create account. Please try again.';
+      toast.error(errorMessage);
       console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
@@ -85,8 +86,9 @@ export default function RegisterPage() {
       await loginWithGoogle();
       toast.success('Account created successfully! Welcome to Uptown!');
       router.push('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign up with Google');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign up with Google';
+      toast.error(errorMessage);
     }
   };
 
@@ -95,8 +97,9 @@ export default function RegisterPage() {
       await loginWithFacebook();
       toast.success('Account created successfully! Welcome to Uptown!');
       router.push('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign up with Facebook');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign up with Facebook';
+      toast.error(errorMessage);
     }
   };
 

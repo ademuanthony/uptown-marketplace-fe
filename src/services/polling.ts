@@ -101,7 +101,7 @@ export class PollingService {
     const pollConversationList = async () => {
       try {
         const response = await messagingService.getUserConversations(1, 50);
-        const currentTime = new Date().toISOString();
+        // const currentTime = new Date().toISOString(); // Removed unused variable
 
         // Check for conversation updates
         response.conversations.forEach(conversation => {
@@ -257,11 +257,11 @@ export class PollingService {
 
   // Event subscription methods
   onNewMessage(callback: (event: MessageEvent) => void): () => void {
-    return this.addEventListener('new_message', callback as any);
+    return this.addEventListener('new_message', callback as (event: RealtimeEvent) => void);
   }
 
   onConversationUpdate(callback: (event: ConversationUpdateEvent) => void): () => void {
-    return this.addEventListener('conversation_update', callback as any);
+    return this.addEventListener('conversation_update', callback as (event: RealtimeEvent) => void);
   }
 
   private addEventListener(eventType: string, callback: (event: RealtimeEvent) => void): () => void {

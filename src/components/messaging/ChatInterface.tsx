@@ -54,7 +54,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       leaveConversation(conversation.id);
       setTypingUsers([]);
     };
-  }, [conversation.id, joinConversation, leaveConversation]);
+  }, [conversation.id, joinConversation, leaveConversation, loadMessages]);
 
   // Handle scroll behavior based on context
   useEffect(() => {
@@ -140,7 +140,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 URL.revokeObjectURL(optimisticMessage.attachment_url);
               }
               
-              newMessages[optimisticIndex] = { ...event.message, status: 'delivered' as any };
+              newMessages[optimisticIndex] = { ...event.message, status: 'delivered' };
               return newMessages;
             } else {
               // If no optimistic message found, avoid adding duplicate own messages
@@ -216,7 +216,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setTypingUsers(typingUserIds);
   }, [typingStatus, conversation.id, user?.id]);
 
-  const loadMessages = async (pageNum = 1, reset = true) => {
+  const loadMessages = useCallback(async (pageNum = 1, reset = true) => {
     try {
       setLoading(pageNum === 1);
       
@@ -247,7 +247,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversation.id]);
 
   const scrollToBottom = (smooth = true) => {
     const container = messagesContainerRef.current;
@@ -285,8 +285,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         recipient_id: conversation.participant_ids?.find(id => id !== user!.id) || '',
         type,
         content,
-        status: 'sending' as any, // Show as sending
-        priority: 'normal' as any,
+        status: 'sending', // Show as sending
+        priority: 'normal',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         metadata: { optimistic_key: optimisticKey }, // Add key for matching
@@ -312,7 +312,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Mark optimistic message as failed
       setMessages(prev => prev.map(msg => 
-        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' as any } : msg
+        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg
       ));
     } finally {
       setSending(false);
@@ -345,13 +345,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         conversation_id: conversation.id,
         sender_id: user!.id,
         recipient_id: conversation.participant_ids?.find(id => id !== user!.id) || '',
-        type: messageType as any,
+        type: messageType,
         content: content || '',
         attachment_url: fileUrl,
         attachment_type: file.type,
         attachment_size: file.size,
-        status: 'sending' as any,
-        priority: 'normal' as any,
+        status: 'sending',
+        priority: 'normal',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         metadata: { optimistic_key: optimisticKey }, // Add key for matching
@@ -384,7 +384,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Mark optimistic message as failed
       setMessages(prev => prev.map(msg => 
-        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' as any } : msg
+        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg
       ));
     } finally {
       setSending(false);

@@ -31,8 +31,9 @@ export default function ForgotPasswordPage() {
       await resetPassword(data.email);
       setEmailSent(true);
       toast.success('Password reset email sent! Check your inbox.');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset email');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send reset email';
+      toast.error(errorMessage);
       console.error('Reset password error:', error);
     } finally {
       setIsLoading(false);
@@ -76,7 +77,7 @@ export default function ForgotPasswordPage() {
                 Reset your password
               </h2>
               <p className="mt-2 text-center text-sm text-gray-600">
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
             </div>
             
@@ -134,12 +135,12 @@ export default function ForgotPasswordPage() {
               Check your email
             </h3>
             <p className="text-gray-600 mb-6">
-              We've sent a password reset link to{' '}
+              We&apos;ve sent a password reset link to{' '}
               <span className="font-medium text-gray-900">{email}</span>
             </p>
             <div className="space-y-4">
               <p className="text-sm text-gray-500">
-                Didn't receive the email? Check your spam folder or{' '}
+                Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setEmailSent(false)}
                   className="text-primary-600 hover:text-primary-500 font-medium"

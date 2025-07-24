@@ -131,7 +131,7 @@ export default function EditItemPage() {
     if (!authLoading && isAuthenticated && user?.id) {
       fetchProduct();
     }
-  }, [productId, authLoading, isAuthenticated, user?.id, reset, router]);
+  }, [productId, authLoading, isAuthenticated, user?.id, user?.email, user?.firebase_uid, reset, router]);
 
   if (authLoading || productLoading) {
     return (

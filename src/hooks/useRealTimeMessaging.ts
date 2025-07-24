@@ -90,14 +90,28 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       cleanup();
       initialized.current = false;
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, cleanup, initializeServices]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanup();
     };
-  }, []);
+  }, [cleanup]);
+
+  const startPolling = useCallback(() => {
+    if (pollingService.isEnabled()) {
+      return;
+    }
+
+    pollingService.configure({
+      enabled: true,
+      interval: pollingInterval,
+    });
+    
+    pollingService.start();
+    setConnectionStatus(prev => ({ ...prev, polling: true }));
+  }, [pollingInterval]);
 
   const initializeServices = useCallback(() => {
     if (!user) return;
@@ -138,21 +152,7 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
         clearTimeout(wsConnectionTimeout.current);
       }
     };
-  }, [user, enableWebSocket, enablePolling, fallbackToPolling]);
-
-  const startPolling = useCallback(() => {
-    if (pollingService.isEnabled()) {
-      return;
-    }
-
-    pollingService.configure({
-      enabled: true,
-      interval: pollingInterval,
-    });
-    
-    pollingService.start();
-    setConnectionStatus(prev => ({ ...prev, polling: true }));
-  }, [pollingInterval]);
+  }, [user, enableWebSocket, enablePolling, fallbackToPolling, startPolling]);
 
   const cleanup = useCallback(() => {
     webSocketService.disconnect();

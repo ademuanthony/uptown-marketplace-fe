@@ -33,8 +33,8 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Token management
-let authToken: string | null = null;
+// Token management - removed unused authToken variable
+// let authToken: string | null = null;
 
 export const setAuthToken = (token: string | null) => {
   authToken = token;
@@ -90,7 +90,7 @@ apiClient.interceptors.response.use(
 async function apiRequest<T>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   endpoint: string,
-  data?: any,
+  data?: unknown,
   config?: AxiosRequestConfig
 ): Promise<T> {
   try {
@@ -236,7 +236,7 @@ export const socialAPI = {
   deleteProfile: (): Promise<APIResponse> =>
     apiRequest<APIResponse>('DELETE', '/social/profile'),
 
-  searchProfiles: (params: any): Promise<PaginatedResponse<SocialProfile>> =>
+  searchProfiles: (params: Record<string, unknown>): Promise<PaginatedResponse<SocialProfile>> =>
     apiRequest<PaginatedResponse<SocialProfile>>('GET', '/social/profiles/search', { params }),
 
   // Connections
@@ -276,8 +276,8 @@ export const socialAPI = {
   getPendingRequests: (limit = 20, offset = 0): Promise<PaginatedResponse<SocialConnection>> =>
     apiRequest<PaginatedResponse<SocialConnection>>('GET', `/social/friend-requests/pending?limit=${limit}&offset=${offset}`),
 
-  getConnectionStatus: (userId: string): Promise<any> =>
-    apiRequest<any>('GET', `/social/users/${userId}/connection-status`),
+  getConnectionStatus: (userId: string): Promise<{ connected: boolean; connection_type?: string }> =>
+    apiRequest<{ connected: boolean; connection_type?: string }>('GET', `/social/users/${userId}/connection-status`),
 };
 
 // Messaging API
@@ -329,8 +329,8 @@ export const reviewsAPI = {
 
 // Premium API
 export const premiumAPI = {
-  getPremiumOptions: (): Promise<any> =>
-    apiRequest<any>('GET', '/premium/options'),
+  getPremiumOptions: (): Promise<{ options: Array<{ id: string; name: string; duration_days: number; price_cents: number; features: string[] }> }> =>
+    apiRequest<{ options: Array<{ id: string; name: string; duration_days: number; price_cents: number; features: string[] }> }>('GET', '/premium/options'),
 
   createPremiumListing: (listingData: Partial<PremiumListing>): Promise<PremiumListing> =>
     apiRequest<PremiumListing>('POST', '/premium/listings', listingData),
@@ -344,8 +344,8 @@ export const premiumAPI = {
 
 // Shipping API
 export const shippingAPI = {
-  calculateShippingCost: (shippingData: any): Promise<any> =>
-    apiRequest<any>('POST', '/shipping/calculate', shippingData),
+  calculateShippingCost: (shippingData: Record<string, unknown>): Promise<Record<string, unknown>> =>
+    apiRequest<Record<string, unknown>>('POST', '/shipping/calculate', shippingData),
 
   createShipment: (shipmentData: Partial<Shipment>): Promise<Shipment> =>
     apiRequest<Shipment>('POST', '/shipping/shipments', shipmentData),
@@ -353,10 +353,10 @@ export const shippingAPI = {
   getShipment: (shipmentId: string): Promise<Shipment> =>
     apiRequest<Shipment>('GET', `/shipping/shipments/${shipmentId}`),
 
-  trackShipment: (trackingNumber: string): Promise<any> =>
-    apiRequest<any>('GET', `/shipping/track/${trackingNumber}`),
+  trackShipment: (trackingNumber: string): Promise<Record<string, unknown>> =>
+    apiRequest<Record<string, unknown>>('GET', `/shipping/track/${trackingNumber}`),
 
-  confirmDelivery: (shipmentId: string, confirmationData: any): Promise<APIResponse> =>
+  confirmDelivery: (shipmentId: string, confirmationData: Record<string, unknown>): Promise<APIResponse> =>
     apiRequest<APIResponse>('POST', `/shipping/shipments/${shipmentId}/confirm`, confirmationData),
 };
 

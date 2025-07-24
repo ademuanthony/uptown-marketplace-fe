@@ -35,7 +35,7 @@ class FavoritesService {
   // Add product to favorites
   async addToFavorites(productId: string, notes?: string): Promise<Favorite> {
     try {
-      const requestData: any = {};
+      const requestData: Record<string, unknown> = {};
       if (notes) {
         requestData.notes = notes;
       }
@@ -64,7 +64,7 @@ class FavoritesService {
   // Remove product from favorites
   async removeFromFavorites(productId: string): Promise<void> {
     try {
-      const response = await api.delete<ApiResponse<any>>(`/products/${productId}/favorites`);
+      const response = await api.delete<ApiResponse<{ success: boolean }>>(`/products/${productId}/favorites`);
       
       if (!response.data || !response.data.success) {
         throw new Error(response.data?.error || 'Failed to remove from favorites');

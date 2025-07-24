@@ -166,6 +166,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           {/* Image preview */}
           {filePreview && (
             <div className="mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={filePreview} 
                 alt="Preview" 

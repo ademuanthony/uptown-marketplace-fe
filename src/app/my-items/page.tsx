@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -65,22 +65,7 @@ export default function MyItemsPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      fetchItems();
-    }
-  }, [authLoading, isAuthenticated]);
-
-  // Show loading while auth is being checked
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -117,7 +102,22 @@ export default function MyItemsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      fetchItems();
+    }
+  }, [authLoading, isAuthenticated, fetchItems]);
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   const handleDeleteItem = async (itemId: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
@@ -132,21 +132,7 @@ export default function MyItemsPage() {
     }
   };
 
-  const handleStatusChange = async (itemId: string, newStatus: string) => {
-    try {
-      // For now, we'll update the local state
-      // TODO: Implement status change API when available
-      console.log('Updating item status:', itemId, newStatus);
-      
-      setItems(items.map(item => 
-        item.id === itemId ? { ...item, status: newStatus as Item['status'] } : item
-      ));
-      toast.success('Status updated successfully');
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast.error('Failed to update status');
-    }
-  };
+  // Removed unused handleStatusChange function
 
   const getStatusIcon = (status: Item['status']) => {
     switch (status) {

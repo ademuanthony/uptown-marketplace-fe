@@ -149,7 +149,7 @@ class ProductService {
   // Publish product
   async publishProduct(productId: string): Promise<void> {
     try {
-      const response = await api.post<ApiResponse<any>>(`/products/${productId}/publish`);
+      const response = await api.post<ApiResponse<{ success: boolean }>>(`/products/${productId}/publish`);
       
       if (!response.data.success) {
         throw new Error(response.data?.error || 'Failed to publish product');
@@ -163,7 +163,7 @@ class ProductService {
   // Unpublish product
   async unpublishProduct(productId: string): Promise<void> {
     try {
-      const response = await api.post<ApiResponse<any>>(`/products/${productId}/unpublish`);
+      const response = await api.post<ApiResponse<{ success: boolean }>>(`/products/${productId}/unpublish`);
       
       if (!response.data.success) {
         throw new Error(response.data?.error || 'Failed to unpublish product');
@@ -252,7 +252,7 @@ class ProductService {
   async updateProduct(productId: string, productData: Partial<CreateProductRequest>): Promise<Product> {
     try {
       // Transform the data to match backend expectations
-      const transformedData: any = { ...productData };
+      const transformedData: Record<string, unknown> = { ...productData };
       
       // Convert price from dollars to cents if present
       if (transformedData.price !== undefined) {
@@ -351,7 +351,7 @@ class ProductService {
   }
 
   // Search products
-  async searchProducts(query: string, page: number = 1, pageSize: number = 10, filters?: any): Promise<{ products: Product[], total: number }> {
+  async searchProducts(query: string, page: number = 1, pageSize: number = 10, filters?: Record<string, unknown>): Promise<{ products: Product[], total: number }> {
     try {
       const params = new URLSearchParams();
       if (query) params.append('q', query);

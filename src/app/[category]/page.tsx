@@ -102,7 +102,7 @@ function CategoryContent() {
         await searchAnalyticsService.trackSearch(`${query} in ${category.name}`);
         
         // Use search API when there's a search query
-        const searchFilters: any = { 
+        const searchFilters: Record<string, unknown> = { 
           category_id: category.id,
           ...filters 
         };
@@ -199,7 +199,7 @@ function CategoryContent() {
       <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Category not found</h1>
-          <p className="text-gray-600">The category you're looking for doesn't exist.</p>
+          <p className="text-gray-600">The category you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     );
@@ -239,7 +239,7 @@ function CategoryContent() {
           <div>
             {query && (
               <h2 className="text-xl font-semibold text-gray-800">
-                Search results for "{query}" in {category.name}
+                Search results for &quot;{query}&quot; in {category.name}
                 {totalResults > 0 && (
                   <span className="ml-2 text-base font-normal text-gray-600">
                     ({totalResults} results)
@@ -392,7 +392,7 @@ function CategoryContent() {
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">
                   {query 
-                    ? `No products found for "${query}" in ${category.name}`
+                    ? `No products found for &quot;${query}&quot; in ${category.name}`
                     : `No products found in ${category.name}`
                   }
                 </p>
