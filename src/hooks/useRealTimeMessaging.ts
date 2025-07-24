@@ -90,14 +90,14 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       cleanup();
       initialized.current = false;
     }
-  }, [isAuthenticated, user, cleanup, initializeServices]);
+  }, [isAuthenticated, user]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanup();
     };
-  }, [cleanup]);
+  }, []);
 
   const startPolling = useCallback(() => {
     if (pollingService.isEnabled()) {

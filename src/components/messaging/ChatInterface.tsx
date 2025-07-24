@@ -54,7 +54,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       leaveConversation(conversation.id);
       setTypingUsers([]);
     };
-  }, [conversation.id, joinConversation, leaveConversation, loadMessages]);
+  }, [conversation.id, joinConversation, leaveConversation]);
 
   // Handle scroll behavior based on context
   useEffect(() => {
@@ -303,7 +303,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Replace optimistic message with actual message from server
       setMessages(prev => prev.map(msg => 
-        msg.id === optimisticMessage.id ? response.message : msg
+        msg.id === optimisticMessage.id ? response : msg
       ));
       
     } catch (error) {
@@ -347,7 +347,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         recipient_id: conversation.participant_ids?.find(id => id !== user!.id) || '',
         type: messageType,
         content: content || '',
-        attachment_url: fileUrl,
+        attachment_url: fileUrl || undefined,
         attachment_type: file.type,
         attachment_size: file.size,
         status: 'sending',

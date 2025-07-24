@@ -86,7 +86,7 @@ export default function MyItemsPage() {
         currency: product.currency,
         category_id: product.category_id,
         condition: product.condition,
-        status: product.status === 'published' ? 'published' : product.status,
+        status: product.status as 'draft' | 'published' | 'sold' | 'pending',
         location: product.location,
         images: product.images,
         tags: product.tags,

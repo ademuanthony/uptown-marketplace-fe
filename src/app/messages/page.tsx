@@ -12,7 +12,7 @@ import CreateConversationModal from '@/components/messaging/CreateConversationMo
 import { toast } from 'react-hot-toast';
 
 const MessagesPage: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);

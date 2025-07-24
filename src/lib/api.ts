@@ -33,8 +33,8 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Token management - removed unused authToken variable
-// let authToken: string | null = null;
+// Token management
+let authToken: string | null = null;
 
 export const setAuthToken = (token: string | null) => {
   authToken = token;

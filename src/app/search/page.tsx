@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { productService } from '@/services/product';
 import { categoryService } from '@/services/category';
 import { searchAnalyticsService } from '@/services/searchAnalytics';
-import { Product, Category } from '@/types';
+import { Product } from '@/services/product';
+import { Category } from '@/services/category';
 import ProductCard from '@/components/products/ProductCard';
 import Pagination from '@/components/common/Pagination';
 import SearchBar from '@/components/common/SearchBar';
@@ -69,8 +70,8 @@ function SearchContent() {
       await searchAnalyticsService.trackSearch(query);
       
       const searchFilters: Record<string, unknown> = { ...filters };
-      if (searchFilters.min_price) searchFilters.min_price = parseInt(searchFilters.min_price);
-      if (searchFilters.max_price) searchFilters.max_price = parseInt(searchFilters.max_price);
+      if (searchFilters.min_price) searchFilters.min_price = parseInt(searchFilters.min_price as string);
+      if (searchFilters.max_price) searchFilters.max_price = parseInt(searchFilters.max_price as string);
       
       const results = await productService.searchProducts(
         query,
@@ -293,7 +294,7 @@ function SearchContent() {
                             image={product.images && product.images.length > 0 ? product.images[0] : '/api/placeholder/400/400'}
                             rating={0} // TODO: Add rating to backend response
                             reviewCount={0} // TODO: Add review count to backend response
-                            sellerName={product.seller_name || undefined}
+                            sellerName={undefined}
                             location={product.location ? `${product.location.city}, ${product.location.state}` : undefined}
                             permalink={product.permalink}
                             categoryId={product.category_id}
