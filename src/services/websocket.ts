@@ -1,9 +1,38 @@
 import { Message, Conversation } from './messaging';
 import { auth } from '@/lib/firebase';
 
+// Specific data types for different message types
+export interface MessageData {
+  message: Message;
+  conversation_id: string;
+}
+
+export interface ConversationUpdateData {
+  conversation: Partial<Conversation>;
+  conversation_id: string;
+}
+
+export interface UserStatusData {
+  user_id: string;
+  last_seen?: string;
+}
+
+export interface TypingData {
+  is_typing: boolean;
+  user_id: string;
+  conversation_id: string;
+}
+
+export interface MessageReadData {
+  message_id: string;
+  user_id: string;
+  conversation_id: string;
+  read_at: string;
+}
+
 export interface WebSocketMessage {
-  type: 'message' | 'conversation_update' | 'user_online' | 'user_offline' | 'typing' | 'message_read';
-  data: unknown;
+  type: 'message' | 'conversation_update' | 'user_online' | 'user_offline' | 'typing' | 'message_read' | 'pong';
+  data: MessageData | ConversationUpdateData | UserStatusData | TypingData | MessageReadData | unknown;
   timestamp: string;
 }
 
@@ -160,52 +189,58 @@ export class WebSocketService {
 
     switch (type) {
       case 'message':
+        const messageData = data as MessageData;
         event = {
           type: 'new_message',
-          message: data.message,
-          conversation_id: data.conversation_id,
+          message: messageData.message,
+          conversation_id: messageData.conversation_id,
         };
         break;
 
       case 'conversation_update':
+        const conversationData = data as ConversationUpdateData;
         event = {
           type: 'conversation_update',
-          conversation: data.conversation,
-          conversation_id: data.conversation_id,
+          conversation: conversationData.conversation,
+          conversation_id: conversationData.conversation_id,
         };
         break;
 
       case 'user_online':
+        const userOnlineData = data as UserStatusData;
         event = {
           type: 'user_online',
-          user_id: data.user_id,
-          last_seen: data.last_seen,
+          user_id: userOnlineData.user_id,
+          last_seen: userOnlineData.last_seen,
         };
         break;
 
       case 'user_offline':
+        const userOfflineData = data as UserStatusData;
         event = {
           type: 'user_offline',
-          user_id: data.user_id,
-          last_seen: data.last_seen,
+          user_id: userOfflineData.user_id,
+          last_seen: userOfflineData.last_seen,
         };
         break;
 
       case 'typing':
+        const typingData = data as TypingData;
         event = {
-          type: data.is_typing ? 'typing_start' : 'typing_stop',
-          user_id: data.user_id,
-          conversation_id: data.conversation_id,
+          type: typingData.is_typing ? 'typing_start' : 'typing_stop',
+          user_id: typingData.user_id,
+          conversation_id: typingData.conversation_id,
         };
         break;
 
       case 'message_read':
+        const readData = data as MessageReadData;
         event = {
           type: 'message_read',
-          message_id: data.message_id,
-          user_id: data.user_id,
-          conversation_id: data.conversation_id,
-          read_at: data.read_at,
+          message_id: readData.message_id,
+          user_id: readData.user_id,
+          conversation_id: readData.conversation_id,
+          read_at: readData.read_at,
         };
         break;
         

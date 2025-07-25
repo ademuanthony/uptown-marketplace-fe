@@ -33,11 +33,7 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Token management
-let authToken: string | null = null;
-
 export const setAuthToken = (token: string | null) => {
-  authToken = token;
   if (token) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('auth_token', token);

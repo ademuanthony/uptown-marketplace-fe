@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,15 @@ import ChatInterface from '@/components/messaging/ChatInterface';
 import CreateConversationModal from '@/components/messaging/CreateConversationModal';
 import { toast } from 'react-hot-toast';
 
-const MessagesPage: React.FC = () => {
+// Loading component for Suspense fallback
+const MessagesLoading: React.FC = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
+
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+const MessagesContent: React.FC = () => {
   const { user, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -323,6 +331,15 @@ const MessagesPage: React.FC = () => {
         onCreate={handleCreateConversationSubmit}
       />
     </div>
+  );
+};
+
+// Main page component with Suspense boundary
+const MessagesPage: React.FC = () => {
+  return (
+    <Suspense fallback={<MessagesLoading />}>
+      <MessagesContent />
+    </Suspense>
   );
 };
 

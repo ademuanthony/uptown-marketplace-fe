@@ -1,5 +1,6 @@
 import api from './api';
 import { User } from './auth';
+import { isAxiosError } from 'axios';
 
 // API response wrapper
 interface ApiResponse<T> {
@@ -59,7 +60,7 @@ class UserService {
       console.error('Profile update error:', error);
       
       // If it's an axios error, extract the message
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -93,7 +94,7 @@ class UserService {
       console.error('Avatar upload error:', error);
       
       // If it's an axios error, extract the message
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -120,7 +121,7 @@ class UserService {
       console.error('Avatar removal error:', error);
       
       // If it's an axios error, extract the message
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -140,7 +141,7 @@ class UserService {
       console.error('Password change error:', error);
       
       // If it's an axios error, extract the message
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -167,7 +168,7 @@ class UserService {
       console.error('Get profile error:', error);
       
       // If it's an axios error, extract the message
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       

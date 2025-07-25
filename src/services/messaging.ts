@@ -1,4 +1,5 @@
 import api from './api';
+import { isAxiosError } from 'axios';
 
 // Message types
 export type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'offer' | 'order' | 'system';
@@ -137,7 +138,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error sending message:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to send message');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to send message');
+      }
+      throw new Error('Failed to send message');
     }
   }
 
@@ -167,7 +171,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error sending file message:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to send file message');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to send file message');
+      }
+      throw new Error('Failed to send file message');
     }
   }
 
@@ -192,7 +199,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error getting conversation history:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to get conversation history');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to get conversation history');
+      }
+      throw new Error('Failed to get conversation history');
     }
   }
 
@@ -211,7 +221,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error creating conversation:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to create conversation');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to create conversation');
+      }
+      throw new Error('Failed to create conversation');
     }
   }
 
@@ -239,7 +252,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error getting conversations:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to get conversations');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to get conversations');
+      }
+      throw new Error('Failed to get conversations');
     }
   }
 
@@ -257,7 +273,10 @@ export class MessagingService {
       }
     } catch (error: unknown) {
       console.error('Error marking message as read:', error);
-      throw new Error(error.response?.data?.error?.message || 'Failed to mark message as read');
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to mark message as read');
+      }
+      throw new Error('Failed to mark message as read');
     }
   }
 

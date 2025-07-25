@@ -1,5 +1,6 @@
 import api from './api';
 import { Product } from './product';
+import { isAxiosError } from 'axios';
 
 // Favorites types
 export interface Favorite {
@@ -53,7 +54,7 @@ class FavoritesService {
     } catch (error) {
       console.error('Add to favorites error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -72,7 +73,7 @@ class FavoritesService {
     } catch (error) {
       console.error('Remove from favorites error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -96,11 +97,11 @@ class FavoritesService {
       console.error('Check favorite status error:', error);
       
       // If there's an auth error, assume not favorited
-      if (error.response?.status === 401) {
+      if (isAxiosError(error) && error.response?.status === 401) {
         return false;
       }
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -145,7 +146,7 @@ class FavoritesService {
     } catch (error) {
       console.error('Get user favorites error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       

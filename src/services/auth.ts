@@ -88,6 +88,10 @@ class AuthService {
   // Firebase Authentication Methods
   async signIn(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
+      if (!auth) {
+        throw new Error('Firebase not initialized');
+      }
+
       const firebaseResult = await signInWithEmailAndPassword(
         auth,
         credentials.email,
@@ -130,6 +134,10 @@ class AuthService {
 
   async signUp(credentials: RegisterCredentials): Promise<AuthResponse> {
     try {
+      if (!auth) {
+        throw new Error('Firebase not initialized');
+      }
+
       const firebaseResult = await createUserWithEmailAndPassword(
         auth,
         credentials.email,
@@ -232,8 +240,11 @@ class AuthService {
 
       // If Firebase fails, simulate success for development
       if (
-        firebaseError.code === 'auth/user-not-found' ||
-        firebaseError.code === 'auth/invalid-email'
+        firebaseError && 
+        typeof firebaseError === 'object' && 
+        'code' in firebaseError &&
+        (firebaseError.code === 'auth/user-not-found' ||
+         firebaseError.code === 'auth/invalid-email')
       ) {
         console.warn(
           'Firebase password reset failed, simulating success for development'
@@ -253,10 +264,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@gmail.com',
-        name: 'Google User',
-        avatar:
+        first_name: 'Google',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_google_token_' + Date.now();
@@ -273,10 +285,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@gmail.com',
-        name: 'Google User',
-        avatar:
+        first_name: 'Google',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_google_token_' + Date.now();
@@ -293,10 +306,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@gmail.com',
-        name: 'Google User',
-        avatar:
+        first_name: 'Google',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_google_token_' + Date.now();
@@ -343,11 +357,12 @@ class AuthService {
         const mockUser: User = {
           id: firebaseResult.user.uid,
           email: firebaseResult.user.email || 'user@gmail.com',
-          name: firebaseResult.user.displayName || 'Google User',
-          avatar:
+          first_name: firebaseResult.user.displayName?.split(' ')[0] || 'Google',
+          last_name: firebaseResult.user.displayName?.split(' ')[1] || 'User',
+          profile_image_url:
             firebaseResult.user.photoURL ||
             'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
 
         localStorage.setItem('auth_token', token);
@@ -366,10 +381,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@gmail.com',
-        name: 'Google User',
-        avatar:
+        first_name: 'Google',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_google_token_' + Date.now();
@@ -386,10 +402,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@facebook.com',
-        name: 'Facebook User',
-        avatar:
+        first_name: 'Facebook',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_facebook_token_' + Date.now();
@@ -406,10 +423,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@facebook.com',
-        name: 'Facebook User',
-        avatar:
+        first_name: 'Facebook',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_facebook_token_' + Date.now();
@@ -426,10 +444,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@facebook.com',
-        name: 'Facebook User',
-        avatar:
+        first_name: 'Facebook',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_facebook_token_' + Date.now();
@@ -476,11 +495,12 @@ class AuthService {
         const mockUser: User = {
           id: firebaseResult.user.uid,
           email: firebaseResult.user.email || 'user@facebook.com',
-          name: firebaseResult.user.displayName || 'Facebook User',
-          avatar:
+          first_name: firebaseResult.user.displayName?.split(' ')[0] || 'Facebook',
+          last_name: firebaseResult.user.displayName?.split(' ')[1] || 'User',
+          profile_image_url:
             firebaseResult.user.photoURL ||
             'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         };
 
         localStorage.setItem('auth_token', token);
@@ -499,10 +519,11 @@ class AuthService {
       const mockUser: User = {
         id: '1',
         email: 'user@facebook.com',
-        name: 'Facebook User',
-        avatar:
+        first_name: 'Facebook',
+        last_name: 'User',
+        profile_image_url:
           'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       const mockToken = 'mock_facebook_token_' + Date.now();
@@ -527,7 +548,7 @@ class AuthService {
           const mockFirebaseUser = {
             uid: '1',
             email: JSON.parse(existingUser).email,
-            displayName: JSON.parse(existingUser).name,
+            displayName: JSON.parse(existingUser).first_name + ' ' + JSON.parse(existingUser).last_name,
             getIdToken: async () => existingToken,
           } as unknown as FirebaseUser;
           callback(mockFirebaseUser);

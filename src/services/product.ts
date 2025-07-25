@@ -1,5 +1,6 @@
 import api from './api';
 import { User } from './auth';
+import { isAxiosError } from 'axios';
 
 // Product types
 export interface Product {
@@ -88,7 +89,7 @@ class ProductService {
       const response = await api.post<ApiResponse<CreateProductResponse>>('/products', requestData);
       
       if (!response.data || !response.data.success || !response.data.data) {
-        throw new Error(response.data?.error?.message || 'Failed to create product');
+        throw new Error(response.data?.error || response.data?.message || 'Failed to create product');
       }
 
       const createResponse = response.data.data;
@@ -120,7 +121,7 @@ class ProductService {
     } catch (error) {
       console.error('Product creation error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -198,7 +199,7 @@ class ProductService {
     } catch (error) {
       console.error('Image upload error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -219,7 +220,7 @@ class ProductService {
     } catch (error) {
       console.error('Product fetch error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -240,7 +241,7 @@ class ProductService {
     } catch (error) {
       console.error('Product fetch by permalink error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -255,7 +256,7 @@ class ProductService {
       const transformedData: Record<string, unknown> = { ...productData };
       
       // Convert price from dollars to cents if present
-      if (transformedData.price !== undefined) {
+      if (transformedData.price !== undefined && typeof transformedData.price === 'number') {
         transformedData.price = Math.round(transformedData.price * 100);
       }
       
@@ -269,7 +270,7 @@ class ProductService {
     } catch (error) {
       console.error('Product update error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -289,16 +290,18 @@ class ProductService {
     } catch (error) {
       console.error('Product deletion error:', error);
       
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      }
-      
-      if (error.response?.status === 404) {
-        throw new Error('Product not found');
-      }
-      
-      if (error.response?.status === 403) {
-        throw new Error('You are not authorized to delete this product');
+      if (isAxiosError(error)) {
+        if (error.response?.data?.message) {
+          throw new Error(error.response.data.message);
+        }
+        
+        if (error.response?.status === 404) {
+          throw new Error('Product not found');
+        }
+        
+        if (error.response?.status === 403) {
+          throw new Error('You are not authorized to delete this product');
+        }
       }
       
       throw new Error(error instanceof Error ? error.message : 'Failed to delete product');
@@ -322,12 +325,18 @@ class ProductService {
       const params = new URLSearchParams();
       if (filters) {
         // Convert price from dollars to cents if present
-        if (filters.min_price) filters.min_price = Math.round(filters.min_price * 100);
-        if (filters.max_price) filters.max_price = Math.round(filters.max_price * 100);
+        const processedFilters = { ...filters };
+        if (processedFilters.min_price && typeof processedFilters.min_price === 'number') {
+          processedFilters.min_price = Math.round(processedFilters.min_price * 100);
+        }
+        if (processedFilters.max_price && typeof processedFilters.max_price === 'number') {
+          processedFilters.max_price = Math.round(processedFilters.max_price * 100);
+        }
 
-        Object.keys(filters).forEach(key => {
-          if (filters[key] !== undefined) {
-            params.append(key, filters[key].toString());
+        (Object.keys(processedFilters) as Array<keyof typeof processedFilters>).forEach(key => {
+          const value = processedFilters[key];
+          if (value !== undefined) {
+            params.append(key, String(value));
           }
         });
       }
@@ -342,7 +351,7 @@ class ProductService {
     } catch (error) {
       console.error('Product list error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
@@ -360,11 +369,19 @@ class ProductService {
       
       if (filters) {
         // Convert price from dollars to cents if present
-        if (filters.min_price) filters.min_price = Math.round(filters.min_price * 100);
-        if (filters.max_price) filters.max_price = Math.round(filters.max_price * 100);
+        const processedFilters = { ...filters };
+        if (processedFilters.min_price && typeof processedFilters.min_price === 'number') {
+          processedFilters.min_price = Math.round(processedFilters.min_price * 100);
+        }
+        if (processedFilters.max_price && typeof processedFilters.max_price === 'number') {
+          processedFilters.max_price = Math.round(processedFilters.max_price * 100);
+        }
 
-        Object.keys(filters).forEach(key => {
-          if (filters[key]) params.append(key, filters[key]);
+        Object.keys(processedFilters).forEach(key => {
+          const value = processedFilters[key];
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
         });
       }
 
@@ -380,6 +397,8 @@ class ProductService {
           page_size: number;
           total_pages: number;
         };
+        error?: string;
+        message?: string;
       }
 
       const response = await api.get<SearchResponse>(`/products/search?${params.toString()}`);
@@ -395,7 +414,7 @@ class ProductService {
     } catch (error) {
       console.error('Product search error:', error);
       
-      if (error.response?.data?.message) {
+      if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
