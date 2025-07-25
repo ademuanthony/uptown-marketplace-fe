@@ -387,13 +387,13 @@ export default function ProfilePage() {
             <div className="w-12 h-12 mx-auto bg-primary-100 rounded-lg flex items-center justify-center mb-4">
               <ShoppingBagIcon className="h-6 w-6 text-primary-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">My Items</h3>
-            <p className="text-gray-600 text-sm mb-4">Manage your listings</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">My Store</h3>
+            <p className="text-gray-600 text-sm mb-4">Manage your store and listings</p>
             <button
-              onClick={() => router.push('/my-items')}
+              onClick={() => router.push('/my-store')}
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
-              View Items →
+              View Store →
             </button>
           </div>
 

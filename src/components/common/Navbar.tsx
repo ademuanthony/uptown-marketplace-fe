@@ -38,7 +38,7 @@ export default function Navbar() {
 
   const userNavigation = [
     { name: 'Your Profile', href: '/profile', icon: UserIcon },
-    { name: 'Your Items', href: '/my-items', icon: ShoppingBagIcon },
+    { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
     { name: 'Favorites', href: '/favorites', icon: HeartIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },

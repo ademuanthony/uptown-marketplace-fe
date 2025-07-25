@@ -20,6 +20,8 @@ export interface User {
   phone_number?: string;
   profile_image_url?: string;
   firebase_uid?: string;
+  permalink?: string;
+  store_name?: string;
   role?: string;
   status?: string;
   email_verified?: boolean;

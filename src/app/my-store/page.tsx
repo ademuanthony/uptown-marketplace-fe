@@ -14,12 +14,14 @@ import {
   AdjustmentsHorizontalIcon,
   ClockIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { productService } from '@/services/product';
+import StoreConfigModal from '@/components/store/StoreConfigModal';
 import toast from 'react-hot-toast';
 
 interface Item {
@@ -50,11 +52,12 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function MyItemsPage() {
+export default function MyStorePage() {
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isStoreConfigModalOpen, setIsStoreConfigModalOpen] = useState(false);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -132,6 +135,11 @@ export default function MyItemsPage() {
     }
   };
 
+  const handleStoreConfigSuccess = (updatedConfig: { store_name?: string; permalink: string }) => {
+    // Update user data if needed - in a real app, you might want to refresh user data
+    console.log('Store configuration updated:', updatedConfig);
+  };
+
   // Removed unused handleStatusChange function
 
   const getStatusIcon = (status: Item['status']) => {
@@ -190,16 +198,33 @@ export default function MyItemsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Items</h1>
-              <p className="mt-2 text-gray-600">Manage your listings and track their performance</p>
+              <h1 className="text-3xl font-bold text-gray-900">My Store</h1>
+              <p className="mt-2 text-gray-600">
+                {user?.store_name ? (
+                  <span>
+                    <strong>{user.store_name}</strong> • uptown.ng/store/{user.permalink}
+                  </span>
+                ) : (
+                  'Manage your store, listings and track their performance'
+                )}
+              </p>
             </div>
-            <Link
-              href="/post-item"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Post New Item
-            </Link>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setIsStoreConfigModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                Store Settings
+              </button>
+              <Link
+                href="/post-item"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 transition-all duration-300 shadow-md hover:shadow-lg"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Post New Item
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -463,6 +488,15 @@ export default function MyItemsPage() {
           )}
         </div>
       </div>
+
+      {/* Store Configuration Modal */}
+      <StoreConfigModal
+        isOpen={isStoreConfigModalOpen}
+        onClose={() => setIsStoreConfigModalOpen(false)}
+        currentStoreName={user?.store_name}
+        currentPermalink={user?.permalink || ''}
+        onSuccess={handleStoreConfigSuccess}
+      />
     </div>
   );
 }
