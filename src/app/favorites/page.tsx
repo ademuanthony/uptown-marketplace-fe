@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ProductCard from '@/components/products/ProductCard';
 import { favoritesService, Favorite } from '@/services/favorites';
 import { Product } from '@/services/product';
+import { getProductImageUrl } from '@/utils/imageUtils';
 import toast from 'react-hot-toast';
 
 interface FavoriteWithProduct extends Favorite {
@@ -217,7 +218,7 @@ export default function FavoritesPage() {
                           id={item.product.id}
                           title={item.product.title}
                           price={item.product.price / 100} // Convert from cents to dollars
-                          image={item.product.images[0] || '/api/placeholder/400/400'}
+                          image={getProductImageUrl(item.product.images?.[0])}
                           rating={0} // TODO: Add rating from backend
                           reviewCount={0} // TODO: Add review count from backend
                           sellerName={undefined} // TODO: Add seller name from backend
@@ -236,7 +237,7 @@ export default function FavoritesPage() {
                         <Link href={item.product.permalink ? `/products/${item.product.permalink}` : `/products/${item.product.id}`}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={item.product.images[0] || '/api/placeholder/150/150'}
+                            src={getProductImageUrl(item.product.images?.[0])}
                             alt={item.product.title}
                             className="h-24 w-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                           />

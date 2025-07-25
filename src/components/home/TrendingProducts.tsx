@@ -5,6 +5,7 @@ import ProductCard from '../products/ProductCard';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Product, productService } from '@/services/product';
 import { favoritesService } from '@/services/favorites';
+import { getProductImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TrendingProducts() {
@@ -135,7 +136,7 @@ export default function TrendingProducts() {
                 id={product.id}
                 title={product.title}
                 price={product.price / 100} // Convert from cents to dollars
-                image={product.images[0] || '/api/placeholder/400/400'}
+                image={getProductImageUrl(product.images?.[0])}
                 rating={0} // TODO: Add rating to backend response
                 reviewCount={0} // TODO: Add review count to backend response
                 sellerName={undefined} // TODO: Add seller name to backend response

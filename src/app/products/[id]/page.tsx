@@ -18,6 +18,7 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { productService, type Product } from '@/services/product';
 import { favoritesService } from '@/services/favorites';
 import { messagingService } from '@/services/messaging';
+import { getProductImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -336,7 +337,7 @@ Let me know if you're open to offers!`;
               {product.images && product.images.length > 0 ? (
                 <>
                   <Image
-                    src={product.images[currentImageIndex]}
+                    src={getProductImageUrl(product.images[currentImageIndex])}
                     alt={product.title}
                     fill
                     className="object-cover"
@@ -390,7 +391,7 @@ Let me know if you're open to offers!`;
                     }`}
                   >
                     <Image
-                      src={image}
+                      src={getProductImageUrl(image)}
                       alt={`${product.title} ${index + 1}`}
                       fill
                       className="object-cover"

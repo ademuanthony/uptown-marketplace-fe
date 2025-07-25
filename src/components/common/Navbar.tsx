@@ -4,6 +4,7 @@ import { useState, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, Transition } from '@headlessui/react';
+import { getProfileImageUrl } from '@/utils/imageUtils';
 import { 
   Bars3Icon, 
   XMarkIcon,
@@ -125,19 +126,13 @@ export default function Navbar() {
                   <div>
                     <Menu.Button className="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
-                      {user?.profile_image_url ? (
-                        <Image
-                          className="h-8 w-8 rounded-full object-cover"
-                          src={user.profile_image_url}
-                          alt={`${user.first_name} ${user.last_name}`}
-                          width={32}
-                          height={32}
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center">
-                          <UserIcon className="h-5 w-5 text-white" />
-                        </div>
-                      )}
+                      {user&&<Image
+                        className="h-8 w-8 rounded-full object-cover"
+                        src={getProfileImageUrl(user)}
+                        alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                        width={32}
+                        height={32}
+                      />}
                       <span className="hidden lg:block text-gray-700 font-medium">
                         {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.email}
                       </span>
@@ -290,19 +285,13 @@ export default function Navbar() {
               <>
                 <div className="border-t border-gray-200 pt-4 pb-3">
                   <div className="flex items-center px-4">
-                    {user?.profile_image_url ? (
-                      <Image
-                        className="h-10 w-10 rounded-full object-cover"
-                        src={user.profile_image_url}
-                        alt={`${user.first_name} ${user.last_name}`}
-                        width={40}
-                        height={40}
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-white" />
-                      </div>
-                    )}
+                    {user&&<Image
+                      className="h-10 w-10 rounded-full object-cover"
+                      src={getProfileImageUrl(user)}
+                      alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                      width={40}
+                      height={40}
+                    />}
                     <div className="ml-3">
                       <div className="text-base font-medium text-gray-800">
                         {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.email}

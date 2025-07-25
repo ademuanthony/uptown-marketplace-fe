@@ -10,7 +10,6 @@ import {
   PencilIcon, 
   EnvelopeIcon, 
   PhoneIcon, 
-  UserIcon,
   StarIcon,
   CalendarIcon,
   ShoppingBagIcon,
@@ -20,6 +19,7 @@ import {
 import { profileSchema, type ProfileFormData } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/user';
+import { getProfileImageUrl } from '@/utils/imageUtils';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
@@ -205,31 +205,20 @@ export default function ProfilePage() {
               <div className="flex-shrink-0 mb-6 lg:mb-0">
                 <div className="relative">
                   {/* Avatar Display */}
-                  {avatarPreview || user?.profile_image_url ? (
-                    <div className="relative">
-                      <Image
-                        src={avatarPreview || user?.profile_image_url || ''}
-                        alt={`${user?.first_name} ${user?.last_name}` || 'Profile'}
-                        width={120}
-                        height={120}
-                        className="w-30 h-30 rounded-full object-cover border-4 border-gray-200"
-                      />
-                      {isUploadingAvatar && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-30 h-30 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center border-4 border-gray-200 relative">
-                      <UserIcon className="h-16 w-16 text-white" />
-                      {isUploadingAvatar && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <div className="relative">
+                    {user&&<Image
+                      src={avatarPreview || getProfileImageUrl(user)}
+                      alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                      width={120}
+                      height={120}
+                      className="w-30 h-30 rounded-full object-cover border-4 border-gray-200"
+                    />}
+                    {isUploadingAvatar && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Upload Button */}
                   {isEditing && (

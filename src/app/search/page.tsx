@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { productService } from '@/services/product';
 import { categoryService } from '@/services/category';
 import { searchAnalyticsService } from '@/services/searchAnalytics';
+import { getProductImageUrl } from '@/utils/imageUtils';
 import { Product } from '@/services/product';
 import { Category } from '@/services/category';
 import ProductCard from '@/components/products/ProductCard';
@@ -291,7 +292,7 @@ function SearchContent() {
                             id={product.id}
                             title={product.title}
                             price={product.price ? product.price / 100 : 0} // Convert from cents to dollars
-                            image={product.images && product.images.length > 0 ? product.images[0] : '/api/placeholder/400/400'}
+                            image={getProductImageUrl(product.images?.[0])}
                             rating={0} // TODO: Add rating to backend response
                             reviewCount={0} // TODO: Add review count to backend response
                             sellerName={undefined}
