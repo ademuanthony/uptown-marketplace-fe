@@ -1,0 +1,175 @@
+// Template for creating Next.js pages that use useSearchParams
+// Copy this template when creating new pages that need search parameters
+
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+// Import your other dependencies here
+
+// Loading component for Suspense fallback
+const PageLoading = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
+
+// Component that uses useSearchParams - must be wrapped in Suspense
+function PageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // Extract search parameters
+  const query = searchParams.get('q') || '';
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const filter = searchParams.get('filter') || '';
+  
+  // State management
+  const [data, setData] = useState<YourDataType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Effects
+  useEffect(() => {
+    // Handle search parameter changes
+    loadData();
+  }, [searchParams]);
+  
+  // Functions
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Your API call here
+      const result = await yourService.getData({
+        query,
+        page,
+        filter
+      });
+      
+      setData(result.data);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const updateSearchParams = (newParams: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+    
+    router.push(`?${params.toString()}`);
+  };
+  
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Error</h3>
+          <p className="text-red-700">{error}</p>
+          <button
+            onClick={() => loadData()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Main render
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        Your Page Title
+      </h1>
+      
+      {/* Search/Filter UI */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search..."
+          defaultValue={query}
+          onChange={(e) => updateSearchParams({ q: e.target.value, page: '1' })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+      
+      {/* Results */}
+      <div className="space-y-4">
+        {data.length > 0 ? (
+          data.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow p-6">
+              {/* Your item rendering here */}
+              <h3 className="text-lg font-semibold">{item.name}</h3>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No results found</p>
+          </div>
+        )}
+      </div>
+      
+      {/* Pagination */}
+      {data.length > 0 && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={() => updateSearchParams({ page: String(page - 1) })}
+            disabled={page <= 1}
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="mx-4 py-2">Page {page}</span>
+          <button
+            onClick={() => updateSearchParams({ page: String(page + 1) })}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function YourPage() {
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <PageContent />
+    </Suspense>
+  );
+}
+
+// Type definitions (add to your types file or at the top)
+interface YourDataType {
+  id: string;
+  name: string;
+  // Add your properties
+}

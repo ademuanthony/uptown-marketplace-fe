@@ -1,0 +1,162 @@
+// Template for creating new API services
+// Copy this template when creating new services
+
+import api from './api';
+import { isAxiosError } from 'axios';
+
+// Define your data types
+interface YourDataType {
+  id: string;
+  name: string;
+  // Add your properties
+}
+
+// Standard API response wrapper
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+// Service class
+class YourService {
+  // GET method template
+  async getItem(id: string): Promise<YourDataType> {
+    try {
+      const response = await api.get<ApiResponse<YourDataType>>(`/your-endpoint/${id}`);
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.error || response.data?.message || 'Failed to fetch item');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Get item error:', error);
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch item');
+    }
+  }
+
+  // POST method template
+  async createItem(data: Partial<YourDataType>): Promise<YourDataType> {
+    try {
+      const response = await api.post<ApiResponse<YourDataType>>('/your-endpoint', data);
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.error || response.data?.message || 'Failed to create item');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Create item error:', error);
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error instanceof Error ? error.message : 'Failed to create item');
+    }
+  }
+
+  // PUT method template
+  async updateItem(id: string, data: Partial<YourDataType>): Promise<YourDataType> {
+    try {
+      const response = await api.put<ApiResponse<YourDataType>>(`/your-endpoint/${id}`, data);
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.error || response.data?.message || 'Failed to update item');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Update item error:', error);
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error instanceof Error ? error.message : 'Failed to update item');
+    }
+  }
+
+  // DELETE method template
+  async deleteItem(id: string): Promise<void> {
+    try {
+      const response = await api.delete<ApiResponse<void>>(`/your-endpoint/${id}`);
+      
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.error || response.data?.message || 'Failed to delete item');
+      }
+    } catch (error) {
+      console.error('Delete item error:', error);
+      
+      if (isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Item not found');
+        }
+        
+        if (error.response?.status === 403) {
+          throw new Error('You are not authorized to delete this item');
+        }
+        
+        if (error.response?.data?.message) {
+          throw new Error(error.response.data.message);
+        }
+      }
+      
+      throw new Error(error instanceof Error ? error.message : 'Failed to delete item');
+    }
+  }
+
+  // List method with pagination template
+  async getItems(filters?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    // Add your filter properties
+  }): Promise<{ items: YourDataType[]; total: number; page: number; pageSize: number }> {
+    try {
+      const params = new URLSearchParams();
+      
+      if (filters) {
+        // Type-safe parameter building
+        (Object.keys(filters) as Array<keyof typeof filters>).forEach(key => {
+          const value = filters[key];
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      
+      const response = await api.get<ApiResponse<{
+        items: YourDataType[];
+        total: number;
+        page: number;
+        pageSize: number;
+      }>>(`/your-endpoint?${params.toString()}`);
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.error || response.data?.message || 'Failed to fetch items');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Get items error:', error);
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch items');
+    }
+  }
+}
+
+// Export service instance
+export const yourService = new YourService();
+export default yourService;
