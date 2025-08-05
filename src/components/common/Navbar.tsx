@@ -17,7 +17,8 @@ import {
   BellIcon,
   ShieldCheckIcon,
   FolderIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -37,9 +38,10 @@ export default function Navbar() {
   ];
 
   const userNavigation = [
-    { name: 'Your Profile', href: '/profile', icon: UserIcon },
+    { name: 'My Profile', href: '/profile', icon: UserIcon },
     { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
+    { name: 'Referrals', href: '/referrals', icon: UsersIcon },
     { name: 'Favorites', href: '/favorites', icon: HeartIcon },
     { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   ];
