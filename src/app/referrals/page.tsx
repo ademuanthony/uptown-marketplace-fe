@@ -7,6 +7,7 @@ import {
   getUserReferrals, 
   getReferralRewards,
   getRecentReferrals,
+  getDownlines,
   generateReferralLink,
   copyReferralLink,
   formatCurrencyAmount,
@@ -17,7 +18,8 @@ import {
   type ReferralRelationship,
   type ReferralReward,
   type ReferralRewardsSummary,
-  type RecentReferralWithProfile
+  type RecentReferralWithProfile,
+  type DownlineWithProfile
 } from '@/services/referral';
 import { 
   ShareIcon, 
@@ -27,7 +29,11 @@ import {
   ChartBarIcon,
   GiftIcon,
   LinkIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ChatBubbleLeftRightIcon,
+  UserCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -51,6 +57,128 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
   </button>
 );
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+}
+
+const Pagination: React.FC<PaginationProps> = ({ 
+  currentPage, 
+  totalPages, 
+  totalItems, 
+  itemsPerPage,
+  onPageChange 
+}) => {
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+      <div className="flex flex-1 justify-between sm:hidden">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm text-gray-700">
+            Showing <span className="font-medium">{startItem}</span> to{' '}
+            <span className="font-medium">{endItem}</span> of{' '}
+            <span className="font-medium">{totalItems}</span> results
+          </p>
+        </div>
+        <div>
+          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="sr-only">Previous</span>
+              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+            {getVisiblePages().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
+                disabled={page === '...'}
+                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                  page === currentPage
+                    ? 'z-10 bg-primary-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
+                    : page === '...'
+                    ? 'text-gray-700 ring-1 ring-inset ring-gray-300 cursor-default'
+                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="sr-only">Next</span>
+              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ReferralsPage() {
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -61,15 +189,45 @@ export default function ReferralsPage() {
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [profile, setProfile] = useState<ReferralProfile | null>(null);
   const [downlines, setDownlines] = useState<ReferralRelationship[]>([]);
+  const [downlinesWithProfiles, setDownlinesWithProfiles] = useState<DownlineWithProfile[]>([]);
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
   const [rewardsSummary, setRewardsSummary] = useState<ReferralRewardsSummary | null>(null);
   const [recentReferrals, setRecentReferrals] = useState<RecentReferralWithProfile[]>([]);
+  
+  // Pagination states
+  const [downlinesPagination, setDownlinesPagination] = useState({
+    currentPage: 1,
+    itemsPerPage: 9, // 3x3 grid
+    totalItems: 0,
+    totalPages: 0
+  });
+  
+  const [rewardsPagination, setRewardsPagination] = useState({
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0
+  });
 
   useEffect(() => {
     if (isAuthenticated) {
       loadReferralData();
     }
   }, [isAuthenticated]);
+
+  // Load downlines when pagination changes
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'downlines') {
+      loadDownlines();
+    }
+  }, [isAuthenticated, activeTab, downlinesPagination.currentPage]);
+
+  // Load rewards when pagination changes
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'rewards') {
+      loadRewards();
+    }
+  }, [isAuthenticated, activeTab, rewardsPagination.currentPage]);
 
   const loadReferralData = async () => {
     try {
@@ -82,24 +240,64 @@ export default function ReferralsPage() {
 
       console.log(statsData);
       
-      // Load downlines
+      // Load downlines (basic relationships for stats)
       const downlinesData = await getUserReferrals({ limit: 50 });
       setDownlines(downlinesData.referrals);
-      
-      // Load rewards
-      const rewardsData = await getReferralRewards({ limit: 20 });
-      setRewards(rewardsData.rewards);
-      setRewardsSummary(rewardsData.summary);
       
       // Load recent referrals
       const recentReferralsData = await getRecentReferrals({ limit: 5 });
       setRecentReferrals(recentReferralsData.recent_referrals);
+      
+      // Load initial downlines and rewards (will be updated by pagination effects)
+      await loadDownlines();
+      await loadRewards();
       
     } catch (error) {
       console.error('Failed to load referral data:', error);
       toast.error('Failed to load referral data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDownlines = async () => {
+    try {
+      const offset = (downlinesPagination.currentPage - 1) * downlinesPagination.itemsPerPage;
+      const downlinesWithProfilesData = await getDownlines({ 
+        limit: downlinesPagination.itemsPerPage,
+        offset: offset
+      });
+      
+      setDownlinesWithProfiles(downlinesWithProfilesData.downlines);
+      setDownlinesPagination(prev => ({
+        ...prev,
+        totalItems: downlinesWithProfilesData.total,
+        totalPages: Math.ceil(downlinesWithProfilesData.total / prev.itemsPerPage)
+      }));
+    } catch (error) {
+      console.error('Failed to load downlines:', error);
+      toast.error('Failed to load downlines');
+    }
+  };
+
+  const loadRewards = async () => {
+    try {
+      const offset = (rewardsPagination.currentPage - 1) * rewardsPagination.itemsPerPage;
+      const rewardsData = await getReferralRewards({ 
+        limit: rewardsPagination.itemsPerPage,
+        offset: offset
+      });
+      
+      setRewards(rewardsData.rewards);
+      setRewardsSummary(rewardsData.summary);
+      setRewardsPagination(prev => ({
+        ...prev,
+        totalItems: rewardsData.total,
+        totalPages: Math.ceil(rewardsData.total / prev.itemsPerPage)
+      }));
+    } catch (error) {
+      console.error('Failed to load rewards:', error);
+      toast.error('Failed to load rewards');
     }
   };
 
@@ -135,6 +333,20 @@ export default function ReferralsPage() {
       // Fallback to copying link
       handleCopyReferralLink();
     }
+  };
+
+  const handleDownlinesPageChange = (page: number) => {
+    setDownlinesPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
+  };
+
+  const handleRewardsPageChange = (page: number) => {
+    setRewardsPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }));
   };
 
   if (!isAuthenticated) {
@@ -364,37 +576,57 @@ export default function ReferralsPage() {
         )}
 
         {activeTab === 'downlines' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">My Downlines</h3>
-            {downlines && downlines.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Level
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        User ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Joined Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {downlines.map((downline) => (
-                      <tr key={downline.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {getLevelName(downline.level)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {downline.referred_id.slice(0, 8)}...
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">My Downlines</h3>
+              {downlinesWithProfiles && downlinesWithProfiles.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {downlinesWithProfiles.map((downline) => (
+                    <div key={downline.user_id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="flex-shrink-0">
+                          {downline.profile_image_url ? (
+                            <img
+                              src={downline.profile_image_url}
+                              alt={`${downline.first_name} ${downline.last_name}`}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <UserCircleIcon className="w-12 h-12 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {downline.first_name && downline.last_name 
+                              ? `${downline.first_name} ${downline.last_name}`
+                              : downline.email
+                            }
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {downline.email}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 mb-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">Referral Code:</span>
+                          <span className="text-xs font-mono font-medium text-gray-900">{downline.referral_code}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">Level:</span>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            downline.level === 1 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {getLevelName(downline.level)}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">Status:</span>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             downline.is_active 
                               ? 'bg-green-100 text-green-800' 
@@ -402,101 +634,135 @@ export default function ReferralsPage() {
                           }`}>
                             {downline.is_active ? 'Active' : 'Inactive'}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(downline.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">No downlines yet. Share your referral link to get started!</p>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">Joined:</span>
+                          <span className="text-xs text-gray-700">
+                            {new Date(downline.joined_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-3 border-t border-gray-200">
+                        <Link
+                          href={`/messages?userId=${downline.user_id}`}
+                          className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors"
+                        >
+                          <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1" />
+                          Contact
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No downlines yet. Share your referral link to get started!</p>
+              )}
+            </div>
+            {downlinesWithProfiles && downlinesWithProfiles.length > 0 && (
+              <Pagination
+                currentPage={downlinesPagination.currentPage}
+                totalPages={downlinesPagination.totalPages}
+                totalItems={downlinesPagination.totalItems}
+                itemsPerPage={downlinesPagination.itemsPerPage}
+                onPageChange={handleDownlinesPageChange}
+              />
             )}
           </div>
         )}
 
         {activeTab === 'rewards' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reward History</h3>
-            
-            {rewardsSummary && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-green-600 font-medium">Total Cash Rewards</p>
-                  <p className="text-lg font-bold text-green-900">
-                    {formatCurrencyAmount(rewardsSummary.total_cash_rewards, rewardsSummary.cash_currency)}
-                  </p>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Reward History</h3>
+              
+              {rewardsSummary && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-600 font-medium">Total Cash Rewards</p>
+                    <p className="text-lg font-bold text-green-900">
+                      {formatCurrencyAmount(rewardsSummary.total_cash_rewards, rewardsSummary.cash_currency)}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <p className="text-sm text-purple-600 font-medium">Total Points Rewards</p>
+                    <p className="text-lg font-bold text-purple-900">
+                      {formatCurrencyAmount(rewardsSummary.total_points_rewards, 'POINTS')}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-yellow-50 rounded-lg">
+                    <p className="text-sm text-yellow-600 font-medium">Pending Rewards</p>
+                    <p className="text-lg font-bold text-yellow-900">{rewardsSummary.pending_rewards}</p>
+                  </div>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-purple-600 font-medium">Total Points Rewards</p>
-                  <p className="text-lg font-bold text-purple-900">
-                    {formatCurrencyAmount(rewardsSummary.total_points_rewards, 'POINTS')}
-                  </p>
-                </div>
-                <div className="p-4 bg-yellow-50 rounded-lg">
-                  <p className="text-sm text-yellow-600 font-medium">Pending Rewards</p>
-                  <p className="text-lg font-bold text-yellow-900">{rewardsSummary.pending_rewards}</p>
-                </div>
-              </div>
-            )}
+              )}
 
-            {rewards && rewards.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Action
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Level
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {rewards.map((reward) => (
-                      <tr key={reward.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(reward.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {reward.action_type.replace('_', ' ')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getLevelName(reward.level)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {formatCurrencyAmount(reward.amount, reward.currency)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            reward.status === 'processed' 
-                              ? 'bg-green-100 text-green-800'
-                              : reward.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {reward.status}
-                          </span>
-                        </td>
+              {rewards && rewards.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Action
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Level
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Amount
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">No rewards yet. Start referring friends to earn rewards!</p>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {rewards.map((reward) => (
+                        <tr key={reward.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(reward.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {reward.action_type.replace('_', ' ')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {getLevelName(reward.level)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {formatCurrencyAmount(reward.amount, reward.currency)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              reward.status === 'processed' 
+                                ? 'bg-green-100 text-green-800'
+                                : reward.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {reward.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No rewards yet. Start referring friends to earn rewards!</p>
+              )}
+            </div>
+            {rewards && rewards.length > 0 && (
+              <Pagination
+                currentPage={rewardsPagination.currentPage}
+                totalPages={rewardsPagination.totalPages}
+                totalItems={rewardsPagination.totalItems}
+                itemsPerPage={rewardsPagination.itemsPerPage}
+                onPageChange={handleRewardsPageChange}
+              />
             )}
           </div>
         )}

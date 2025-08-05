@@ -98,6 +98,20 @@ export interface RecentReferralWithProfile {
   is_active: boolean;
 }
 
+export interface DownlineWithProfile {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  profile_image_url: string;
+  referral_code: string;
+  level: number;
+  joined_at: string;
+  is_active: boolean;
+  relationship_id: string;
+}
+
 // Create referral profile
 export const createReferralProfile = async (data: {
   user_id: string;
@@ -164,6 +178,19 @@ export const getRecentReferrals = async (params?: {
   total: number;
 }> => {
   const response = await api.get('/referrals/recent', { params });
+  return response.data.data;
+};
+
+// Get downlines with user profiles
+export const getDownlines = async (params?: {
+  level?: number;
+  limit?: number;
+  offset?: number;
+}): Promise<{
+  downlines: DownlineWithProfile[];
+  total: number;
+}> => {
+  const response = await api.get('/referrals/downlines', { params });
   return response.data.data;
 };
 
