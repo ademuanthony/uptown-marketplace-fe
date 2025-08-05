@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   getUserReferralStats, 
-  getUserReferrals, 
   getReferralRewards,
   getRecentReferrals,
   getDownlines,
@@ -15,7 +14,6 @@ import {
   getRewardPercentageDisplay,
   type ReferralStats,
   type ReferralProfile,
-  type ReferralRelationship,
   type ReferralReward,
   type ReferralRewardsSummary,
   type RecentReferralWithProfile,
@@ -188,7 +186,7 @@ export default function ReferralsPage() {
   // Data states
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [profile, setProfile] = useState<ReferralProfile | null>(null);
-  const [downlines, setDownlines] = useState<ReferralRelationship[]>([]);
+  // const [downlines, setDownlines] = useState<ReferralRelationship[]>([]);
   const [downlinesWithProfiles, setDownlinesWithProfiles] = useState<DownlineWithProfile[]>([]);
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
   const [rewardsSummary, setRewardsSummary] = useState<ReferralRewardsSummary | null>(null);
@@ -241,8 +239,8 @@ export default function ReferralsPage() {
       console.log(statsData);
       
       // Load downlines (basic relationships for stats)
-      const downlinesData = await getUserReferrals({ limit: 50 });
-      setDownlines(downlinesData.referrals);
+      // const downlinesData = await getUserReferrals({ limit: 50 });
+      // setDownlines(downlinesData.referrals);
       
       // Load recent referrals
       const recentReferralsData = await getRecentReferrals({ limit: 5 });
