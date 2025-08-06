@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import NotificationWrapper from "@/components/common/NotificationWrapper";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <Navbar />
+        <NotificationWrapper />
         {children}
         <Footer />
         <Toaster

@@ -144,16 +144,50 @@ class InvoiceService {
         params.append('status', status);
       }
 
-      const response = await api.get<ApiResponse<GetUserInvoicesResponse>>(`/invoices?${params}`);
+      const response = await api.get(`/invoices?${params}`);
       
-      if (!response.data || !response.data.success || !response.data.data) {
-        throw new Error(response.data?.message || 'Failed to get user invoices');
+      // Handle paginated response structure
+      if (response.data && response.data.success) {
+        // The backend returns data as an array directly in the data field for paginated responses
+        const invoices = Array.isArray(response.data.data) ? response.data.data : [];
+        const pagination = response.data.pagination || {
+          page: page,
+          page_size: perPage,
+          total_count: 0,
+          total_pages: 0
+        };
+        
+        return {
+          invoices,
+          pagination
+        };
       }
-
-      return response.data.data;
+      
+      // Return empty if no success or data
+      return {
+        invoices: [],
+        pagination: {
+          page: page,
+          page_size: perPage,
+          total_count: 0,
+          total_pages: 0
+        }
+      };
     } catch (error) {
       console.error('Get user invoices error:', error);
       if (isAxiosError(error)) {
+        // Handle 401 unauthorized - user might not be logged in
+        if (error.response?.status === 401) {
+          return {
+            invoices: [],
+            pagination: {
+              page: page,
+              page_size: perPage,
+              total_count: 0,
+              total_pages: 0
+            }
+          };
+        }
         throw new Error(error.response?.data?.message || error.message || 'Failed to get user invoices');
       }
       throw error;
