@@ -33,7 +33,7 @@ const statusColors = {
 };
 
 export default function InvoicesPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,12 +207,22 @@ export default function InvoicesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          href={`/invoices/${invoice.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          View
-                        </Link>
+                        <div className="flex justify-end space-x-2">
+                          <Link
+                            href={`/invoices/${invoice.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            View
+                          </Link>
+                          {invoiceService.canPayInvoice(invoice) && (
+                            <Link
+                              href={`/invoices/${invoice.id}`}
+                              className="bg-primary-600 text-white px-3 py-1 rounded text-xs hover:bg-primary-700"
+                            >
+                              Pay Now
+                            </Link>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

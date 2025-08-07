@@ -248,6 +248,87 @@ class InvoiceService {
         return 'text-gray-600 bg-gray-50';
     }
   }
+
+  // Initiate payment with multiple methods
+  async initiatePayment(
+    invoiceId: string,
+    method: 'crypto' | 'bank_transfer' | 'card',
+    email: string,
+    options: {
+      network?: string;
+      returnUrl?: string;
+    } = {}
+  ): Promise<unknown> {
+    try {
+      const requestBody: {
+        method: 'crypto' | 'bank_transfer' | 'card';
+        email: string;
+        network?: string;
+        return_url?: string;
+      } = {
+        method,
+        email,
+      };
+
+      // Add method-specific options
+      if (method === 'crypto' && options.network) {
+        requestBody.network = options.network;
+      }
+      if ((method === 'bank_transfer' || method === 'card') && options.returnUrl) {
+        requestBody.return_url = options.returnUrl;
+      }
+
+      const response = await api.post<ApiResponse<unknown>>(
+        `/invoices/${invoiceId}/payment`,
+        requestBody
+      );
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.message || 'Failed to initiate payment');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      console.error('Initiate payment error:', error);
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to initiate payment');
+      }
+      throw error;
+    }
+  }
+
+  // Check payment status
+  async checkPaymentStatus(
+    invoiceId: string,
+    reference: string,
+    provider?: 'crypto' | 'paystack' | 'stripe'
+  ): Promise<unknown> {
+    try {
+      const params = new URLSearchParams({
+        reference,
+      });
+
+      if (provider) {
+        params.append('provider', provider);
+      }
+
+      const response = await api.get<ApiResponse<unknown>>(
+        `/invoices/${invoiceId}/payment/status?${params}`
+      );
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.message || 'Failed to check payment status');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      console.error('Check payment status error:', error);
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to check payment status');
+      }
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

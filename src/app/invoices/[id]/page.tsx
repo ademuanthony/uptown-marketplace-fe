@@ -4,215 +4,17 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import invoiceService, { type Invoice } from '@/services/invoice';
+import UnifiedPayment from '@/components/invoice/UnifiedPayment';
 import { 
   DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon,
   XMarkIcon,
-  ExclamationTriangleIcon,
-  BanknotesIcon,
   CalendarDaysIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-
-interface CryptoPaymentProps {
-  invoice: Invoice;
-  onPaymentComplete: () => void;
-}
-
-const CryptoPayment: React.FC<CryptoPaymentProps> = ({ invoice, onPaymentComplete }) => {
-  const [selectedCrypto, setSelectedCrypto] = useState<'usdt' | 'eth' | 'btc'>('usdt');
-  const [paymentAddress, setPaymentAddress] = useState('');
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [isGeneratingAddress, setIsGeneratingAddress] = useState(false);
-  const [paymentInitiated, setPaymentInitiated] = useState(false);
-
-  // Mock crypto addresses for demo - in production, these would be generated dynamically
-  const cryptoAddresses = {
-    usdt: 'TRX-USDT-ADDRESS-EXAMPLE-12345',
-    eth: '0xETH-ADDRESS-EXAMPLE-12345',
-    btc: 'bc1BTC-ADDRESS-EXAMPLE-12345'
-  };
-
-  const cryptoNames = {
-    usdt: 'USDT (TRC-20)',
-    eth: 'Ethereum (ETH)',
-    btc: 'Bitcoin (BTC)'
-  };
-
-  const generatePaymentAddress = async () => {
-    setIsGeneratingAddress(true);
-    try {
-      // Simulate API call to generate payment address
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const address = cryptoAddresses[selectedCrypto];
-      setPaymentAddress(address);
-      
-      // Generate QR code URL (in production, use a proper QR code service)
-      const qrData = `${selectedCrypto}:${address}?amount=${invoice.total_amount.amount / 100}`;
-      setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`);
-      
-    } catch (error) {
-      console.error('Failed to generate payment address:', error);
-      toast.error('Failed to generate payment address');
-    } finally {
-      setIsGeneratingAddress(false);
-    }
-  };
-
-  const confirmPayment = async () => {
-    setPaymentInitiated(true);
-    try {
-      // In production, this would verify the blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('Payment confirmed! Processing...');
-      onPaymentComplete();
-    } catch (error) {
-      console.error('Payment confirmation failed:', error);
-      toast.error('Payment confirmation failed');
-      setPaymentInitiated(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedCrypto) {
-      generatePaymentAddress();
-    }
-  }, [selectedCrypto]);
-
-  return (
-    <div className="bg-white rounded-lg p-6 border border-gray-200">
-      <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-        <BanknotesIcon className="h-5 w-5 mr-2" />
-        Cryptocurrency Payment
-      </h3>
-
-      {/* Crypto Selection */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select Cryptocurrency
-        </label>
-        <div className="grid grid-cols-3 gap-3">
-          {(Object.keys(cryptoNames) as Array<keyof typeof cryptoNames>).map((crypto) => (
-            <button
-              key={crypto}
-              onClick={() => setSelectedCrypto(crypto)}
-              className={`p-3 border rounded-lg text-center transition-colors ${
-                selectedCrypto === crypto
-                  ? 'border-primary-500 bg-primary-50 text-primary-700'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              <div className="text-sm font-medium">{crypto.toUpperCase()}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {crypto === 'usdt' ? 'TRC-20' : crypto === 'eth' ? 'Ethereum' : 'Bitcoin'}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Payment Details */}
-      {paymentAddress && (
-        <div className="border border-gray-200 rounded-lg p-4 mb-6">
-          <div className="text-center mb-4">
-            <h4 className="font-medium text-gray-900">
-              Pay with {cryptoNames[selectedCrypto]}
-            </h4>
-            <p className="text-2xl font-bold text-primary-600 mt-2">
-              {invoice.total_amount.display}
-            </p>
-          </div>
-
-          {/* QR Code */}
-          {qrCodeUrl && (
-            <div className="text-center mb-4">
-              <img
-                src={qrCodeUrl}
-                alt="Payment QR Code"
-                className="mx-auto border border-gray-200 rounded-lg"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Scan with your crypto wallet
-              </p>
-            </div>
-          )}
-
-          {/* Payment Address */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Payment Address
-            </label>
-            <div className="flex">
-              <input
-                type="text"
-                value={paymentAddress}
-                readOnly
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm font-mono"
-              />
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(paymentAddress);
-                  toast.success('Address copied to clipboard');
-                }}
-                className="px-4 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-200 text-sm"
-              >
-                Copy
-              </button>
-            </div>
-          </div>
-
-          {/* Instructions */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-            <div className="flex">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-              <div className="ml-2 text-sm">
-                <p className="text-yellow-800 font-medium">Important Instructions:</p>
-                <ul className="text-yellow-700 mt-1 space-y-1">
-                  <li>• Send exactly {invoice.total_amount.display} to the address above</li>
-                  <li>• Network: {selectedCrypto === 'usdt' ? 'TRON (TRC-20)' : cryptoNames[selectedCrypto]}</li>
-                  <li>• Allow 5-10 minutes for confirmation</li>
-                  <li>• Do not send from an exchange (use personal wallet)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Confirm Payment Button */}
-          <button
-            onClick={confirmPayment}
-            disabled={paymentInitiated}
-            className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {paymentInitiated ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Confirming Payment...
-              </div>
-            ) : (
-              'I have sent the payment'
-            )}
-          </button>
-
-          <p className="text-xs text-center text-gray-500 mt-2">
-            Click after sending payment to check confirmation status
-          </p>
-        </div>
-      )}
-
-      {isGeneratingAddress && (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-2"></div>
-          <span className="text-gray-600">Generating payment address...</span>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -513,8 +315,10 @@ export default function InvoicePage() {
           {/* Payment Section */}
           <div>
             {canPay ? (
-              <CryptoPayment 
-                invoice={invoice} 
+              <UnifiedPayment 
+                invoiceId={invoice.id}
+                totalAmount={invoice.total_amount}
+                userEmail={user.email || invoice.buyer_email}
                 onPaymentComplete={handlePaymentComplete}
               />
             ) : (
