@@ -99,16 +99,6 @@ export default function UnifiedPayment({
   const initiatePayment = async () => {
     setLoading(true);
     try {
-      const requestBody: {
-        method: PaymentMethod;
-        email: string;
-        network?: string;
-        return_url?: string;
-      } = {
-        method: selectedMethod,
-        email: userEmail,
-      };
-
       // Call the invoice service
       const data = await invoiceService.initiatePayment(
         invoiceId,
@@ -360,7 +350,7 @@ export default function UnifiedPayment({
               {/* Wallet Address */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Send USDT to this Address
+                  Send USDT or POL to this Address
                 </label>
                 <div className="flex items-center bg-gray-50 rounded-lg p-3">
                   <input
