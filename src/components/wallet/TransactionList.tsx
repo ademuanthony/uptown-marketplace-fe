@@ -171,9 +171,10 @@ const getTransactionStatusConfig = (status: TransactionStatus) => {
 
 // Format transaction amount with appropriate sign and color
 const formatTransactionAmount = (transaction: Transaction, userId?: string) => {
-  const typeConfig = getTransactionTypeConfig(transaction.type);
-  const amount = transaction.amount.amount;
-  const currency = transaction.amount.currency;
+  const typeConfig = getTransactionTypeConfig(transaction.type as TransactionType);
+  // Parse amount as float from string - backend sends amount as string
+  const amount = parseFloat(transaction.amount) || 0;
+  const currency = transaction.currency;
   
   // Determine if this is an incoming or outgoing transaction
   let isIncoming = typeConfig.direction === 'incoming';
@@ -191,7 +192,7 @@ const formatTransactionAmount = (transaction: Transaction, userId?: string) => {
     currency: currency === 'USD' ? 'USD' : undefined,
     minimumFractionDigits: 2,
     maximumFractionDigits: currency === 'USD' ? 2 : 6,
-  }).format(amount);
+  }).format(Math.abs(amount));
   
   return {
     display: `${sign}${formattedAmount}${currency !== 'USD' ? ` ${currency}` : ''}`,
@@ -325,8 +326,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
   return (
     <div className={`space-y-3 ${className}`}>
       {transactions.map((transaction) => {
-        const typeConfig = getTransactionTypeConfig(transaction.type);
-        const statusConfig = getTransactionStatusConfig(transaction.status);
+        const typeConfig = getTransactionTypeConfig(transaction.type as TransactionType);
+        const statusConfig = getTransactionStatusConfig(transaction.status as TransactionStatus);
         const amountInfo = formatTransactionAmount(transaction, userId);
         const isExpanded = expandedTx === transaction.id;
         const IconComponent = typeConfig.icon;
@@ -389,8 +390,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   {transaction.metadata?.fee_amount && (
                     <div className="text-xs text-gray-500 mt-1">
                       Fee: {walletService.formatCurrency(
-                        transaction.metadata.fee_amount.amount,
-                        transaction.metadata.fee_amount.currency
+                        transaction.metadata.fee_amount.amount || 0,
+                        transaction.metadata.fee_amount.currency || 'USD'
                       )}
                     </div>
                   )}
@@ -408,79 +409,151 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
             {/* Expanded Details */}
             {isExpanded && (
-              <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Basic Information */}
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-900">Transaction Details</h4>
-                    
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
+              <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white">
+                <div className="p-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Basic Information */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                        <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
+                        Transaction Details
+                      </h4>
+                      
+                      <div className="space-y-2.5 text-xs">
+                      <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
+                        <span className="text-gray-500 font-medium">Amount:</span>
+                        <span className={`text-right col-span-2 font-semibold text-sm ${amountInfo.colorClass}`}>
+                          {amountInfo.display}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
+                        <span className="text-gray-500 font-medium">Status:</span>
+                        <span className="text-right col-span-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}>
+                            {statusConfig.label}
+                          </span>
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2">
                         <span className="text-gray-500">ID:</span>
-                        <span className="font-mono">{transaction.id}</span>
+                        <span className="font-mono text-right col-span-2 truncate text-gray-700" title={transaction.id}>
+                          {transaction.id.length > 12 ? `${transaction.id.substring(0, 8)}...${transaction.id.substring(transaction.id.length - 4)}` : transaction.id}
+                        </span>
                       </div>
                       
-                      <div className="flex justify-between">
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="text-gray-500">Type:</span>
+                        <span className="text-right col-span-2 text-gray-700">
+                          {typeConfig.label}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        <span className="text-gray-500">Description:</span>
+                        <span className="text-right col-span-2 text-gray-700">
+                          {transaction.description}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2">
                         <span className="text-gray-500">Reference:</span>
-                        <span className="font-mono">{transaction.reference}</span>
+                        <span className="font-mono text-right col-span-2 truncate text-gray-700" title={transaction.reference}>
+                          {transaction.reference.length > 20 ? `${transaction.reference.substring(0, 16)}...` : transaction.reference}
+                        </span>
                       </div>
                       
-                      <div className="flex justify-between">
+                      <div className="grid grid-cols-3 gap-2">
                         <span className="text-gray-500">Created:</span>
-                        <span>{new Date(transaction.created_at).toLocaleString()}</span>
+                        <span className="text-right col-span-2 text-gray-700">
+                          {new Date(transaction.created_at).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
                       
                       {transaction.processed_at && (
-                        <div className="flex justify-between">
+                        <div className="grid grid-cols-3 gap-2">
                           <span className="text-gray-500">Processed:</span>
-                          <span>{new Date(transaction.processed_at).toLocaleString()}</span>
+                          <span className="text-right col-span-2 text-gray-700">
+                            {new Date(transaction.processed_at).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Metadata */}
-                  {transaction.metadata && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900">Additional Info</h4>
+                  {transaction.metadata && Object.keys(transaction.metadata).length > 0 && (
+                    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                        <span className="w-1 h-4 bg-green-500 rounded-full mr-2"></span>
+                        Additional Info
+                      </h4>
                       
-                      <div className="space-y-1 text-xs">
+                      <div className="space-y-2.5 text-xs">
                         {transaction.metadata.blockchain_tx_hash && (
-                          <div className="flex justify-between items-center">
+                          <div className="grid grid-cols-3 gap-2">
                             <span className="text-gray-500">Tx Hash:</span>
-                            <a
-                              href={`#`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 flex items-center"
-                            >
-                              <span className="font-mono truncate max-w-24">
-                                {transaction.metadata.blockchain_tx_hash.substring(0, 10)}...
-                              </span>
-                              <LinkIcon className="h-3 w-3 ml-1" />
-                            </a>
+                            <div className="col-span-2 text-right">
+                              <a
+                                href={`https://polygonscan.com/tx/${transaction.metadata.blockchain_tx_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 inline-flex items-center"
+                              >
+                                <span className="font-mono" title={transaction.metadata.blockchain_tx_hash}>
+                                  {transaction.metadata.blockchain_tx_hash.substring(0, 6)}...{transaction.metadata.blockchain_tx_hash.substring(transaction.metadata.blockchain_tx_hash.length - 4)}
+                                </span>
+                                <LinkIcon className="h-3 w-3 ml-1" />
+                              </a>
+                            </div>
                           </div>
                         )}
                         
                         {transaction.metadata.confirmations !== undefined && (
-                          <div className="flex justify-between">
+                          <div className="grid grid-cols-3 gap-2">
                             <span className="text-gray-500">Confirmations:</span>
-                            <span>{transaction.metadata.confirmations}</span>
+                            <span className="text-right col-span-2">
+                              {transaction.metadata.confirmations} / 12
+                            </span>
                           </div>
                         )}
                         
                         {transaction.metadata.exchange_rate && (
-                          <div className="flex justify-between">
+                          <div className="grid grid-cols-3 gap-2">
                             <span className="text-gray-500">Exchange Rate:</span>
-                            <span>${transaction.metadata.exchange_rate.toFixed(4)}</span>
+                            <span className="text-right col-span-2">
+                              ${transaction.metadata.exchange_rate.toFixed(4)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {transaction.metadata.payment_provider && (
+                          <div className="grid grid-cols-3 gap-2">
+                            <span className="text-gray-500">Provider:</span>
+                            <span className="text-right col-span-2 capitalize">
+                              {transaction.metadata.payment_provider}
+                            </span>
                           </div>
                         )}
                         
                         {transaction.counterparty_user_id && (
-                          <div className="flex justify-between">
+                          <div className="grid grid-cols-3 gap-2">
                             <span className="text-gray-500">Counterparty:</span>
-                            <span className="font-mono">
-                              {transaction.counterparty_user_id.substring(0, 8)}...
+                            <span className="font-mono text-right col-span-2" title={transaction.counterparty_user_id}>
+                              {transaction.counterparty_user_id.substring(0, 6)}...{transaction.counterparty_user_id.substring(transaction.counterparty_user_id.length - 4)}
                             </span>
                           </div>
                         )}
@@ -491,13 +564,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
                 {/* Notes */}
                 {transaction.metadata?.notes && (
-                  <div className="pt-2 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Notes</h4>
-                    <p className="text-xs text-gray-600 bg-white p-2 rounded border">
+                  <div className="mt-4 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                      <span className="w-1 h-4 bg-yellow-500 rounded-full mr-2"></span>
+                      Notes
+                    </h4>
+                    <p className="text-xs text-gray-700 leading-relaxed">
                       {transaction.metadata.notes}
                     </p>
                   </div>
                 )}
+                </div>
               </div>
             )}
           </div>

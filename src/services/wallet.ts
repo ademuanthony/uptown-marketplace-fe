@@ -78,14 +78,16 @@ export interface Transaction {
   id: string;
   type: string;
   status: string;
-  amount: string;
+  amount: string; // Backend sends as string
   currency: string;
   description: string;
   reference: string;
   created_at: string;
   updated_at: string;
   processed_at?: string;
-  metadata?: { [key: string]: any };
+  metadata?: TransactionMetadata;
+  counterparty_user_id?: string;
+  counterparty_wallet?: string;
 }
 
 // Pagination interface (matching backend response)
@@ -246,12 +248,14 @@ class WalletService {
   }
 
   // Format currency amount for display
-  formatCurrency(amount: number, currency: string): string {
+  formatCurrency(amount: number | string, currency: string): string {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
+    
     if (currency === 'USD') {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-      }).format(amount);
+      }).format(numAmount);
     }
     
     // Format crypto currencies with appropriate decimal places
@@ -259,7 +263,7 @@ class WalletService {
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: decimals > 6 ? 6 : decimals,
-    }).format(amount) + ` ${currency}`;
+    }).format(numAmount) + ` ${currency}`;
   }
 
   // Get transaction type display name
@@ -310,7 +314,7 @@ class WalletService {
       return transaction.counterparty_user_id === userId;
     }
     
-    return incomingTypes.includes(transaction.type);
+    return incomingTypes.includes(transaction.type as TransactionType);
   }
 }
 
