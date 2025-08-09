@@ -51,6 +51,9 @@ export interface WalletBalance {
   available: string;
   pending: string;
   frozen: string;
+  usd_value: number;
+  usd_price: number;
+  percent_change_24h: number;
 }
 
 // Transaction metadata interface

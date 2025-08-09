@@ -225,7 +225,7 @@ const WalletPage: React.FC = () => {
                       currency={wallet.currency as DepositCurrency}
                       balance={parseFloat(wallet.available)}
                       pendingDeposits={parseFloat(wallet.pending)}
-                      priceChange24h={wallet.currency === 'POL' ? 2.5 : 0}
+                      priceChange24h={wallet.percent_change_24h || 0}
                     />
                   ))
                 )}

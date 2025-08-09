@@ -100,6 +100,34 @@ export interface CancelInvoiceResponse {
   invoice: Invoice;
 }
 
+// Available balance for wallet payments
+export interface AvailableBalance {
+  currency: string;
+  balance: string;
+  usd_value: number;
+}
+
+// Get available balances response
+export interface GetAvailableBalancesResponse {
+  balances: AvailableBalance[];
+}
+
+// Wallet payment response
+export interface WalletPaymentResponse {
+  invoice: Invoice;
+  transaction: {
+    id: string;
+    type: string;
+    status: string;
+    amount: string;
+    currency: string;
+    description: string;
+    reference: string;
+    created_at: string;
+  };
+  success: boolean;
+}
+
 class InvoiceService {
   // Get specific invoice by ID
   async getInvoice(invoiceId: string): Promise<Invoice> {
@@ -325,6 +353,53 @@ class InvoiceService {
       console.error('Check payment status error:', error);
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.message || error.message || 'Failed to check payment status');
+      }
+      throw error;
+    }
+  }
+
+  // Get available wallet balances for invoice payment using wallet service
+  async getAvailableBalances(): Promise<AvailableBalance[]> {
+    try {
+      // Import wallet service dynamically to avoid circular dependency
+      const { default: walletService } = await import('./wallet');
+      const summary = await walletService.getWalletSummary();
+      
+      // Convert WalletBalance[] to AvailableBalance[]
+      return summary.wallets.map(wallet => ({
+        currency: wallet.currency,
+        balance: wallet.available, // Use available balance for payments
+        usd_value: wallet.usd_value
+      }));
+    } catch (error) {
+      console.error('Get available balances error:', error);
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to get available balances');
+      }
+      throw error;
+    }
+  }
+
+  // Pay invoice with wallet balance
+  async payWithWallet(
+    invoiceId: string,
+    currency: string
+  ): Promise<WalletPaymentResponse> {
+    try {
+      const response = await api.post<ApiResponse<WalletPaymentResponse>>(
+        `/invoices/${invoiceId}/pay-with-wallet`,
+        { currency }
+      );
+      
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.message || 'Failed to pay invoice with wallet');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      console.error('Pay with wallet error:', error);
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message || 'Failed to pay invoice with wallet');
       }
       throw error;
     }

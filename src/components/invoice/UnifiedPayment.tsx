@@ -13,7 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import PaymentMethodSelector, { PaymentMethod } from './PaymentMethodSelector';
-import invoiceService from '@/services/invoice';
+import WalletPaymentModal from './WalletPaymentModal';
+import invoiceService, { Invoice } from '@/services/invoice';
 
 interface UnifiedPaymentProps {
   invoiceId: string;
@@ -82,24 +83,47 @@ export default function UnifiedPayment({
   userEmail, 
   onPaymentComplete 
 }: UnifiedPaymentProps) {
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('crypto');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('wallet');
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
 
   // Determine return URL for traditional payments
   const returnUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/invoice/${invoiceId}/payment-callback`
     : undefined;
 
+  // Load invoice data on component mount
+  useEffect(() => {
+    const loadInvoice = async () => {
+      try {
+        const invoiceData = await invoiceService.getInvoice(invoiceId);
+        setInvoice(invoiceData);
+      } catch (error) {
+        console.error('Failed to load invoice:', error);
+        toast.error('Failed to load invoice details');
+      }
+    };
+
+    loadInvoice();
+  }, [invoiceId]);
+
   // Initiate payment with selected method
   const initiatePayment = async () => {
+    if (selectedMethod === 'wallet') {
+      // For wallet payments, show the wallet modal instead
+      setShowWalletModal(true);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Call the invoice service
+      // Call the invoice service for non-wallet payments
       const data = await invoiceService.initiatePayment(
         invoiceId,
         selectedMethod,
@@ -236,6 +260,16 @@ export default function UnifiedPayment({
     stopPolling();
   };
 
+  // Handle wallet payment success
+  const handleWalletPaymentSuccess = (updatedInvoice: Invoice) => {
+    setInvoice(updatedInvoice);
+    setShowWalletModal(false);
+    toast.success('Invoice paid successfully with wallet!');
+    if (onPaymentComplete) {
+      onPaymentComplete();
+    }
+  };
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -291,7 +325,8 @@ export default function UnifiedPayment({
                 Initiating Payment...
               </span>
             ) : (
-              `Pay with ${selectedMethod === 'crypto' ? 'Cryptocurrency' : 
+              `Pay with ${selectedMethod === 'wallet' ? 'Wallet Balance' :
+                        selectedMethod === 'crypto' ? 'Cryptocurrency' : 
                         selectedMethod === 'bank_transfer' ? 'Bank Transfer' : 'Card'}`
             )}
           </button>
@@ -517,6 +552,16 @@ export default function UnifiedPayment({
             )}
           </div>
         </div>
+      )}
+
+      {/* Wallet Payment Modal */}
+      {invoice && (
+        <WalletPaymentModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          invoice={invoice}
+          onPaymentSuccess={handleWalletPaymentSuccess}
+        />
       )}
     </div>
   );

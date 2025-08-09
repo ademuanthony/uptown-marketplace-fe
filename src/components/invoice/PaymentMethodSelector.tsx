@@ -5,10 +5,11 @@ import {
   CreditCardIcon,
   BanknotesIcon,
   CurrencyDollarIcon,
+  WalletIcon,
   CheckCircleIcon 
 } from '@heroicons/react/24/outline';
 
-export type PaymentMethod = 'crypto' | 'bank_transfer' | 'card';
+export type PaymentMethod = 'wallet' | 'crypto' | 'bank_transfer' | 'card';
 
 interface PaymentMethodOption {
   id: PaymentMethod;
@@ -26,6 +27,14 @@ interface PaymentMethodSelectorProps {
 }
 
 const paymentMethods: PaymentMethodOption[] = [
+  {
+    id: 'wallet',
+    name: 'Wallet Balance',
+    description: 'Pay instantly from your wallet balance',
+    icon: WalletIcon,
+    processingTime: 'Instant confirmation',
+    fees: 'No fees'
+  },
   {
     id: 'crypto',
     name: 'Cryptocurrency (USDT)',
@@ -139,6 +148,15 @@ export default function PaymentMethodSelector({
           );
         })}
       </div>
+
+      {selectedMethod === 'wallet' && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <strong>Instant Payment:</strong> Pay directly from your wallet balance. 
+            If you have sufficient funds in the required currency, payment will be processed instantly.
+          </p>
+        </div>
+      )}
 
       {selectedMethod === 'crypto' && (
         <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
