@@ -31,7 +31,13 @@ api.interceptors.request.use(
           config.headers.Authorization = `Bearer ${token}`;
           console.log('Added stored Authorization header:', `Bearer ${token.substring(0, 20)}...`);
         } else {
-          console.log('No auth token available');
+          // Development mode fallback - use test token
+          if (process.env.NODE_ENV === 'development' || API_BASE_URL.includes('localhost')) {
+            config.headers.Authorization = 'Bearer test-user-token';
+            console.log('Added development test token');
+          } else {
+            console.log('No auth token available');
+          }
         }
       }
     } catch (error) {
@@ -42,6 +48,9 @@ api.interceptors.request.use(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log('Added fallback Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+      } else if (process.env.NODE_ENV === 'development' || API_BASE_URL.includes('localhost')) {
+        config.headers.Authorization = 'Bearer test-user-token';
+        console.log('Added development fallback test token');
       }
     }
     

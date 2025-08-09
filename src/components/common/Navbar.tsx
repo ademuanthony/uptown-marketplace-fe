@@ -19,7 +19,8 @@ import {
   FolderIcon,
   ChatBubbleLeftRightIcon,
   UsersIcon,
-  BoltIcon
+  BoltIcon,
+  WalletIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -41,6 +42,7 @@ export default function Navbar() {
   const userNavigation = [
     { name: 'My Profile', href: '/profile', icon: UserIcon },
     { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
+    { name: 'Wallet', href: '/wallet', icon: WalletIcon },
     { name: 'Fuel', href: '/fuel', icon: BoltIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
     { name: 'Referrals', href: '/referrals', icon: UsersIcon },

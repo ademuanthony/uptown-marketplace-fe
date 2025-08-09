@@ -9,7 +9,7 @@ import {
   signInWithPopup,
   FacebookAuthProvider,
 } from 'firebase/auth';
-import { auth, isDevMode, hasValidConfig } from '@/config/firebase';
+import { auth } from '@/config/firebase';
 import api from './api';
 
 export interface User {
@@ -70,22 +70,6 @@ interface BackendRegisterResponse {
 }
 
 class AuthService {
-  // Check if backend is available
-  private async isBackendAvailable(): Promise<boolean> {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/health`,
-        {
-          method: 'GET',
-          mode: 'cors',
-        }
-      );
-      return response.ok;
-    } catch {
-      console.warn('Backend not available, falling back to development mode');
-      return false;
-    }
-  }
 
   // Firebase Authentication Methods
   async signIn(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -108,7 +92,6 @@ class AuthService {
 
       // The backend returns: { success: true, data: AuthenticateUserResponse }
       const result = response.data;
-      console.log('Login response:', result);
 
       if (!result || !result.success || !result.data) {
         throw new Error(result.message || 'Login failed');
@@ -127,8 +110,7 @@ class AuthService {
       return { user, token: authToken };
 
     } catch (firebaseError) {
-      console.log('firebaseError', firebaseError);
-      console.error('Firebase authentication failed:', firebaseError);
+      console.error('Authentication failed:', firebaseError);
       const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Login failed';
       throw new Error(errorMessage);
     }
@@ -166,7 +148,6 @@ class AuthService {
 
         // The backend returns: { success: true, data: RegisterUserResponse }
         const result = response.data;
-        console.log('Registration response:', result);
 
         if (!result || !result.success || !result.data) {
           throw new Error(result.message || 'Registration failed');
@@ -187,7 +168,6 @@ class AuthService {
         throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      console.log('firebaseError', firebaseError);
       const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Registration failed';
       console.error('Firebase registration failed:', errorMessage);
       throw new Error(errorMessage);
@@ -200,8 +180,8 @@ class AuthService {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
 
-      // Only call Firebase signOut if it's available
-      if (auth && hasValidConfig) {
+      // Sign out from Firebase
+      if (auth) {
         await signOut(auth);
       }
     } catch (error) {
@@ -212,114 +192,21 @@ class AuthService {
   }
 
   async resetPassword(email: string): Promise<void> {
-    // In development mode, just simulate success
-    if (isDevMode && !hasValidConfig) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return;
-    }
-
-    // Check if backend is available, simulate success if not
-    const backendAvailable = await this.isBackendAvailable();
-    if (!backendAvailable) {
-      console.warn('Backend unavailable, simulating password reset success');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return;
-    }
-
     if (!auth) {
-      console.warn(
-        'Firebase not initialized, simulating password reset success'
-      );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return;
+      throw new Error('Firebase not initialized');
     }
 
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (firebaseError) {
-      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Password reset error';
-      console.error('Password reset error:', errorMessage);
-
-      // If Firebase fails, simulate success for development
-      if (
-        firebaseError && 
-        typeof firebaseError === 'object' && 
-        'code' in firebaseError &&
-        (firebaseError.code === 'auth/user-not-found' ||
-         firebaseError.code === 'auth/invalid-email')
-      ) {
-        console.warn(
-          'Firebase password reset failed, simulating success for development'
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return;
-      }
-
-      const firebaseErrorMessage = firebaseError instanceof Error ? firebaseError.message : 'Password reset failed';
-      throw new Error(firebaseErrorMessage);
+      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Password reset failed';
+      throw new Error(errorMessage);
     }
   }
 
   async signInWithGoogle(): Promise<AuthResponse> {
-    // In development mode, simulate Google login
-    if (isDevMode && !hasValidConfig) {
-      const mockUser: User = {
-        id: '1',
-        email: 'user@gmail.com',
-        first_name: 'Google',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_google_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
-    }
-
-    // Check if backend is available, fallback to mock if not
-    const backendAvailable = await this.isBackendAvailable();
-    if (!backendAvailable) {
-      console.warn('Backend unavailable, using mock Google authentication');
-      const mockUser: User = {
-        id: '1',
-        email: 'user@gmail.com',
-        first_name: 'Google',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_google_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
-    }
-
     if (!auth) {
-      console.warn(
-        'Firebase not initialized, using mock Google authentication'
-      );
-      const mockUser: User = {
-        id: '1',
-        email: 'user@gmail.com',
-        first_name: 'Google',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_google_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
+      throw new Error('Firebase not initialized');
     }
 
     try {
@@ -350,114 +237,18 @@ class AuthService {
 
         return { user, token: authToken };
       } catch (backendError) {
-        // If backend fails (CORS, network, etc.), use mock but keep Firebase token
-        console.warn(
-          'Backend Google login failed, using mock user data:',
-          backendError instanceof Error ? backendError.message : 'Unknown error'
-        );
-
-        const mockUser: User = {
-          id: firebaseResult.user.uid,
-          email: firebaseResult.user.email || 'user@gmail.com',
-          first_name: firebaseResult.user.displayName?.split(' ')[0] || 'Google',
-          last_name: firebaseResult.user.displayName?.split(' ')[1] || 'User',
-          profile_image_url:
-            firebaseResult.user.photoURL ||
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-          created_at: new Date().toISOString(),
-        };
-
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-
-        return { user: mockUser, token };
+        const errorMessage = backendError instanceof Error ? backendError.message : 'Social login failed';
+        throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      const errorMsg = firebaseError instanceof Error ? firebaseError.message : 'Google login error';
-      console.error('Google login error:', errorMsg);
-
-      // If Firebase fails, fallback to mock auth for development
-      console.warn(
-        'Google login failed, falling back to mock authentication for development'
-      );
-      const mockUser: User = {
-        id: '1',
-        email: 'user@gmail.com',
-        first_name: 'Google',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_google_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
+      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Google login failed';
+      throw new Error(errorMessage);
     }
   }
 
   async signInWithFacebook(): Promise<AuthResponse> {
-    // In development mode, simulate Facebook login
-    if (isDevMode && !hasValidConfig) {
-      const mockUser: User = {
-        id: '1',
-        email: 'user@facebook.com',
-        first_name: 'Facebook',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_facebook_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
-    }
-
-    // Check if backend is available, fallback to mock if not
-    const backendAvailable = await this.isBackendAvailable();
-    if (!backendAvailable) {
-      console.warn('Backend unavailable, using mock Facebook authentication');
-      const mockUser: User = {
-        id: '1',
-        email: 'user@facebook.com',
-        first_name: 'Facebook',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_facebook_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
-    }
-
     if (!auth) {
-      console.warn(
-        'Firebase not initialized, using mock Facebook authentication'
-      );
-      const mockUser: User = {
-        id: '1',
-        email: 'user@facebook.com',
-        first_name: 'Facebook',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_facebook_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
+      throw new Error('Firebase not initialized');
     }
 
     try {
@@ -488,108 +279,26 @@ class AuthService {
 
         return { user, token: authToken };
       } catch (backendError) {
-        // If backend fails (CORS, network, etc.), use mock but keep Firebase token
-        console.warn(
-          'Backend Facebook login failed, using mock user data:',
-          backendError instanceof Error ? backendError.message : 'Unknown error'
-        );
-
-        const mockUser: User = {
-          id: firebaseResult.user.uid,
-          email: firebaseResult.user.email || 'user@facebook.com',
-          first_name: firebaseResult.user.displayName?.split(' ')[0] || 'Facebook',
-          last_name: firebaseResult.user.displayName?.split(' ')[1] || 'User',
-          profile_image_url:
-            firebaseResult.user.photoURL ||
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-          created_at: new Date().toISOString(),
-        };
-
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-
-        return { user: mockUser, token };
+        const errorMessage = backendError instanceof Error ? backendError.message : 'Social login failed';
+        throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      const fbErrorMsg = firebaseError instanceof Error ? firebaseError.message : 'Facebook login error';
-      console.error('Facebook login error:', fbErrorMsg);
-
-      // If Firebase fails, fallback to mock auth for development
-      console.warn(
-        'Facebook login failed, falling back to mock authentication for development'
-      );
-      const mockUser: User = {
-        id: '1',
-        email: 'user@facebook.com',
-        first_name: 'Facebook',
-        last_name: 'User',
-        profile_image_url:
-          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face',
-        created_at: new Date().toISOString(),
-      };
-
-      const mockToken = 'mock_facebook_token_' + Date.now();
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      return { user: mockUser, token: mockToken };
+      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Facebook login failed';
+      throw new Error(errorMessage);
     }
   }
 
   onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
-    // In development mode, simulate auth state
-    if (isDevMode && !hasValidConfig) {
-      // Check localStorage for existing session
-      const existingUser = localStorage.getItem('user');
-      const existingToken = localStorage.getItem('auth_token');
-
-      // Simulate async callback
-      setTimeout(() => {
-        if (existingUser && existingToken) {
-          // Create a mock Firebase user object
-          const mockFirebaseUser = {
-            uid: '1',
-            email: JSON.parse(existingUser).email,
-            displayName: JSON.parse(existingUser).first_name + ' ' + JSON.parse(existingUser).last_name,
-            getIdToken: async () => existingToken,
-          } as unknown as FirebaseUser;
-          callback(mockFirebaseUser);
-        } else {
-          callback(null);
-        }
-      }, 100);
-
-      // Return a mock unsubscribe function
-      return () => {};
-    }
-
     if (!auth) {
-      // Return empty callback and unsubscribe function if auth not initialized
-      setTimeout(() => callback(null), 100);
-      return () => {};
+      throw new Error('Firebase not initialized');
     }
 
     return onAuthStateChanged(auth, callback);
   }
 
   async getCurrentUser(): Promise<User | null> {
-    // In development mode, return user from localStorage
-    if (isDevMode && !hasValidConfig) {
-      const existingUser = localStorage.getItem('user');
-      return existingUser ? JSON.parse(existingUser) : null;
-    }
-
-    // Check if backend is available, fallback to localStorage if not
-    const backendAvailable = await this.isBackendAvailable();
-    if (!backendAvailable) {
-      console.warn('Backend unavailable, returning cached user data');
-      const existingUser = localStorage.getItem('user');
-      return existingUser ? JSON.parse(existingUser) : null;
-    }
-
     if (!auth) {
-      const existingUser = localStorage.getItem('user');
-      return existingUser ? JSON.parse(existingUser) : null;
+      throw new Error('Firebase not initialized');
     }
 
     try {
@@ -621,36 +330,18 @@ class AuthService {
 
         return result.data.user;
       } catch (backendError) {
-        // If backend fails (CORS, network, etc.), return cached user data
-        console.warn(
-          'Backend getCurrentUser failed, using cached user data:',
-          backendError instanceof Error ? backendError.message : 'Unknown error'
-        );
-        const existingUser = localStorage.getItem('user');
-        return existingUser ? JSON.parse(existingUser) : null;
+        const errorMessage = backendError instanceof Error ? backendError.message : 'Failed to get user data';
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Get current user error:', error);
-      const existingUser = localStorage.getItem('user');
-      return existingUser ? JSON.parse(existingUser) : null;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get current user';
+      throw new Error(errorMessage);
     }
   }
 
   async refreshToken(): Promise<string | null> {
-    // In development mode, return existing token
-    if (isDevMode && !hasValidConfig) {
-      return localStorage.getItem('auth_token');
-    }
-
-    // Check if backend is available, return cached token if not
-    const backendAvailable = await this.isBackendAvailable();
-    if (!backendAvailable) {
-      console.warn('Backend unavailable, returning cached token');
-      return localStorage.getItem('auth_token');
-    }
-
     if (!auth) {
-      return localStorage.getItem('auth_token');
+      throw new Error('Firebase not initialized');
     }
 
     try {
@@ -664,8 +355,8 @@ class AuthService {
 
       return token;
     } catch (error) {
-      console.error('Token refresh error:', error);
-      return localStorage.getItem('auth_token');
+      const errorMessage = error instanceof Error ? error.message : 'Token refresh failed';
+      throw new Error(errorMessage);
     }
   }
 }

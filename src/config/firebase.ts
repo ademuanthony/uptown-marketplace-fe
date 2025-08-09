@@ -2,12 +2,6 @@ import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 
-// Check if we're in development mode with demo config
-const isDevMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true';
-const hasValidConfig = 
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'demo-api-key';
-
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,11 +11,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Check if all required Firebase configuration is present
+const hasValidConfig = 
+  firebaseConfig.apiKey && 
+  firebaseConfig.authDomain && 
+  firebaseConfig.projectId && 
+  firebaseConfig.appId;
+
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
 
-// Only initialize Firebase if we have valid config
 if (hasValidConfig) {
   try {
     // Initialize Firebase
@@ -40,13 +40,15 @@ if (hasValidConfig) {
     }
   } catch (error) {
     console.error('Firebase initialization error:', error);
+    throw new Error('Failed to initialize Firebase. Please check your configuration.');
   }
-} else if (isDevMode) {
-  console.warn('🔧 Firebase not configured - running in development mode with mock auth');
 } else {
-  console.error('❌ Firebase configuration missing. Please check your environment variables.');
+  console.error('Firebase configuration is incomplete. Please set the following environment variables:');
+  if (!firebaseConfig.apiKey) console.error('- NEXT_PUBLIC_FIREBASE_API_KEY');
+  if (!firebaseConfig.authDomain) console.error('- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
+  if (!firebaseConfig.projectId) console.error('- NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+  if (!firebaseConfig.appId) console.error('- NEXT_PUBLIC_FIREBASE_APP_ID');
 }
 
 export { auth, db };
 export default app;
-export { isDevMode, hasValidConfig };
