@@ -117,7 +117,7 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
 
   const canPayWithCurrency = (balance: AvailableBalance) => {
     // Convert invoice amount to USD for comparison
-    const invoiceAmountUSD = invoice.total_amount.amount / 100; // Convert cents to dollars
+    const invoiceAmountUSD = invoice.total_amount.amount / 10000; // Convert cents to dollars
     
     if (balance.currency === invoice.currency) {
       // Same currency - direct comparison

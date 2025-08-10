@@ -196,39 +196,39 @@ const WalletPage: React.FC = () => {
             {/* Balance Cards */}
             {walletSummary && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Show default cards if no wallets exist */}
-                {walletSummary.wallets.length === 0 ? (
-                  <>
-                    <WalletCard
-                      currency="USDT"
-                      balance={0}
-                      pendingDeposits={0}
-                      priceChange24h={0}
-                    />
-                    <WalletCard
-                      currency="POL"
-                      balance={0}
-                      pendingDeposits={0}
-                      priceChange24h={2.5}
-                    />
-                    <WalletCard
-                      currency="USD"
-                      balance={0}
-                      showUSDEquivalent={false}
-                    />
-                  </>
-                ) : (
-                  // Show actual wallet data
-                  walletSummary.wallets.map((wallet) => (
-                    <WalletCard
-                      key={wallet.currency}
-                      currency={wallet.currency as DepositCurrency}
-                      balance={parseFloat(wallet.available)}
-                      pendingDeposits={parseFloat(wallet.pending)}
-                      priceChange24h={wallet.percent_change_24h || 0}
-                    />
-                  ))
-                )}
+                {/* Always show all three currency cards */}
+                {(['USDT', 'POL', 'USD'] as const).map((currency) => {
+                  // Find existing wallet data for this currency
+                  const existingWallet = walletSummary.wallets.find(w => w.currency === currency);
+                  
+                  if (existingWallet) {
+                    // Show actual wallet data
+                    return (
+                      <WalletCard
+                        key={currency}
+                        currency={currency as DepositCurrency}
+                        balance={parseFloat(existingWallet.available)}
+                        usdEquivalent={existingWallet.usd_value}
+                        pendingDeposits={parseFloat(existingWallet.pending)}
+                        priceChange24h={existingWallet.percent_change_24h}
+                        showUSDEquivalent={currency !== 'USD'}
+                      />
+                    );
+                  } else {
+                    // Show zero balance card with proper defaults
+                    return (
+                      <WalletCard
+                        key={currency}
+                        currency={currency as DepositCurrency}
+                        balance={0}
+                        usdEquivalent={0}
+                        pendingDeposits={0}
+                        priceChange24h={0}
+                        showUSDEquivalent={currency !== 'USD'}
+                      />
+                    );
+                  }
+                })}
               </div>
             )}
 

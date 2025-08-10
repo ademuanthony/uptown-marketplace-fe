@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { User as FirebaseUser } from 'firebase/auth';
 import { authService, User, LoginCredentials, RegisterCredentials } from '@/services/auth';
 
@@ -16,6 +17,7 @@ export function useAuth() {
     isLoading: true,
     isAuthenticated: false,
   });
+  const router = useRouter();
 
   useEffect(() => {
     // Listen to Firebase auth state changes
@@ -108,6 +110,8 @@ export function useAuth() {
         isLoading: false,
         isAuthenticated: false,
       });
+      // Redirect to home page after successful logout
+      router.push('/');
     } catch (error) {
       throw error;
     }
