@@ -81,7 +81,7 @@ const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-lg text-primary-600">
-                    {formatCurrency(pkg.price.amount, pkg.price.currency)}
+                    {formatCurrency(pkg.price.amount/100, pkg.price.currency)}
                   </p>
                 </div>
               </div>
