@@ -245,7 +245,7 @@ export const getLevelName = (level: number): string => {
 
 // Get reward percentage for display
 export const getRewardPercentageDisplay = (level: number, actionType: 'cash' | 'points'): string => {
-  const cashPercentages = [5.0, 2.0, 1.0, 0.5, 0.3, 0.2];
+  const cashPercentages = [15.0, 10.0, 7.5, 7.5, 5.0, 5.0];
   const pointsPercentages = [50.0, 25.0, 15.0, 10.0, 7.0, 5.0];
   
   const percentages = actionType === 'cash' ? cashPercentages : pointsPercentages;
