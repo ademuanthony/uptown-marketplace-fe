@@ -207,6 +207,7 @@ export default function ProfilePage() {
                   {/* Avatar Display */}
                   <div className="relative">
                     {user&&<Image
+                      key={`${user.first_name}-${user.last_name}-${user.profile_image_url}`}
                       src={avatarPreview || getProfileImageUrl(user)}
                       alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
                       width={120}

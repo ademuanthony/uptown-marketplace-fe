@@ -50,12 +50,14 @@ export const getAbsoluteImageUrl = (imagePath: string | undefined | null): strin
 /**
  * Gets a fallback avatar URL
  * @param initial - Optional initial letter for generated avatar
+ * @param name - Optional full name for better avatar generation
  * @returns Fallback avatar URL
  */
-export const getFallbackAvatarUrl = (initial?: string): string => {
+export const getFallbackAvatarUrl = (initial?: string, name?: string): string => {
   if (initial) {
-    // Generate a simple avatar with the initial
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&size=128&background=3b82f6&color=ffffff`;
+    // Use full name for better avatar generation if available
+    const displayName = name || initial;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=128&background=3b82f6&color=ffffff&format=svg`;
   }
   
   // Default avatar
@@ -80,8 +82,12 @@ export const getProfileImageUrl = (user: {
   }
 
   // Generate fallback with user initials
-  const initial = user.first_name?.[0] || user.last_name?.[0] || '?';
-  return getFallbackAvatarUrl(initial);
+  const firstName = user.first_name || '';
+  const lastName = user.last_name || '';
+  const initials = (firstName.charAt(0) + lastName.charAt(0)) || '?';
+  const name = `${firstName} ${lastName}`.trim() || 'User';
+  
+  return getFallbackAvatarUrl(initials, name);
 };
 
 /**
