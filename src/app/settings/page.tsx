@@ -118,7 +118,7 @@ export default function SettingsPage() {
     setIsLoading(true);
     try {
       // TODO: Replace with actual API call
-      console.log('Notification settings:', settings);
+      console.info('Notification settings:', settings);
       await new Promise(resolve => setTimeout(resolve, 500));
       toast.success('Notification preferences updated');
     } catch {
@@ -132,7 +132,7 @@ export default function SettingsPage() {
     setIsLoading(true);
     try {
       // TODO: Replace with actual API call
-      console.log('Privacy settings:', settings);
+      console.info('Privacy settings:', settings);
       await new Promise(resolve => setTimeout(resolve, 500));
       toast.success('Privacy settings updated');
     } catch {

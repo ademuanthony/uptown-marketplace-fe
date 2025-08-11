@@ -40,10 +40,6 @@ const WalletPage: React.FC = () => {
   }>({});
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    loadWalletData();
-  }, []);
-
   const loadWalletData = async () => {
     try {
       setLoading(true);
@@ -58,6 +54,10 @@ const WalletPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadWalletData();
+  }, []);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);

@@ -72,7 +72,7 @@ export default function MyStorePage() {
     
     try {
       setIsLoading(true);
-      console.log('My-items: fetching products for user.id:', user.id);
+      console.info('My-items: fetching products for user.id:', user.id);
       const response = await productService.listProducts({
         seller_id: user.id,
         page: 1,
@@ -136,7 +136,7 @@ export default function MyStorePage() {
 
   const handleStoreConfigSuccess = (updatedConfig: { store_name?: string; permalink: string }) => {
     // Update user data if needed - in a real app, you might want to refresh user data
-    console.log('Store configuration updated:', updatedConfig);
+    console.info('Store configuration updated:', updatedConfig);
   };
 
   // Removed unused handleStatusChange function
@@ -375,7 +375,7 @@ export default function MyStorePage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-16 w-16">
-                            {item.images && item.images.length > 0 ? (
+                            {item.images && item.images.length > 0 && item.images[0] ? (
                               <Image
                                 src={item.images[0]}
                                 alt={item.title}

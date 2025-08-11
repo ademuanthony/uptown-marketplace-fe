@@ -233,11 +233,6 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const [totalPages, setTotalPages] = useState(1);
   const [expandedTx, setExpandedTx] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadTransactions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filterType, filterStatus, limit]);
-
   const loadTransactions = async () => {
     try {
       setLoading(true);
@@ -259,6 +254,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filterType, filterStatus, limit]);
 
   const toggleExpanded = (txId: string) => {
     setExpandedTx(expandedTx === txId ? null : txId);

@@ -40,7 +40,7 @@ const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  console.log('packages', packages);  
+  console.info('packages', packages);  
 
   const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -178,20 +178,6 @@ export default function FuelPage() {
     total_pages: number;
   } | null>(null);
 
-  // Load initial data
-  useEffect(() => {
-    if (!authLoading && user) {
-      loadFuelData();
-    }
-  }, [user, authLoading]);
-
-  // Load transaction history when tab changes
-  useEffect(() => {
-    if (activeTab === 'history' && user) {
-      loadTransactionHistory(transactionPage);
-    }
-  }, [activeTab, transactionPage, user]);
-
   const loadFuelData = async () => {
     try {
       setLoading(true);
@@ -202,7 +188,7 @@ export default function FuelPage() {
       ]);
 
       setBalance(balanceData);
-      console.log('packagesData', packagesData);
+      console.info('packagesData', packagesData);
       setPackages(Array.isArray(packagesData) ? packagesData : []);
       setSummary(summaryData);
     } catch (error) {
@@ -223,6 +209,20 @@ export default function FuelPage() {
       toast.error('Failed to load transaction history');
     }
   };
+
+  // Load initial data
+  useEffect(() => {
+    if (!authLoading && user) {
+      loadFuelData();
+    }
+  }, [user, authLoading]);
+
+  // Load transaction history when tab changes
+  useEffect(() => {
+    if (activeTab === 'history' && user) {
+      loadTransactionHistory(transactionPage);
+    }
+  }, [activeTab, transactionPage, user]);
 
   const handlePurchase = async (packageId: string) => {
     try {

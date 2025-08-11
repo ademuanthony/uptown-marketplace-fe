@@ -74,7 +74,7 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
       // Handle different payment method responses
       if (method === 'crypto') {
         // Redirect to crypto payment page or show crypto payment details
-        console.log('Crypto payment initiated:', paymentData);
+        console.info('Crypto payment initiated:', paymentData);
       } else {
         // Redirect to payment provider (Paystack/Stripe)
         if (paymentData && typeof paymentData === 'object' && 'authorization_url' in paymentData) {

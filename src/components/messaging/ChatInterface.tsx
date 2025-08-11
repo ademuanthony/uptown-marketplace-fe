@@ -40,183 +40,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     typingStatus,
   } = useRealTimeMessaging();
 
-  // Load conversation messages and setup real-time
-  useEffect(() => {
-    setMessages([]); // Clear previous messages
-    setShouldAutoScroll(true); // Reset auto-scroll for new conversation
-    loadMessages();
-    
-    // Join conversation for real-time updates
-    joinConversation(conversation.id);
-    
-    // Cleanup when conversation changes
-    return () => {
-      leaveConversation(conversation.id);
-      setTypingUsers([]);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversation.id, joinConversation, leaveConversation]);
-
-  // Handle scroll behavior based on context
-  useEffect(() => {
-    if (messages.length > 0 && !loading) {
-      if (shouldAutoScroll) {
-        // For initial load, scroll immediately. For new messages, scroll smoothly
-        const isInitialLoad = page === 1;
-        scrollToBottom(!isInitialLoad);
-      }
-    }
-  }, [messages, loading, shouldAutoScroll, page]);
-
-  // Check if user is near the bottom of the chat to decide on auto-scrolling
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
-      setShouldAutoScroll(isNearBottom);
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Setup real-time message listener
-  useEffect(() => {
-    const unsubscribe = onNewMessage(event => {
-      if (event.conversation_id === conversation.id) {
-        setMessages(prev => {
-          // Check if this is a message from the current user (sender)
-          const isOwnMessage = event.message.sender_id === user?.id;
-          
-          if (isOwnMessage) {
-            // For own messages, check if we have an optimistic message to replace
-            // Use multiple strategies to find the matching optimistic message
-            let optimisticIndex = -1;
-            
-            // Strategy 1: Find the most recent optimistic message of the same type
-            for (let i = prev.length - 1; i >= 0; i--) {
-              const msg = prev[i];
-              if (!msg.id.startsWith('temp-') || msg.sender_id !== user?.id) continue;
-              
-              // For text messages, match by content and type
-              if (msg.type === 'text' && event.message.type === 'text' && msg.content === event.message.content) {
-                optimisticIndex = i;
-                break;
-              }
-              
-              // For file/image messages, match by type and size
-              if ((msg.type === 'image' || msg.type === 'file') && 
-                  (event.message.type === 'image' || event.message.type === 'file') &&
-                  msg.attachment_type === event.message.attachment_type &&
-                  msg.attachment_size === event.message.attachment_size) {
-                optimisticIndex = i;
-                break;
-              }
-            }
-            
-            // Strategy 2: If no exact match, find the newest temp message of the same type
-            if (optimisticIndex === -1) {
-              for (let i = prev.length - 1; i >= 0; i--) {
-                const msg = prev[i];
-                if (!msg.id.startsWith('temp-') || msg.sender_id !== user?.id) continue;
-                
-                if (msg.type === event.message.type) {
-                  optimisticIndex = i;
-                  break;
-                }
-              }
-            }
-            
-            if (optimisticIndex !== -1) {
-              // Replace optimistic message with real message and clean up blob URL
-              const newMessages = [...prev];
-              const optimisticMessage = newMessages[optimisticIndex];
-              
-              // Clean up blob URL if it exists
-              if (optimisticMessage.attachment_url && optimisticMessage.attachment_url.startsWith('blob:')) {
-                URL.revokeObjectURL(optimisticMessage.attachment_url);
-              }
-              
-              newMessages[optimisticIndex] = { ...event.message, status: 'delivered' };
-              return newMessages;
-            } else {
-              // If no optimistic message found, avoid adding duplicate own messages
-              // This prevents the "blink" effect where our own message appears twice
-              console.log('No optimistic message found for own message, checking for duplicates');
-              const isDuplicate = prev.some(msg => msg.id === event.message.id);
-              if (isDuplicate) {
-                console.log('Duplicate own message detected, ignoring');
-                return prev;
-              }
-            }
-          }
-          
-          // Check if message already exists (avoid duplicates)
-          const exists = prev.some(msg => msg.id === event.message.id);
-          if (exists) {
-            return prev;
-          }
-          
-          // Add new message from other participants
-          const newMessages = [...prev, event.message];
-          
-          // Sort to ensure proper order
-          return newMessages.sort((a, b) => 
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-          );
-        });
-      }
-    });
-
-    return unsubscribe;
-  }, [conversation.id, onNewMessage, user?.id]);
-
-  // Setup typing indicator listener
-  useEffect(() => {
-    const unsubscribe = onTyping(event => {
-      if (event.conversation_id === conversation.id && event.user_id !== user?.id) {
-        setTypingUsers(prev => {
-          if (event.type === 'typing_start') {
-            return prev.includes(event.user_id) ? prev : [...prev, event.user_id];
-          } else {
-            return prev.filter(userId => userId !== event.user_id);
-          }
-        });
-      }
-    });
-
-    return unsubscribe;
-  }, [conversation.id, user?.id, onTyping]);
-
-  // Setup message read listener
-  useEffect(() => {
-    const unsubscribe = onMessageRead(event => {
-      if (event.conversation_id === conversation.id) {
-        setMessages(prev => prev.map(msg => 
-          msg.id === event.message_id 
-            ? { ...msg, status: 'read', read_at: event.read_at }
-            : msg,
-        ));
-      }
-    });
-
-    return unsubscribe;
-  }, [conversation.id, onMessageRead]);
-
-  // Update typing status based on real-time data
-  useEffect(() => {
-    const conversationTyping = typingStatus[conversation.id] || {};
-    const typingUserIds = Object.entries(conversationTyping)
-      .filter(([userId, status]) => status.isTyping && userId !== user?.id)
-      .map(([userId]) => userId);
-    
-    setTypingUsers(typingUserIds);
-  }, [typingStatus, conversation.id, user?.id]);
-
   const loadMessages = useCallback(async (pageNum = 1, reset = true) => {
     try {
       setLoading(pageNum === 1);
@@ -411,7 +234,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const handleReply = (message: Message) => {
     // This would need to be implemented to set reply context
-    console.log('Reply to message:', message);
+    console.info('Reply to message:', message);
     // For now, just scroll to bottom to focus input
     scrollToBottom();
   };
@@ -490,6 +313,184 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       return 'text-red-600';
     }
   };
+
+
+    // Load conversation messages and setup real-time
+    useEffect(() => {
+      setMessages([]); // Clear previous messages
+      setShouldAutoScroll(true); // Reset auto-scroll for new conversation
+      loadMessages();
+      
+      // Join conversation for real-time updates
+      joinConversation(conversation.id);
+      
+      // Cleanup when conversation changes
+      return () => {
+        leaveConversation(conversation.id);
+        setTypingUsers([]);
+      };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [conversation.id, joinConversation, leaveConversation]);
+  
+    // Handle scroll behavior based on context
+    useEffect(() => {
+      if (messages.length > 0 && !loading) {
+        if (shouldAutoScroll) {
+          // For initial load, scroll immediately. For new messages, scroll smoothly
+          const isInitialLoad = page === 1;
+          scrollToBottom(!isInitialLoad);
+        }
+      }
+    }, [messages, loading, shouldAutoScroll, page]);
+  
+    // Check if user is near the bottom of the chat to decide on auto-scrolling
+    useEffect(() => {
+      const container = messagesContainerRef.current;
+      if (!container) return;
+  
+      const handleScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        
+        setShouldAutoScroll(isNearBottom);
+      };
+  
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+  
+    // Setup real-time message listener
+    useEffect(() => {
+      const unsubscribe = onNewMessage(event => {
+        if (event.conversation_id === conversation.id) {
+          setMessages(prev => {
+            // Check if this is a message from the current user (sender)
+            const isOwnMessage = event.message.sender_id === user?.id;
+            
+            if (isOwnMessage) {
+              // For own messages, check if we have an optimistic message to replace
+              // Use multiple strategies to find the matching optimistic message
+              let optimisticIndex = -1;
+              
+              // Strategy 1: Find the most recent optimistic message of the same type
+              for (let i = prev.length - 1; i >= 0; i--) {
+                const msg = prev[i];
+                if (!msg || !msg.id.startsWith('temp-') || msg.sender_id !== user?.id) continue;
+                
+                // For text messages, match by content and type
+                if (msg.type === 'text' && event.message.type === 'text' && msg.content === event.message.content) {
+                  optimisticIndex = i;
+                  break;
+                }
+                
+                // For file/image messages, match by type and size
+                if ((msg.type === 'image' || msg.type === 'file') && 
+                    (event.message.type === 'image' || event.message.type === 'file') &&
+                    msg.attachment_type === event.message.attachment_type &&
+                    msg.attachment_size === event.message.attachment_size) {
+                  optimisticIndex = i;
+                  break;
+                }
+              }
+              
+              // Strategy 2: If no exact match, find the newest temp message of the same type
+              if (optimisticIndex === -1) {
+                for (let i = prev.length - 1; i >= 0; i--) {
+                  const msg = prev[i];
+                  if (!msg || !msg.id.startsWith('temp-') || msg.sender_id !== user?.id) continue;
+                  
+                  if (msg.type === event.message.type) {
+                    optimisticIndex = i;
+                    break;
+                  }
+                }
+              }
+              
+              if (optimisticIndex !== -1) {
+                // Replace optimistic message with real message and clean up blob URL
+                const newMessages = [...prev];
+                const optimisticMessage = newMessages[optimisticIndex];
+                
+                // Clean up blob URL if it exists
+                if (optimisticMessage && optimisticMessage.attachment_url && optimisticMessage.attachment_url.startsWith('blob:')) {
+                  URL.revokeObjectURL(optimisticMessage.attachment_url);
+                }
+                
+                newMessages[optimisticIndex] = { ...event.message, status: 'delivered' };
+                return newMessages;
+              } else {
+                // If no optimistic message found, avoid adding duplicate own messages
+                // This prevents the "blink" effect where our own message appears twice
+                console.info('No optimistic message found for own message, checking for duplicates');
+                const isDuplicate = prev.some(msg => msg.id === event.message.id);
+                if (isDuplicate) {
+                  console.info('Duplicate own message detected, ignoring');
+                  return prev;
+                }
+              }
+            }
+            
+            // Check if message already exists (avoid duplicates)
+            const exists = prev.some(msg => msg.id === event.message.id);
+            if (exists) {
+              return prev;
+            }
+            
+            // Add new message from other participants
+            const newMessages = [...prev, event.message];
+            
+            // Sort to ensure proper order
+            return newMessages.sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+            );
+          });
+        }
+      });
+  
+      return unsubscribe;
+    }, [conversation.id, onNewMessage, user?.id]);
+  
+    // Setup typing indicator listener
+    useEffect(() => {
+      const unsubscribe = onTyping(event => {
+        if (event.conversation_id === conversation.id && event.user_id !== user?.id) {
+          setTypingUsers(prev => {
+            if (event.type === 'typing_start') {
+              return prev.includes(event.user_id) ? prev : [...prev, event.user_id];
+            } else {
+              return prev.filter(userId => userId !== event.user_id);
+            }
+          });
+        }
+      });
+  
+      return unsubscribe;
+    }, [conversation.id, user?.id, onTyping]);
+  
+    // Setup message read listener
+    useEffect(() => {
+      const unsubscribe = onMessageRead(event => {
+        if (event.conversation_id === conversation.id) {
+          setMessages(prev => prev.map(msg => 
+            msg.id === event.message_id 
+              ? { ...msg, status: 'read', read_at: event.read_at }
+              : msg,
+          ));
+        }
+      });
+  
+      return unsubscribe;
+    }, [conversation.id, onMessageRead]);
+  
+    // Update typing status based on real-time data
+    useEffect(() => {
+      const conversationTyping = typingStatus[conversation.id] || {};
+      const typingUserIds = Object.entries(conversationTyping)
+        .filter(([userId, status]) => status.isTyping && userId !== user?.id)
+        .map(([userId]) => userId);
+      
+      setTypingUsers(typingUserIds);
+    }, [typingStatus, conversation.id, user?.id]);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">

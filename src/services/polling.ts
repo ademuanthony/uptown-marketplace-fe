@@ -43,17 +43,17 @@ export class PollingService {
 
   start() {
     if (this.config.enabled) {
-      console.log('Polling service already enabled');
+      console.info('Polling service already enabled');
       return;
     }
 
-    console.log('Starting polling service');
+    console.info('Starting polling service');
     this.config.enabled = true;
     this.startConversationListPolling();
   }
 
   stop() {
-    console.log('Stopping polling service');
+    console.info('Stopping polling service');
     this.config.enabled = false;
     
     // Clear all timers
@@ -181,7 +181,7 @@ export class PollingService {
           });
 
           // Update last updated timestamp
-          if (newMessages.length > 0) {
+          if (newMessages.length > 0 && newMessages[0]) {
             tracked.lastUpdated = newMessages[0].created_at;
           }
 
@@ -231,7 +231,7 @@ export class PollingService {
 
     const delay = this.config.interval * Math.pow(this.config.backoffMultiplier, nextAttempt);
     
-    console.log(`Retrying ${timerId} in ${delay}ms (attempt ${nextAttempt}/${this.config.maxRetries})`);
+    console.info(`Retrying ${timerId} in ${delay}ms (attempt ${nextAttempt}/${this.config.maxRetries})`);
 
     const timer = setTimeout(() => {
       if (this.config.enabled) {

@@ -11,8 +11,7 @@ import {
   InformationCircleIcon,
   LinkIcon,
 } from '@heroicons/react/24/outline';
-import { DepositCurrency, NetworkType } from '../../services/deposits';
-import depositService from '../../services/deposits';
+import depositService, { DepositCurrency, NetworkType } from '../../services/deposits';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -43,6 +42,49 @@ const DepositModal: React.FC<DepositModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [networks] = useState<NetworkOption[]>(depositService.getSupportedNetworks());
 
+
+  const generateDepositAddress = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setDepositAddress('');
+      setQrCodeDataUrl('');
+      
+      console.info('Generating deposit address for:', selectedCurrency, selectedNetwork);
+      
+      const network = networks.find(n => n.type === selectedNetwork);
+      if (!network) {
+        throw new Error(`Unsupported network: ${selectedNetwork}`);
+      }
+
+      console.info('Using network:', network);
+      const address = await depositService.getOrCreateDepositAddress(selectedCurrency, network.id);
+      console.info('Received deposit address:', address);
+      
+      if (!address || !address.address) {
+        throw new Error('No address returned from server');
+      }
+      
+      setDepositAddress(address.address);
+
+      // Generate QR code
+      console.info('Generating QR code for address:', address.address);
+      const qrCode = await depositService.generateDepositQRCode(
+        address.address,
+        selectedCurrency,
+        selectedNetwork,
+      );
+      console.info('Generated QR code:', qrCode);
+      setQrCodeDataUrl(qrCode.qr_code_data_url);
+    } catch (err) {
+      console.error('Failed to generate deposit address:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate deposit address';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCurrency, selectedNetwork, networks]);
+  
   useEffect(() => {
     if (isOpen) {
       generateDepositAddress();
@@ -56,48 +98,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, selectedCurrency, selectedNetwork]);
-
-  const generateDepositAddress = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setDepositAddress('');
-      setQrCodeDataUrl('');
-      
-      console.log('Generating deposit address for:', selectedCurrency, selectedNetwork);
-      
-      const network = networks.find(n => n.type === selectedNetwork);
-      if (!network) {
-        throw new Error(`Unsupported network: ${selectedNetwork}`);
-      }
-
-      console.log('Using network:', network);
-      const address = await depositService.getOrCreateDepositAddress(selectedCurrency, network.id);
-      console.log('Received deposit address:', address);
-      
-      if (!address || !address.address) {
-        throw new Error('No address returned from server');
-      }
-      
-      setDepositAddress(address.address);
-
-      // Generate QR code
-      console.log('Generating QR code for address:', address.address);
-      const qrCode = await depositService.generateDepositQRCode(
-        address.address,
-        selectedCurrency,
-        selectedNetwork,
-      );
-      console.log('Generated QR code:', qrCode);
-      setQrCodeDataUrl(qrCode.qr_code_data_url);
-    } catch (err) {
-      console.error('Failed to generate deposit address:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate deposit address';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCurrency, selectedNetwork, networks]);
 
   const handleCopyAddress = async () => {
     try {

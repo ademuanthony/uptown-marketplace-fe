@@ -20,7 +20,7 @@ export default function PaymentDemo() {
 
   const handlePaymentComplete = () => {
     setPaymentCompleted(true);
-    console.log('Payment completed successfully!');
+    console.info('Payment completed successfully!');
   };
 
   if (paymentCompleted) {

@@ -89,7 +89,7 @@ export default function EditItemPage() {
         const product = await productService.getProduct(productId);
         
         // Debug: Log user and product info
-        console.log('Debug ownership check:', {
+        console.info('Debug ownership check:', {
           product_seller_id: product.seller_id,
           user_id: user?.id,
           user_firebase_uid: user?.firebase_uid,
@@ -239,8 +239,8 @@ export default function EditItemPage() {
 
       // Debug: Check auth token before update
       const authToken = localStorage.getItem('auth_token');
-      console.log('Auth token before update:', authToken ? 'Present' : 'Missing');
-      console.log('Product data being sent:', productData);
+      console.info('Auth token before update:', authToken ? 'Present' : 'Missing');
+      console.info('Product data being sent:', productData);
 
       await productService.updateProduct(productId, productData);
       

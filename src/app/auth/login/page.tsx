@@ -46,7 +46,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       const result = await authService.signInWithGoogle();
-      console.log('Google login successful:', result);
+      console.info('Google login successful:', result);
       toast.success('Welcome back!');
       router.push('/');
     } catch (error) {
@@ -58,7 +58,7 @@ export default function LoginPage() {
   const handleFacebookLogin = async () => {
     try {
       const result = await authService.signInWithFacebook();
-      console.log('Facebook login successful:', result);
+      console.info('Facebook login successful:', result);
       toast.success('Welcome back!');
       router.push('/');
     } catch (error) {
@@ -118,7 +118,7 @@ export default function LoginPage() {
             onSubmit={e => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Native form submit prevented');
+              console.info('Native form submit prevented');
               handleSubmit(onSubmit)(e);
             }}
           >

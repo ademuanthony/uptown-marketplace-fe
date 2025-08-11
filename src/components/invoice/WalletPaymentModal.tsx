@@ -66,7 +66,7 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
       } else if (sufficientUSDBalance) {
         // Use any currency with sufficient USD value
         setSelectedCurrency(sufficientUSDBalance.currency);
-      } else if (balances.length > 0) {
+      } else if (balances.length > 0 && balances[0]) {
         // Default to first available balance
         setSelectedCurrency(balances[0].currency);
       }

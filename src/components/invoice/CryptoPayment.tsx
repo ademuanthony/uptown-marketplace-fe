@@ -58,6 +58,80 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     fee: 'Low (~$0.01)', 
   };
 
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [pollingInterval]);
+
+
+    // Check payment status
+    const checkPaymentStatus = useCallback(async () => {
+      if (!paymentDetails || !paymentReference) return;
+      
+      setChecking(true);
+      try {
+        const response = await fetch(`/api/v1/invoices/${invoiceId}/crypto-payment/status?reference=${encodeURIComponent(paymentReference)}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to check payment status');
+        }
+  
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Map the unified payment verification response to the old format
+          const statusData: PaymentStatus = {
+            status: (data.data.status === 'completed' ? 'confirmed' : 
+                    data.data.status === 'processing' ? 'confirming' :
+                    data.data.status === 'failed' ? 'failed' : 'pending') as 'pending' | 'confirming' | 'confirmed' | 'failed',
+            transactionHash: data.data.provider_data?.transaction_hash,
+            confirmations: data.data.provider_data?.confirmations || 0,
+            requiredConfirmations: 20, // Default for Polygon
+            amountReceived: data.data.amount ? (data.data.amount.amount / 100).toFixed(2) : undefined,
+            verifiedAt: data.data.processed_at,
+          };
+          
+          setPaymentStatus(statusData);
+          
+          // Check if payment is confirmed
+          if (statusData.status === 'confirmed') {
+            stopPolling();
+            toast.success('Payment confirmed successfully!');
+            if (onPaymentComplete) {
+              onPaymentComplete();
+            }
+          } else if (statusData.status === 'confirming') {
+            toast.loading(`Transaction confirming: ${statusData.confirmations}/${statusData.requiredConfirmations} confirmations`);
+          }
+        }
+      } catch (error) {
+        console.error('Status check error:', error);
+      } finally {
+        setChecking(false);
+      }
+    }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete, stopPolling]);
+  
+
+    // Start polling for payment status
+  const startPolling = () => {
+      // Initial check
+    checkPaymentStatus();
+      
+      // Poll every 10 seconds
+    const interval = setInterval(() => {
+        checkPaymentStatus();
+    }, 10000);
+      
+      setPollingInterval(interval);
+  };
+
   // Initiate crypto payment
   const initiatePayment = async () => {
     setLoading(true);
@@ -101,77 +175,6 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     } finally {
       setLoading(false);
     }
-  };
-
-  // Stop polling
-  const stopPolling = useCallback(() => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
-  }, [pollingInterval]);
-
-  // Check payment status
-  const checkPaymentStatus = useCallback(async () => {
-    if (!paymentDetails || !paymentReference) return;
-    
-    setChecking(true);
-    try {
-      const response = await fetch(`/api/v1/invoices/${invoiceId}/crypto-payment/status?reference=${encodeURIComponent(paymentReference)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to check payment status');
-      }
-
-      const data = await response.json();
-      if (data.success && data.data) {
-        // Map the unified payment verification response to the old format
-        const statusData: PaymentStatus = {
-          status: (data.data.status === 'completed' ? 'confirmed' : 
-                  data.data.status === 'processing' ? 'confirming' :
-                  data.data.status === 'failed' ? 'failed' : 'pending') as 'pending' | 'confirming' | 'confirmed' | 'failed',
-          transactionHash: data.data.provider_data?.transaction_hash,
-          confirmations: data.data.provider_data?.confirmations || 0,
-          requiredConfirmations: 20, // Default for Polygon
-          amountReceived: data.data.amount ? (data.data.amount.amount / 100).toFixed(2) : undefined,
-          verifiedAt: data.data.processed_at,
-        };
-        
-        setPaymentStatus(statusData);
-        
-        // Check if payment is confirmed
-        if (statusData.status === 'confirmed') {
-          stopPolling();
-          toast.success('Payment confirmed successfully!');
-          if (onPaymentComplete) {
-            onPaymentComplete();
-          }
-        } else if (statusData.status === 'confirming') {
-          toast.loading(`Transaction confirming: ${statusData.confirmations}/${statusData.requiredConfirmations} confirmations`);
-        }
-      }
-    } catch (error) {
-      console.error('Status check error:', error);
-    } finally {
-      setChecking(false);
-    }
-  }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete, stopPolling]);
-
-  // Start polling for payment status
-  const startPolling = () => {
-    // Initial check
-    checkPaymentStatus();
-    
-    // Poll every 10 seconds
-    const interval = setInterval(() => {
-      checkPaymentStatus();
-    }, 10000);
-    
-    setPollingInterval(interval);
   };
 
   // Copy wallet address to clipboard

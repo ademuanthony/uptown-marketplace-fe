@@ -37,6 +37,19 @@ const MessagesContent: React.FC = () => {
     stopTracking,
   } = useRealTimeMessaging();
 
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      const response = await messagingService.getUserConversations(1, 50);
+      setConversations(response.conversations);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+      toast.error('Failed to load conversations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Load conversations on component mount
   useEffect(() => {
     if (user && !authLoading) {
@@ -52,7 +65,12 @@ const MessagesContent: React.FC = () => {
         if (existingIndex >= 0) {
           // Update existing conversation
           const updated = [...prev];
-          updated[existingIndex] = { ...updated[existingIndex], ...event.conversation };
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            ...Object.fromEntries(
+              Object.entries(event.conversation).filter(([_, value]) => value !== undefined)
+            )
+          } as Conversation;
           
           // Sort by last_message_at to keep most recent first
           updated.sort((a, b) => {
@@ -134,19 +152,6 @@ const MessagesContent: React.FC = () => {
     }
   }, [searchParams, conversations]);
 
-  const loadConversations = async () => {
-    try {
-      setLoading(true);
-      const response = await messagingService.getUserConversations(1, 50);
-      setConversations(response.conversations);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
-      toast.error('Failed to load conversations');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
     setShowMobileChat(true);
@@ -169,7 +174,7 @@ const MessagesContent: React.FC = () => {
     try {
       let conversation: Conversation;
 
-      if (type === 'direct' && participantIds && participantIds.length > 0) {
+      if (type === 'direct' && participantIds && participantIds.length > 0 && participantIds[0]) {
         conversation = await messagingService.createDirectConversation(participantIds[0]);
       } else if (type === 'group' && title) {
         conversation = await messagingService.createGroupConversation(

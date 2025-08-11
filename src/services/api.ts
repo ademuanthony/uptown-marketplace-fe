@@ -23,20 +23,20 @@ api.interceptors.request.use(
         // Get fresh Firebase token
         const token = await currentUser.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Added Firebase Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+        console.info('Added Firebase Authorization header:', `Bearer ${token.substring(0, 20)}...`);
       } else {
         // Fallback to stored token if Firebase user not available
         const token = localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
-          console.log('Added stored Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+          console.info('Added stored Authorization header:', `Bearer ${token.substring(0, 20)}...`);
         } else {
           // Development mode fallback - use test token
           if (process.env.NODE_ENV === 'development' || API_BASE_URL.includes('localhost')) {
             config.headers.Authorization = 'Bearer test-user-token';
-            console.log('Added development test token');
+            console.info('Added development test token');
           } else {
-            console.log('No auth token available');
+            console.warn('No auth token available');
           }
         }
       }
@@ -47,10 +47,10 @@ api.interceptors.request.use(
       const token = localStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Added fallback Authorization header:', `Bearer ${token.substring(0, 20)}...`);
+        console.info('Added fallback Authorization header:', `Bearer ${token.substring(0, 20)}...`);
       } else if (process.env.NODE_ENV === 'development' || API_BASE_URL.includes('localhost')) {
         config.headers.Authorization = 'Bearer test-user-token';
-        console.log('Added development fallback test token');
+        console.info('Added development fallback test token');
       }
     }
     
@@ -65,7 +65,7 @@ api.interceptors.response.use(
   async error => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      console.log('401 error, attempting token refresh');
+      console.warn('401 error, attempting token refresh');
       
       try {
         const {currentUser} = auth;

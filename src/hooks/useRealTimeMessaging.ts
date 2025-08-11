@@ -81,25 +81,6 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
   const wsConnectionTimeout = useRef<NodeJS.Timeout | null>(null);
   const typingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // Initialize services when user is authenticated
-  useEffect(() => {
-    if (isAuthenticated && user && !initialized.current) {
-      initializeServices();
-      initialized.current = true;
-    } else if (!isAuthenticated && initialized.current) {
-      cleanup();
-      initialized.current = false;
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user]);
-
-  // Cleanup on unmount
-  useEffect(() => 
-     () => {
-      cleanup();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  , []);
 
   const startPolling = useCallback(() => {
     if (pollingService.isEnabled()) {
@@ -123,10 +104,10 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       setConnectionStatus(prev => ({ ...prev, websocket: connected }));
 
       if (!connected && fallbackToPolling && enablePolling) {
-        console.log('WebSocket disconnected, falling back to polling');
+        console.info('WebSocket disconnected, falling back to polling');
         startPolling();
       } else if (connected && pollingService.isEnabled()) {
-        console.log('WebSocket connected, stopping polling fallback');
+        console.info('WebSocket connected, stopping polling fallback');
         pollingService.stop();
         setConnectionStatus(prev => ({ ...prev, polling: false }));
       }
@@ -139,7 +120,7 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       // Set a timeout for WebSocket connection
       wsConnectionTimeout.current = setTimeout(() => {
         if (!webSocketService.getConnectionStatus() && fallbackToPolling && enablePolling) {
-          console.log('WebSocket connection timeout, falling back to polling');
+          console.info('WebSocket connection timeout, falling back to polling');
           startPolling();
         }
       }, 5000);
@@ -172,6 +153,27 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       wsConnectionTimeout.current = null;
     }
   }, []);
+
+  // Cleanup on unmount
+  useEffect(() => 
+     () => {
+      cleanup();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  , []);
+
+
+  // Initialize services when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user && !initialized.current) {
+      initializeServices();
+      initialized.current = true;
+    } else if (!isAuthenticated && initialized.current) {
+      cleanup();
+      initialized.current = false;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user]);
 
   // Event handlers
   const onNewMessage = useCallback((callback: (event: MessageEvent) => void) => {

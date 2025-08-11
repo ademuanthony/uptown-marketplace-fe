@@ -258,7 +258,7 @@ export default function ReferralsPage() {
       setStats(statsData.stats);
       setProfile(statsData.profile);
 
-      console.log(statsData);
+      console.info(statsData);
       
       // Load downlines (basic relationships for stats)
       // const downlinesData = await getUserReferrals({ limit: 50 });

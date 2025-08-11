@@ -38,12 +38,6 @@ export default function FavoritesPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchFavorites();
-    }
-  }, [isAuthenticated]);
-
   const fetchFavorites = async () => {
     try {
       setIsLoading(true);
@@ -56,6 +50,12 @@ export default function FavoritesPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchFavorites();
+    }
+  }, [isAuthenticated]);
 
   const handleRemoveFavorite = async (productId: string) => {
     try {

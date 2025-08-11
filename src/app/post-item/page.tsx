@@ -571,9 +571,9 @@ export default function PostItemPage() {
                       toast.error(`Please fix: ${firstError.message}`);
                       
                       // Navigate to the step containing the error
-                      if (['title', 'description', 'category_id'].includes(firstErrorKey)) {
+                      if (firstErrorKey && ['title', 'description', 'category_id'].includes(firstErrorKey)) {
                         setCurrentStep(1);
-                      } else if (['price', 'condition', 'location'].includes(firstErrorKey) || firstErrorKey.startsWith('location.')) {
+                      } else if (firstErrorKey && (['price', 'condition', 'location'].includes(firstErrorKey) || firstErrorKey.startsWith('location.'))) {
                         setCurrentStep(2);
                       } else {
                         setCurrentStep(3);

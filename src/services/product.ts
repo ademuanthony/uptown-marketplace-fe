@@ -132,14 +132,14 @@ class ProductService {
     try {
       const response = await api.get<ApiResponse<{ trending_products: Product[]; count: number }>>(`/recommendations/trending?limit=${limit}`);
       
-      console.log('response', response);
+      console.info('response', response);
       if (!response.data.success || !response.data.data) {
         throw new Error(response.data?.error || 'Failed to fetch trending products');
       }
 
       return response.data.data.trending_products || [];
     } catch (error) {
-      console.log('error', error);
+      console.info('error', error);
       console.error('Failed to fetch trending products:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch trending products');
     }

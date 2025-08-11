@@ -287,7 +287,7 @@ function CategoryContent() {
                 <select
                   value={`${filters.sort_by}-${filters.sort_order}`}
                   onChange={e => {
-                    const [sortBy, sortOrder] = e.target.value.split('-');
+                    const [sortBy = 'created_at', sortOrder = 'desc'] = e.target.value.split('-');
                     handleSortChange(sortBy, sortOrder);
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"

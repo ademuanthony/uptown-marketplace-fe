@@ -26,29 +26,44 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (selectedFile && !disabled && !uploading) {
-      // Send file with optional message content
-      handleSendFile();
-    } else if (message.trim() && !disabled) {
-      // Send text message
-      handleStopTyping();
-      onSendMessage(message.trim(), 'text');
-      setMessage('');
+  const handleStopTyping = () => {
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTyping?.(false);
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
     }
   };
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newMessage = e.target.value;
-    setMessage(newMessage);
+  const clearFileSelection = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
-    // Handle typing indicator
-    if (onTyping && newMessage.trim()) {
-      handleStartTyping();
-    } else if (onTyping) {
-      handleStopTyping();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (selectedFile) {
+      // Send file message
+      onSendFile?.(selectedFile, message.trim() || undefined);
+      clearFileSelection();
+    } else if (message.trim()) {
+      // Send text message
+      onSendMessage?.(message.trim(), 'text');
+    }
+    
+    setMessage('');
+    handleStopTyping();
+    
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
   };
 
@@ -67,18 +82,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
     typingTimeoutRef.current = setTimeout(() => {
       handleStopTyping();
     }, 3000);
-  };
-
-  const handleStopTyping = () => {
-    if (isTypingRef.current) {
-      isTypingRef.current = false;
-      onTyping?.(false);
-    }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -113,25 +116,21 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
-  const handleSendFile = () => {
-    if (selectedFile && !disabled && !uploading) {
-      onSendFile(selectedFile, message.trim() || undefined);
-      clearFileSelection();
-      setMessage('');
-    }
-  };
-
-  const clearFileSelection = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
   const triggerFileInput = () => {
     if (!disabled) {
       fileInputRef.current?.click();
+    }
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+
+    // Handle typing indicator
+    if (onTyping && newMessage.trim()) {
+      handleStartTyping();
+    } else if (onTyping) {
+      handleStopTyping();
     }
   };
 

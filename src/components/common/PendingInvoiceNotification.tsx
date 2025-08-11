@@ -78,6 +78,7 @@ export default function PendingInvoiceNotification() {
 
   // Show only the first pending invoice as a notification bar
   const invoice = pendingInvoices[0];
+  if (!invoice) return null;
   const remainingCount = pendingInvoices.length - 1;
 
   return (

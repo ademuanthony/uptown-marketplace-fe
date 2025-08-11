@@ -146,88 +146,7 @@ export default function UnifiedPayment({
     ? `${window.location.origin}/invoice/${invoiceId}/payment-callback`
     : undefined;
 
-  // Load invoice data on component mount
-  useEffect(() => {
-    const loadInvoice = async () => {
-      try {
-        const invoiceData = await invoiceService.getInvoice(invoiceId);
-        setInvoice(invoiceData);
-      } catch (error) {
-        console.error('Failed to load invoice:', error);
-        toast.error('Failed to load invoice details');
-      }
-    };
-
-    loadInvoice();
-  }, [invoiceId]);
-
-  // Initiate payment with selected method
-  const initiatePayment = async () => {
-    if (selectedMethod === 'wallet') {
-      // For wallet payments, show the wallet modal instead
-      setShowWalletModal(true);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Call the invoice service for non-wallet payments
-      const data = await invoiceService.initiatePayment(
-        invoiceId,
-        selectedMethod,
-        userEmail,
-        {
-          network: selectedMethod === 'crypto' ? 'polygon' : undefined,
-          returnUrl: selectedMethod !== 'crypto' ? returnUrl : undefined,
-        },
-      );
-      if (data) {
-        console.log('Payment response from backend:', data); // Debug log
-        
-        // Cast to backend response type
-        const backendData = data as BackendPaymentResponse;
-        
-        // Map snake_case backend response to camelCase frontend interface
-        const mappedData: PaymentDetails = {
-          transactionId: backendData.transaction_id,
-          provider: backendData.provider,
-          providerReference: backendData.provider_reference,
-          authorizationUrl: backendData.authorization_url,
-          clientSecret: backendData.client_secret,
-          status: backendData.status,
-          amount: backendData.amount,
-          expiresAt: backendData.expires_at,
-          instructions: backendData.instructions,
-          // Crypto-specific fields
-          walletAddress: backendData.wallet_address,
-          network: backendData.network,
-          qrCode: backendData.qr_code,
-          requiredConfirms: backendData.required_confirmations,
-        };
-        
-        console.log('Mapped payment data:', mappedData); // Debug log
-        setPaymentDetails(mappedData);
-        
-        // Handle different payment methods
-        if (selectedMethod === 'crypto') {
-          startPolling(mappedData.providerReference);
-        } else if (selectedMethod === 'bank_transfer' || selectedMethod === 'card') {
-          // For Paystack, redirect to authorization URL
-          if (mappedData.authorizationUrl) {
-            window.location.href = mappedData.authorizationUrl;
-            return;
-          }
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to initiate payment');
-      console.error('Payment initiation error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Stop polling
+    // Stop polling
   const stopPolling = useCallback(() => {
     if (pollingInterval) {
       clearInterval(pollingInterval);
@@ -289,6 +208,87 @@ export default function UnifiedPayment({
     }, 10000);
     
     setPollingInterval(interval);
+  };
+    
+  // Load invoice data on component mount
+  useEffect(() => {
+    const loadInvoice = async () => {
+      try {
+        const invoiceData = await invoiceService.getInvoice(invoiceId);
+        setInvoice(invoiceData);
+      } catch (error) {
+        console.error('Failed to load invoice:', error);
+        toast.error('Failed to load invoice details');
+      }
+    };
+
+    loadInvoice();
+  }, [invoiceId]);
+
+  // Initiate payment with selected method
+  const initiatePayment = async () => {
+    if (selectedMethod === 'wallet') {
+      // For wallet payments, show the wallet modal instead
+      setShowWalletModal(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Call the invoice service for non-wallet payments
+      const data = await invoiceService.initiatePayment(
+        invoiceId,
+        selectedMethod,
+        userEmail,
+        {
+          network: selectedMethod === 'crypto' ? 'polygon' : undefined,
+          returnUrl: selectedMethod !== 'crypto' ? returnUrl : undefined,
+        },
+      );
+      if (data) {
+        console.info('Payment response from backend:', data); // Debug log
+        
+        // Cast to backend response type
+        const backendData = data as BackendPaymentResponse;
+        
+        // Map snake_case backend response to camelCase frontend interface
+        const mappedData: PaymentDetails = {
+          transactionId: backendData.transaction_id,
+          provider: backendData.provider,
+          providerReference: backendData.provider_reference,
+          authorizationUrl: backendData.authorization_url,
+          clientSecret: backendData.client_secret,
+          status: backendData.status,
+          amount: backendData.amount,
+          expiresAt: backendData.expires_at,
+          instructions: backendData.instructions,
+          // Crypto-specific fields
+          walletAddress: backendData.wallet_address,
+          network: backendData.network,
+          qrCode: backendData.qr_code,
+          requiredConfirms: backendData.required_confirmations,
+        };
+        
+        console.info('Mapped payment data:', mappedData); // Debug log
+        setPaymentDetails(mappedData);
+        
+        // Handle different payment methods
+        if (selectedMethod === 'crypto') {
+          startPolling(mappedData.providerReference);
+        } else if (selectedMethod === 'bank_transfer' || selectedMethod === 'card') {
+          // For Paystack, redirect to authorization URL
+          if (mappedData.authorizationUrl) {
+            window.location.href = mappedData.authorizationUrl;
+            return;
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to initiate payment');
+      console.error('Payment initiation error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Copy wallet address to clipboard (crypto payments)

@@ -127,7 +127,7 @@ export class WebSocketService {
       this.ws = new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}&user_id=${encodeURIComponent(userId)}`);
       
       this.ws.onopen = () => {
-        console.log('WebSocket connected');
+        console.info('WebSocket connected');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.startHeartbeat();
@@ -147,7 +147,7 @@ export class WebSocketService {
       };
 
       this.ws.onclose = event => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+        console.info('WebSocket disconnected:', event.code, event.reason);
         this.isConnected = false;
         this.stopHeartbeat();
         this.notifyConnectionListeners(false);
@@ -183,7 +183,7 @@ export class WebSocketService {
 
   private handleMessage(wsMessage: WebSocketMessage) {
     const { type, data } = wsMessage;
-    console.log('Received WebSocket message:', wsMessage);
+    console.info('Received WebSocket message:', wsMessage);
 
     let event: RealtimeEvent;
 
@@ -246,7 +246,7 @@ export class WebSocketService {
         
       case 'pong':
         // Handle pong response from server
-        console.log('🏓 Received pong from server');
+        console.info('🏓 Received pong from server');
         return;
 
       default:
@@ -304,7 +304,7 @@ export class WebSocketService {
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
     this.reconnectAttempts++;
 
-    console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    console.info(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
     setTimeout(() => {
       if (this.userId) {
@@ -400,14 +400,14 @@ export class WebSocketService {
   }
 
   joinConversation(conversationId: string) {
-    console.log('🔗 Attempting to join conversation:', conversationId);
+    console.info('🔗 Attempting to join conversation:', conversationId);
     
     // Add to joined conversations set
     this.joinedConversations.add(conversationId);
     
     const joinAction = () => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        console.log('📤 Sending join_conversation message for:', conversationId);
+        console.info('📤 Sending join_conversation message for:', conversationId);
         this.ws.send(JSON.stringify({
           type: 'join_conversation',
           data: {
@@ -420,13 +420,13 @@ export class WebSocketService {
     if (this.isConnected) {
       joinAction();
     } else {
-      console.log('⏳ WebSocket not connected, queuing join request for:', conversationId);
+      console.info('⏳ WebSocket not connected, queuing join request for:', conversationId);
       this.pendingActions.push(joinAction);
     }
   }
 
   leaveConversation(conversationId: string) {
-    console.log('👋 Leaving conversation:', conversationId);
+    console.info('👋 Leaving conversation:', conversationId);
     
     // Remove from joined conversations set
     this.joinedConversations.delete(conversationId);
@@ -442,7 +442,7 @@ export class WebSocketService {
   }
   
   private processPendingActions() {
-    console.log('🔄 Processing pending actions:', this.pendingActions.length);
+    console.info('🔄 Processing pending actions:', this.pendingActions.length);
     
     // Execute all pending actions
     const actions = [...this.pendingActions];
@@ -456,7 +456,7 @@ export class WebSocketService {
       }
     });
     
-    console.log('✅ Pending actions processed');
+    console.info('✅ Pending actions processed');
   }
 
   // Getters

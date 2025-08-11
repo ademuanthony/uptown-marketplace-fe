@@ -45,14 +45,14 @@ class DepositService {
   // Get or create deposit address for a specific currency/network
   async getOrCreateDepositAddress(currency: DepositCurrency, chainId: number): Promise<DepositAddress> {
     try {
-      console.log('Sending deposit address request:', { currency, chain_id: chainId });
+      console.info('Sending deposit address request:', { currency, chain_id: chainId });
       
       const response = await api.post<ApiResponse<DepositAddress>>('/deposit-addresses', {
         currency,
         chain_id: chainId,
       });
       
-      console.log('Deposit address API response:', response.data);
+      console.info('Deposit address API response:', response.data);
       
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get deposit address');
