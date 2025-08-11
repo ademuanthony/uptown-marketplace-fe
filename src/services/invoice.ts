@@ -1,3 +1,4 @@
+import { Money } from '@/types/api';
 import api from './api';
 import { isAxiosError } from 'axios';
 
@@ -24,48 +25,20 @@ export interface Invoice {
     id: string;
     description: string;
     quantity: number;
-    unit_price: {
-      amount: number;
-      currency: string;
-      display: string;
-    };
-    total_price: {
-      amount: number;
-      currency: string;
-      display: string;
-    };
+    unit_price: Money;
+    total_price: Money;
     metadata: Record<string, unknown>;
   }[];
-  sub_total: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
-  tax_amount: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
-  discount_amount: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
-  total_amount: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
+  sub_total: Money;
+  tax_amount: Money;
+  discount_amount: Money;
+  total_amount: Money;
   currency: string;
   due_date?: string;
   paid_at?: string;
   cancelled_at?: string;
   refunded_at?: string;
-  refund_amount?: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
+  refund_amount?: Money;
   payment_deadline: string;
   can_be_paid: boolean;
   is_expired: boolean;

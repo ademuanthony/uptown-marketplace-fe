@@ -35,7 +35,7 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
     if (balance.currency === invoice.currency) {
       // Same currency - direct comparison
       const availableAmount = parseFloat(balance.balance);
-      const invoiceAmount = parseFloat(invoice.total_amount.display.replace(/[^0-9.-]+/g, ''));
+      const invoiceAmount = invoice.total_amount.display;
       return availableAmount >= invoiceAmount;
     } else if (invoice.currency === 'USD' || invoice.currency === 'usd') {
       // Invoice is in USD, compare with wallet's USD value
