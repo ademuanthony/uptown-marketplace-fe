@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   WalletIcon,
   ArrowDownTrayIcon,
@@ -12,6 +12,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import WalletCard from '../../components/wallet/WalletCard';
+import PointsCard from '../../components/wallet/PointsCard';
 import TransactionList from '../../components/wallet/TransactionList';
 import DepositModal from '../../components/wallet/DepositModal';
 import WithdrawalForm from '../../components/wallet/WithdrawalForm';
@@ -20,6 +21,7 @@ import walletService, {
   TransactionType,
   TransactionStatus,
 } from '../../services/wallet';
+import loyaltyService, { LoyaltyAccount } from '../../services/loyalty';
 import { useAuth } from '../../contexts/AuthContext';
 import { DepositCurrency } from '@/services/deposits';
 
@@ -28,6 +30,7 @@ type ViewMode = 'overview' | 'deposit' | 'withdraw' | 'transfer';
 const WalletPage: React.FC = () => {
   const { user } = useAuth();
   const [walletSummary, setWalletSummary] = useState<WalletSummary | null>(null);
+  const [loyaltyAccount, setLoyaltyAccount] = useState<LoyaltyAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
@@ -44,24 +47,53 @@ const WalletPage: React.FC = () => {
   }>({});
   const [showFilters, setShowFilters] = useState(false);
 
-  const loadWalletData = async () => {
+  const loadWalletData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const summary = await walletService.getWalletSummary();
-      setWalletSummary(summary);
+      // Load wallet and loyalty data in parallel
+      const [summary, loyalty] = await Promise.allSettled([
+        walletService.getWalletSummary(),
+        loyaltyService.getLoyaltyAccount(),
+      ]);
+
+      // Set wallet summary
+      if (summary.status === 'fulfilled') {
+        setWalletSummary(summary.value);
+      } else {
+        console.error('Failed to load wallet summary:', summary.reason);
+      }
+
+      // Set loyalty account (don't fail if loyalty service is unavailable)
+      if (loyalty.status === 'fulfilled') {
+        setLoyaltyAccount(loyalty.value);
+      } else {
+        console.warn('Failed to load loyalty points:', loyalty.reason);
+        // Set default empty loyalty account
+        setLoyaltyAccount({
+          user_id: user?.id || '',
+          total_points: 0,
+          available_points: 0,
+          pending_points: 0,
+          lifetime_earned: 0,
+          lifetime_spent: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          currency: 'PNT',
+        });
+      }
     } catch (err) {
       console.error('Failed to load wallet data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load wallet data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     loadWalletData();
-  }, []);
+  }, [loadWalletData]);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -102,8 +134,8 @@ const WalletPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-300 rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
                 <div key={i} className="h-48 bg-gray-300 rounded-xl"></div>
               ))}
             </div>
@@ -199,9 +231,17 @@ const WalletPage: React.FC = () => {
         {viewMode === 'overview' && (
           <>
             {/* Balance Cards */}
-            {walletSummary && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Always show all three currency cards */}
+            {walletSummary && loyaltyAccount && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {/* Loyalty Points Card */}
+                <PointsCard
+                  balance={loyaltyAccount.available_points}
+                  lifetimeEarned={loyaltyAccount.lifetime_earned}
+                  lifetimeSpent={loyaltyAccount.lifetime_spent}
+                  isLoading={loading}
+                />
+
+                {/* Currency Cards */}
                 {(['USDT', 'POL', 'USD'] as const).map(currency => {
                   // Find existing wallet data for this currency
                   const existingWallet = walletSummary.wallets.find(w => w.currency === currency);
