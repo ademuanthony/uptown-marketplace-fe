@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +19,7 @@ import { profileSchema, type ProfileFormData } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/user';
 import { getProfileImageUrl } from '@/utils/imageUtils';
+import Avatar from '@/components/common/Avatar';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
@@ -206,13 +206,12 @@ export default function ProfilePage() {
                 <div className="relative">
                   {/* Avatar Display */}
                   <div className="relative">
-                    {user&&<Image
+                    {user&&<Avatar
                       key={`${user.first_name}-${user.last_name}-${user.profile_image_url}`}
                       src={avatarPreview || getProfileImageUrl(user)}
                       alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
-                      width={120}
-                      height={120}
-                      className="w-30 h-30 rounded-full object-cover border-4 border-gray-200"
+                      size={120}
+                      className="w-30 h-30 border-4 border-gray-200"
                     />}
                     {isUploadingAvatar && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">

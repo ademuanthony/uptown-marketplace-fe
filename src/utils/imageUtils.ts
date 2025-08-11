@@ -57,7 +57,8 @@ export const getFallbackAvatarUrl = (initial?: string, name?: string): string =>
   if (initial) {
     // Use full name for better avatar generation if available
     const displayName = name || initial;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=128&background=3b82f6&color=ffffff&format=svg`;
+    // Use PNG format instead of SVG for better Next.js compatibility
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=128&background=3b82f6&color=ffffff&format=png`;
   }
   
   // Default avatar
