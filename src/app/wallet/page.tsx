@@ -233,14 +233,6 @@ const WalletPage: React.FC = () => {
             {/* Balance Cards */}
             {walletSummary && loyaltyAccount && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {/* Loyalty Points Card */}
-                <PointsCard
-                  balance={loyaltyAccount.available_points}
-                  lifetimeEarned={loyaltyAccount.lifetime_earned}
-                  lifetimeSpent={loyaltyAccount.lifetime_spent}
-                  isLoading={loading}
-                />
-
                 {/* Currency Cards */}
                 {(['USDT', 'POL', 'USD'] as const).map(currency => {
                   // Find existing wallet data for this currency
@@ -274,6 +266,14 @@ const WalletPage: React.FC = () => {
                     );
                   }
                 })}
+
+                {/* Loyalty Points Card */}
+                <PointsCard
+                  balance={loyaltyAccount.available_points / 1e2}
+                  lifetimeEarned={loyaltyAccount.lifetime_earned / 1e2}
+                  lifetimeSpent={loyaltyAccount.lifetime_spent / 1e2}
+                  isLoading={loading}
+                />
               </div>
             )}
 
