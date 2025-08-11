@@ -684,18 +684,18 @@ export default function ReferralsPage() {
                   <div className="p-4 bg-green-50 rounded-lg">
                     <p className="text-sm text-green-600 font-medium">Total Cash Rewards</p>
                     <p className="text-lg font-bold text-green-900">
-                      {formatCurrencyAmount(rewardsSummary.total_cash_rewards, rewardsSummary.cash_currency)}
+                      {formatCurrencyAmount(rewardsSummary.total_cash_rewards.display, rewardsSummary.cash_currency)}
                     </p>
                   </div>
                   <div className="p-4 bg-purple-50 rounded-lg">
                     <p className="text-sm text-purple-600 font-medium">Total Points Rewards</p>
                     <p className="text-lg font-bold text-purple-900">
-                      {formatCurrencyAmount(rewardsSummary.total_points_rewards, 'POINTS')}
+                      {formatCurrencyAmount(rewardsSummary.total_points_rewards.display, 'PNT')}
                     </p>
                   </div>
                   <div className="p-4 bg-yellow-50 rounded-lg">
                     <p className="text-sm text-yellow-600 font-medium">Pending Rewards</p>
-                    <p className="text-lg font-bold text-yellow-900">{rewardsSummary.pending_rewards}</p>
+                    <p className="text-lg font-bold text-yellow-900">{formatCurrencyAmount(rewardsSummary.pending_rewards.display, 'PNT')}</p>
                   </div>
                 </div>
               )}
@@ -735,7 +735,7 @@ export default function ReferralsPage() {
                             {getLevelName(reward.level)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {formatCurrencyAmount(reward.amount, reward.currency)}
+                            {formatCurrencyAmount(reward.amount.display, reward.currency)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

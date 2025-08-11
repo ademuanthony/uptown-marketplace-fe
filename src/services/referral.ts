@@ -58,7 +58,7 @@ export interface ReferralReward {
   action_type: string;
   reward_type: 'cash' | 'points';
   level: number;
-  amount: number;
+  amount: Money;
   currency: string;
   status: 'pending' | 'processed' | 'failed' | 'cancelled';
   reference_id?: string;
@@ -69,12 +69,12 @@ export interface ReferralReward {
 }
 
 export interface ReferralRewardsSummary {
-  total_cash_rewards: number;
-  total_points_rewards: number;
+  total_cash_rewards: Money;
+  total_points_rewards: Money;
   cash_currency: string;
-  pending_rewards: number;
-  processed_rewards: number;
-  failed_rewards: number;
+  pending_rewards: Money;
+  processed_rewards: Money;
+  failed_rewards: Money;
 }
 
 export interface TopReferrer {
