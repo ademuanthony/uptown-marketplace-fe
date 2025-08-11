@@ -394,3 +394,10 @@ export interface ProfileFormData {
   interests: string[];
   visibility: SocialProfileVisibility;
 }
+
+export interface Money {
+  display: number;
+  currency: string;
+  amount: number;
+  decimals: number;
+}

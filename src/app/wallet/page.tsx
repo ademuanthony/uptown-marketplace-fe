@@ -141,7 +141,7 @@ const WalletPage: React.FC = () => {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
                 <p className="text-sm text-gray-600">
-                  Total Balance: {walletSummary ? `$${walletSummary.summary.total_value}` : '--'}
+                  Total Balance: {walletSummary ? `$${walletSummary.summary.total_value.display}` : '--'}
                 </p>
               </div>
             </div>

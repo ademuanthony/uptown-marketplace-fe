@@ -1,5 +1,6 @@
 import api from './api';
 import { isAxiosError } from 'axios';
+import { Money } from '../types/api';
 
 // API response wrapper
 interface ApiResponse<T> {
@@ -113,7 +114,7 @@ export interface TransactionListResponse {
 export interface WalletSummary {
   wallets: WalletBalance[];
   summary: {
-    total_value: string;
+    total_value: Money;
     total_transactions: number;
     pending_transactions: number;
   };

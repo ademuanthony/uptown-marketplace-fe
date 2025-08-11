@@ -1,4 +1,5 @@
 import api from './api';
+import { Money } from '../types/api';
 
 export interface ReferralProfile {
   user_id: string;
@@ -10,8 +11,8 @@ export interface ReferralProfile {
   level4_referrals: number;
   level5_referrals: number;
   level6_referrals: number;
-  total_cash_earned: number;
-  total_points_earned: number;
+  total_cash_earned: Money;
+  total_points_earned: Money;
   cash_currency: string;
   is_active: boolean;
   created_at: string;
@@ -30,10 +31,10 @@ export interface ReferralStats {
   indirect_referrals: number;
   total_referrals: number;
   active_referrals: number;
-  total_cash_earned: number;
-  total_points_earned: number;
+  total_cash_earned: Money;
+  total_points_earned: Money;
   cash_currency: string;
-  pending_rewards: number;
+  pending_rewards: Money;
   last_referral_date: string;
   referral_conversion_rate: number;
 }

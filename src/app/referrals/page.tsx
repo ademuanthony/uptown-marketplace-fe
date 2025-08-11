@@ -451,7 +451,7 @@ export default function ReferralsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Cash Earned</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrencyAmount(stats?.total_cash_earned || 0, stats?.cash_currency || 'NGN')}
+                  {formatCurrencyAmount(stats?.total_cash_earned.display || 0, stats?.cash_currency || 'NGN')}
                 </p>
               </div>
             </div>
@@ -465,7 +465,7 @@ export default function ReferralsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Points Earned</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrencyAmount(stats?.total_points_earned || 0, 'POINTS')}
+                  {formatCurrencyAmount(stats?.total_points_earned.display || 0, 'POINTS')}
                 </p>
               </div>
             </div>
