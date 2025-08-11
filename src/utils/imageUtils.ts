@@ -115,10 +115,10 @@ export const getProductImageUrl = (imagePath: string | undefined | null): string
  */
 export const getOptimizedImageUrl = (
   imagePath: string | undefined | null,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   _width: number = 400,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _quality: number = 75
+   
+  _quality: number = 75,
 ): string => {
   const absoluteUrl = getAbsoluteImageUrl(imagePath);
   
@@ -149,12 +149,12 @@ export const isAllowedImageDomain = (imageUrl: string): boolean => {
       'amazonaws.com',
       'unsplash.com',
       'ui-avatars.com',
-      'res.cloudinary.com'
+      'res.cloudinary.com',
     ];
 
     return allowedDomains.some(domain => 
       url.hostname === domain || 
-      url.hostname.endsWith(`.${domain}`)
+      url.hostname.endsWith(`.${domain}`),
     );
   } catch {
     return false;

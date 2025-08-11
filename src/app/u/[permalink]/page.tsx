@@ -8,7 +8,7 @@ import {
   CalendarIcon, 
   ShoppingBagIcon, 
   DocumentTextIcon,
-  StarIcon 
+  StarIcon, 
 } from '@heroicons/react/24/outline';
 import { publicProfileService, PublicProfileResponse } from '@/services/publicProfile';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
@@ -173,7 +173,7 @@ export default function PublicProfilePage() {
         <ProfileTabs
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={(tabId) => setActiveTab(tabId as TabType)}
+          onTabChange={tabId => setActiveTab(tabId as TabType)}
         />
 
         {/* Tab Content */}

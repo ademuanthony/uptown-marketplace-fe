@@ -14,10 +14,10 @@ const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  async (config) => {
+  async config => {
     try {
       // Get current Firebase user
-      const currentUser = auth.currentUser;
+      const {currentUser} = auth;
       
       if (currentUser) {
         // Get fresh Firebase token
@@ -56,21 +56,19 @@ api.interceptors.request.use(
     
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  error => Promise.reject(error),
 );
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     if (error.response?.status === 401) {
       // Token expired or invalid
       console.log('401 error, attempting token refresh');
       
       try {
-        const currentUser = auth.currentUser;
+        const {currentUser} = auth;
         if (currentUser) {
           // Try to refresh the token
           const newToken = await currentUser.getIdToken(true);
@@ -92,7 +90,7 @@ api.interceptors.response.use(
       window.location.href = '/auth/login';
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

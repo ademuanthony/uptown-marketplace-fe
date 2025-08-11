@@ -14,7 +14,7 @@ import {
   CalendarIcon,
   ShoppingBagIcon,
   HeartIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { profileSchema, type ProfileFormData } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
@@ -132,7 +132,7 @@ export default function ProfilePage() {
     try {
       // Create preview
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         setAvatarPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -356,7 +356,6 @@ export default function ProfilePage() {
                       <p className="mt-1 text-sm text-red-600">{errors.phone_number.message}</p>
                     )}
                   </div>
-
 
                   {isEditing && (
                     <div className="flex justify-end space-x-3">

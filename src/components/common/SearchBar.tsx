@@ -12,10 +12,10 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ 
-  placeholder = "Search for products, categories, or sellers...", 
-  className = "",
+  placeholder = 'Search for products, categories, or sellers...', 
+  className = '',
   onSearch,
-  initialValue = ""
+  initialValue = '',
 }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState(initialValue);
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function SearchBar({
       <input
         type="text"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={e => setSearchQuery(e.target.value)}
         placeholder={placeholder}
         className="w-full px-4 py-3 pl-12 pr-32 text-gray-900 bg-white border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent shadow-sm"
       />

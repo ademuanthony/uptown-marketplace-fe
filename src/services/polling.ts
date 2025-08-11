@@ -111,7 +111,7 @@ export class PollingService {
             // Conversation was updated
             const event: ConversationUpdateEvent = {
               type: 'conversation_update',
-              conversation: conversation,
+              conversation,
               conversation_id: conversation.id,
             };
 
@@ -166,14 +166,14 @@ export class PollingService {
         if (tracked) {
           // Check for new messages
           const newMessages = response.messages.filter(
-            message => message.created_at > tracked.lastUpdated
+            message => message.created_at > tracked.lastUpdated,
           );
 
           // Emit events for new messages
           newMessages.forEach(message => {
             const event: MessageEvent = {
               type: 'new_message',
-              message: message,
+              message,
               conversation_id: conversationId,
             };
 

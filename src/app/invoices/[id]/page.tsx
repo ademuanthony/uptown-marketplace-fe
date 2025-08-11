@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import invoiceService, { type Invoice } from '@/services/invoice';
@@ -11,7 +11,7 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   CalendarDaysIcon,
-  UserIcon
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -56,13 +56,7 @@ export default function InvoicePage() {
 
   const invoiceId = params.id as string;
 
-  useEffect(() => {
-    if (!authLoading && user && invoiceId) {
-      loadInvoice();
-    }
-  }, [user, authLoading, invoiceId]);
-
-  const loadInvoice = async () => {
+  const loadInvoice = useCallback(async () => {
     try {
       setLoading(true);
       const invoiceData = await invoiceService.getInvoice(invoiceId);
@@ -74,7 +68,13 @@ export default function InvoicePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [invoiceId, router]);
+
+  useEffect(() => {
+    if (!authLoading && user && invoiceId) {
+      loadInvoice();
+    }
+  }, [user, authLoading, invoiceId, loadInvoice]);
 
   const handleCancelInvoice = async () => {
     if (!invoice || !cancelReason.trim()) {
@@ -207,7 +207,7 @@ export default function InvoicePage() {
                     month: 'long',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
                   })}
                 </dd>
               </div>
@@ -219,7 +219,7 @@ export default function InvoicePage() {
                     {new Date(invoice.due_date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
-                      day: 'numeric'
+                      day: 'numeric',
                     })}
                   </dd>
                 </div>
@@ -233,7 +233,7 @@ export default function InvoicePage() {
                     month: 'long',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
                   })}
                 </dd>
               </div>
@@ -336,7 +336,7 @@ export default function InvoicePage() {
                           month: 'long',
                           day: 'numeric',
                           hour: '2-digit',
-                          minute: '2-digit'
+                          minute: '2-digit',
                         })}
                       </p>
                     )}
@@ -379,7 +379,7 @@ export default function InvoicePage() {
               </p>
               <textarea
                 value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
+                onChange={e => setCancelReason(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none"
                 rows={3}
                 placeholder="Enter cancellation reason..."

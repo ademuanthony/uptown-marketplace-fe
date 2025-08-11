@@ -17,7 +17,7 @@ import {
   ProductReview,
   PremiumListing,
   Shipment,
-  PaginatedResponse
+  PaginatedResponse,
 } from '@/types/api';
 
 // API Configuration
@@ -53,7 +53,7 @@ if (typeof window !== 'undefined') {
 
 // Request interceptor
 apiClient.interceptors.request.use(
-  (config) => {
+  config => {
     // Add user ID header if available
     const userId = localStorage.getItem('user_id');
     if (userId) {
@@ -61,12 +61,12 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error),
 );
 
 // Response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Handle unauthorized - clear token and redirect to login
@@ -79,7 +79,7 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Generic API request function
@@ -87,7 +87,7 @@ async function apiRequest<T>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   endpoint: string,
   data?: unknown,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
 ): Promise<T> {
   try {
     const response = await apiClient.request<T>({
@@ -297,7 +297,7 @@ export const messagingAPI = {
       attachments.forEach(file => formData.append('attachments', file));
     }
     return apiRequest<Message>('POST', `/messaging/conversations/${conversationId}/messages`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
@@ -362,7 +362,7 @@ export const uploadFile = async (file: File, endpoint: string): Promise<string> 
   formData.append('file', file);
   
   const response = await apiRequest<{ url: string }>('POST', endpoint, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
   
   return response.url;

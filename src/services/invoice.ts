@@ -152,7 +152,7 @@ class InvoiceService {
   async getUserInvoices(
     status?: string,
     page: number = 1, 
-    perPage: number = 20
+    perPage: number = 20,
   ): Promise<{
     invoices: Invoice[];
     pagination: {
@@ -179,15 +179,15 @@ class InvoiceService {
         // The backend returns data as an array directly in the data field for paginated responses
         const invoices = Array.isArray(response.data.data) ? response.data.data : [];
         const pagination = response.data.pagination || {
-          page: page,
+          page,
           page_size: perPage,
           total_count: 0,
-          total_pages: 0
+          total_pages: 0,
         };
         
         return {
           invoices,
-          pagination
+          pagination,
         };
       }
       
@@ -195,11 +195,11 @@ class InvoiceService {
       return {
         invoices: [],
         pagination: {
-          page: page,
+          page,
           page_size: perPage,
           total_count: 0,
-          total_pages: 0
-        }
+          total_pages: 0,
+        },
       };
     } catch (error) {
       console.error('Get user invoices error:', error);
@@ -209,11 +209,11 @@ class InvoiceService {
           return {
             invoices: [],
             pagination: {
-              page: page,
+              page,
               page_size: perPage,
               total_count: 0,
-              total_pages: 0
-            }
+              total_pages: 0,
+            },
           };
         }
         throw new Error(error.response?.data?.message || error.message || 'Failed to get user invoices');
@@ -227,7 +227,7 @@ class InvoiceService {
     try {
       const response = await api.post<ApiResponse<CancelInvoiceResponse>>(
         `/invoices/${invoiceId}/cancel`,
-        { reason }
+        { reason },
       );
       
       if (!response.data || !response.data.success || !response.data.data) {
@@ -285,7 +285,7 @@ class InvoiceService {
     options: {
       network?: string;
       returnUrl?: string;
-    } = {}
+    } = {},
   ): Promise<unknown> {
     try {
       const requestBody: {
@@ -308,7 +308,7 @@ class InvoiceService {
 
       const response = await api.post<ApiResponse<unknown>>(
         `/invoices/${invoiceId}/payment`,
-        requestBody
+        requestBody,
       );
       
       if (!response.data || !response.data.success || !response.data.data) {
@@ -329,7 +329,7 @@ class InvoiceService {
   async checkPaymentStatus(
     invoiceId: string,
     reference: string,
-    provider?: 'crypto' | 'paystack' | 'stripe'
+    provider?: 'crypto' | 'paystack' | 'stripe',
   ): Promise<unknown> {
     try {
       const params = new URLSearchParams({
@@ -341,7 +341,7 @@ class InvoiceService {
       }
 
       const response = await api.get<ApiResponse<unknown>>(
-        `/invoices/${invoiceId}/payment/status?${params}`
+        `/invoices/${invoiceId}/payment/status?${params}`,
       );
       
       if (!response.data || !response.data.success || !response.data.data) {
@@ -368,8 +368,8 @@ class InvoiceService {
       // Convert WalletBalance[] to AvailableBalance[]
       return summary.wallets.map(wallet => ({
         currency: wallet.currency,
-        balance: wallet.available, // Use available balance for payments
-        usd_value: wallet.usd_value
+        balance: wallet.available.display.toString(), // Convert Money to string
+        usd_value: wallet.usd_value.display, // Get the numeric value
       }));
     } catch (error) {
       console.error('Get available balances error:', error);
@@ -383,12 +383,12 @@ class InvoiceService {
   // Pay invoice with wallet balance
   async payWithWallet(
     invoiceId: string,
-    currency: string
+    currency: string,
   ): Promise<WalletPaymentResponse> {
     try {
       const response = await api.post<ApiResponse<WalletPaymentResponse>>(
         `/invoices/${invoiceId}/pay-with-wallet`,
-        { currency }
+        { currency },
       );
       
       if (!response.data || !response.data.success || !response.data.data) {

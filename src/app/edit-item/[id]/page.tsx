@@ -12,7 +12,7 @@ import {
   CurrencyDollarIcon,
   TagIcon,
   InformationCircleIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import { createProductSchema, type CreateProductFormData, productConditions } from '@/schemas/product';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,7 +57,7 @@ export default function EditItemPage() {
   // Check authentication
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login?redirect=/edit-item/' + productId);
+      router.push(`/auth/login?redirect=/edit-item/${productId}`);
     }
   }, [authLoading, isAuthenticated, router, productId]);
 
@@ -93,7 +93,7 @@ export default function EditItemPage() {
           product_seller_id: product.seller_id,
           user_id: user?.id,
           user_firebase_uid: user?.firebase_uid,
-          user_email: user?.email
+          user_email: user?.email,
         });
         
         // Note: Removing frontend ownership check for now
@@ -146,7 +146,7 @@ export default function EditItemPage() {
   }
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
+    const {files} = event.target;
     if (!files) return;
 
     const newFiles = Array.from(files);
@@ -318,7 +318,7 @@ export default function EditItemPage() {
                   } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                 >
                   <option value="">Select a category</option>
-                  {categories.map((category) => (
+                  {categories.map(category => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -364,7 +364,7 @@ export default function EditItemPage() {
                 Condition
               </label>
               <div className="grid grid-cols-3 gap-3">
-                {productConditions.map((condition) => (
+                {productConditions.map(condition => (
                   <label
                     key={condition}
                     className={`relative flex items-center justify-center px-4 py-3 border rounded-md cursor-pointer transition-all ${
@@ -558,7 +558,7 @@ export default function EditItemPage() {
                   placeholder="Add tags separated by commas (e.g., vintage, rare, collectible)"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   defaultValue={watch('tags')?.join(', ')}
-                  onChange={(e) => {
+                  onChange={e => {
                     const tags = e.target.value.split(',').map(tag => tag.trim());
                     setValue('tags', tags);
                   }}
@@ -642,7 +642,7 @@ export default function EditItemPage() {
 
         {/* Form */}
         <form 
-          onSubmit={(e) => {
+          onSubmit={e => {
             // Prevent submission if not on final step
             if (currentStep !== 3) {
               e.preventDefault();
@@ -650,7 +650,7 @@ export default function EditItemPage() {
             }
             handleSubmit(onSubmit)(e);
           }}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             // Prevent Enter key from submitting form unless on final step
             if (e.key === 'Enter' && currentStep !== 3) {
               e.preventDefault();

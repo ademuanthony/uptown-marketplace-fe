@@ -197,7 +197,7 @@ const WalletPage: React.FC = () => {
             {walletSummary && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {/* Always show all three currency cards */}
-                {(['USDT', 'POL', 'USD'] as const).map((currency) => {
+                {(['USDT', 'POL', 'USD'] as const).map(currency => {
                   // Find existing wallet data for this currency
                   const existingWallet = walletSummary.wallets.find(w => w.currency === currency);
                   
@@ -207,9 +207,9 @@ const WalletPage: React.FC = () => {
                       <WalletCard
                         key={currency}
                         currency={currency as DepositCurrency}
-                        balance={parseFloat(existingWallet.available)}
-                        usdEquivalent={existingWallet.usd_value}
-                        pendingDeposits={parseFloat(existingWallet.pending)}
+                        balance={existingWallet.available.display}
+                        usdEquivalent={existingWallet.usd_value.display}
+                        pendingDeposits={existingWallet.pending.display}
                         priceChange24h={existingWallet.percent_change_24h}
                         showUSDEquivalent={currency !== 'USD'}
                       />
@@ -281,7 +281,7 @@ const WalletPage: React.FC = () => {
                       type="text"
                       placeholder="Search transactions..."
                       value={transactionFilters.search || ''}
-                      onChange={(e) => setTransactionFilters(prev => ({ ...prev, search: e.target.value }))}
+                      onChange={e => setTransactionFilters(prev => ({ ...prev, search: e.target.value }))}
                       className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-48"
                     />
                   </div>
@@ -311,9 +311,9 @@ const WalletPage: React.FC = () => {
                       </label>
                       <select
                         value={transactionFilters.type || ''}
-                        onChange={(e) => setTransactionFilters(prev => ({ 
+                        onChange={e => setTransactionFilters(prev => ({ 
                           ...prev, 
-                          type: e.target.value as TransactionType || undefined 
+                          type: e.target.value as TransactionType || undefined, 
                         }))}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
                       >
@@ -332,9 +332,9 @@ const WalletPage: React.FC = () => {
                       </label>
                       <select
                         value={transactionFilters.status || ''}
-                        onChange={(e) => setTransactionFilters(prev => ({ 
+                        onChange={e => setTransactionFilters(prev => ({ 
                           ...prev, 
-                          status: e.target.value as TransactionStatus || undefined 
+                          status: e.target.value as TransactionStatus || undefined, 
                         }))}
                         className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
                       >

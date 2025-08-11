@@ -39,7 +39,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
           seller_id: userId,
           status: 'active', // Only show active products
           page: '1',
-          page_size: '20'
+          page_size: '20',
         });
         
         const response = await fetch(`${apiBaseUrl}/api/v1/products?${queryParams}`, {
@@ -78,7 +78,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
             image_url: p.images?.[0]?.url || p.image_url,
             category_name: p.category_name,
             view_count: p.view_count || 0,
-            created_at: p.created_at
+            created_at: p.created_at,
           };
         }) || [];
         
@@ -134,7 +134,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product) => (
+      {products.map(product => (
         <Link
           key={product.id}
           href={`/products/${product.id}`}

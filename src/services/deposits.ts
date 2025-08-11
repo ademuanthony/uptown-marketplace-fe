@@ -156,9 +156,9 @@ class DepositService {
         margin: 2,
         color: {
           dark: '#000000',
-          light: '#FFFFFF'
+          light: '#FFFFFF',
         },
-        errorCorrectionLevel: 'M'
+        errorCorrectionLevel: 'M',
       });
       
       return qrCodeDataUrl;
@@ -246,4 +246,5 @@ class DepositService {
   }
 }
 
-export default new DepositService();
+const depositService = new DepositService();
+export default depositService;

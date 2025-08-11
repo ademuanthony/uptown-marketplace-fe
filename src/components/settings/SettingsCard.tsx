@@ -13,7 +13,7 @@ export default function SettingsCard({
   description, 
   children, 
   icon, 
-  className = '' 
+  className = '', 
 }: SettingsCardProps) {
   return (
     <div className={`bg-gray-50 rounded-lg p-6 ${className}`}>

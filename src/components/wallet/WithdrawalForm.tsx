@@ -8,10 +8,9 @@ import {
   CheckIcon,
   XMarkIcon,
   ClockIcon,
-  LinkIcon,
   BookOpenIcon,
 } from '@heroicons/react/24/outline';
-import { Currency, NetworkType } from '../../services/deposits';
+import { DepositCurrency as Currency, NetworkType } from '../../services/deposits';
 import withdrawalService, { WithdrawalRequest, NetworkFee, WithdrawalLimits, AddressBookEntry } from '../../services/withdrawals';
 import walletService from '../../services/wallet';
 
@@ -57,32 +56,6 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
   const supportedCurrencies: Currency[] = ['USDT', 'POL'];
   const supportedNetworks = withdrawalService.getSupportedWithdrawalMethods();
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (formData.currency) {
-      loadWithdrawalLimits();
-    }
-  }, [formData.currency]);
-
-  useEffect(() => {
-    if (formData.currency && formData.network && formData.amount && formData.amount > 0) {
-      loadNetworkFee();
-    } else {
-      setNetworkFee(null);
-    }
-  }, [formData.currency, formData.network, formData.amount]);
-
-  useEffect(() => {
-    if (formData.recipient_address && formData.network && formData.currency) {
-      validateAddress();
-    } else {
-      setAddressValidation(null);
-    }
-  }, [formData.recipient_address, formData.network]);
-
   const loadInitialData = async () => {
     try {
       const [balanceData, addressBookData] = await Promise.all([
@@ -90,10 +63,9 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
         withdrawalService.getAddressBook(),
       ]);
       
-      setAvailableBalance(
-        formData.currency === 'USDT' ? balanceData.balances.usdt.balance :
-        formData.currency === 'POL' ? balanceData.balances.pol.balance : 0
-      );
+      // Find the wallet for the selected currency
+      const wallet = balanceData.wallets.find(w => w.currency === formData.currency);
+      setAvailableBalance(wallet ? wallet.available.display : 0);
       
       setAddressBook(addressBookData);
     } catch (err) {
@@ -120,7 +92,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
       const fee = await withdrawalService.getNetworkFee(
         formData.currency,
         formData.network,
-        formData.amount
+        formData.amount,
       );
       setNetworkFee(fee);
     } catch (err) {
@@ -137,7 +109,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
       const validation = await withdrawalService.validateWithdrawalAddress(
         formData.recipient_address,
         formData.currency,
-        formData.network
+        formData.network,
       );
       setAddressValidation(validation);
     } catch (err) {
@@ -145,6 +117,36 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
       setAddressValidation({ is_valid: false, warnings: ['Address validation failed'] });
     }
   };
+
+  useEffect(() => {
+    loadInitialData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (formData.currency) {
+      loadWithdrawalLimits();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.currency]);
+
+  useEffect(() => {
+    if (formData.currency && formData.network && formData.amount && formData.amount > 0) {
+      loadNetworkFee();
+    } else {
+      setNetworkFee(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.currency, formData.network, formData.amount]);
+
+  useEffect(() => {
+    if (formData.recipient_address && formData.network && formData.currency) {
+      validateAddress();
+    } else {
+      setAddressValidation(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.recipient_address, formData.network]);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -207,7 +209,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
             addressBookName.trim(),
             formData.recipient_address!,
             formData.currency!,
-            formData.network!
+            formData.network!,
           );
         } catch (err) {
           console.warn('Failed to save to address book:', err);
@@ -225,7 +227,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof WithdrawalRequest, value: any) => {
+  const handleInputChange = (field: keyof WithdrawalRequest, value: string | number | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear validation error for this field
@@ -308,7 +310,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
             Currency
           </label>
           <div className="grid grid-cols-2 gap-3">
-            {supportedCurrencies.map((currency) => (
+            {supportedCurrencies.map(currency => (
               <button
                 key={currency}
                 type="button"
@@ -335,14 +337,14 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               Network
             </label>
             <div className="space-y-2">
-              {getAvailableNetworks().map((network) => (
+              {getAvailableNetworks().map(network => (
                 <label key={network.network} className="flex items-center">
                   <input
                     type="radio"
                     name="network"
                     value={network.network}
                     checked={formData.network === network.network}
-                    onChange={(e) => handleInputChange('network', e.target.value as NetworkType)}
+                    onChange={e => handleInputChange('network', e.target.value as NetworkType)}
                     className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
                   <div className="ml-3 flex items-center justify-between w-full">
@@ -374,7 +376,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               step="0.000001"
               min="0"
               value={formData.amount || ''}
-              onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+              onChange={e => handleInputChange('amount', parseFloat(e.target.value) || 0)}
               placeholder={`Enter amount in ${formData.currency}`}
               className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
@@ -414,7 +416,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               <div className="space-y-2">
                 {addressBook
                   .filter(entry => entry.currency === formData.currency)
-                  .map((entry) => (
+                  .map(entry => (
                     <button
                       key={entry.id}
                       type="button"
@@ -441,7 +443,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
           <input
             type="text"
             value={formData.recipient_address || ''}
-            onChange={(e) => handleInputChange('recipient_address', e.target.value)}
+            onChange={e => handleInputChange('recipient_address', e.target.value)}
             placeholder="Enter recipient wallet address"
             className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
           />
@@ -476,7 +478,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               <input
                 type="checkbox"
                 checked={saveToAddressBook}
-                onChange={(e) => setSaveToAddressBook(e.target.checked)}
+                onChange={e => setSaveToAddressBook(e.target.checked)}
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-700">Save to address book</span>
@@ -487,7 +489,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
                 <input
                   type="text"
                   value={addressBookName}
-                  onChange={(e) => setAddressBookName(e.target.value)}
+                  onChange={e => setAddressBookName(e.target.value)}
                   placeholder="Enter a name for this address"
                   className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
@@ -507,7 +509,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
           <input
             type="text"
             value={formData.description || ''}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={e => handleInputChange('description', e.target.value)}
             placeholder="Add a note for this withdrawal"
             className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />

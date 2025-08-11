@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   getUserReferralStats, 
@@ -17,7 +18,7 @@ import {
   type ReferralReward,
   type ReferralRewardsSummary,
   type RecentReferralWithProfile,
-  type DownlineWithProfile
+  type DownlineWithProfile,
 } from '@/services/referral';
 import { 
   ShareIcon, 
@@ -31,7 +32,7 @@ import {
   ChatBubbleLeftRightIcon,
   UserCircleIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -68,7 +69,7 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages, 
   totalItems, 
   itemsPerPage,
-  onPageChange 
+  onPageChange, 
 }) => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -197,37 +198,58 @@ export default function ReferralsPage() {
     currentPage: 1,
     itemsPerPage: 9, // 3x3 grid
     totalItems: 0,
-    totalPages: 0
+    totalPages: 0,
   });
   
   const [rewardsPagination, setRewardsPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
     totalItems: 0,
-    totalPages: 0
+    totalPages: 0,
   });
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadReferralData();
+  const loadDownlines = useCallback(async () => {
+    try {
+      const offset = (downlinesPagination.currentPage - 1) * downlinesPagination.itemsPerPage;
+      const downlinesWithProfilesData = await getDownlines({ 
+        limit: downlinesPagination.itemsPerPage,
+        offset,
+      });
+      
+      setDownlinesWithProfiles(downlinesWithProfilesData.downlines);
+      setDownlinesPagination(prev => ({
+        ...prev,
+        totalItems: downlinesWithProfilesData.total,
+        totalPages: Math.ceil(downlinesWithProfilesData.total / prev.itemsPerPage),
+      }));
+    } catch (error) {
+      console.error('Failed to load downlines:', error);
+      toast.error('Failed to load downlines');
     }
-  }, [isAuthenticated]);
+  }, [downlinesPagination.currentPage, downlinesPagination.itemsPerPage]);
 
-  // Load downlines when pagination changes
-  useEffect(() => {
-    if (isAuthenticated && activeTab === 'downlines') {
-      loadDownlines();
+  const loadRewards = useCallback(async () => {
+    try {
+      const offset = (rewardsPagination.currentPage - 1) * rewardsPagination.itemsPerPage;
+      const rewardsData = await getReferralRewards({ 
+        limit: rewardsPagination.itemsPerPage,
+        offset,
+      });
+      
+      setRewards(rewardsData.rewards);
+      setRewardsSummary(rewardsData.summary);
+      setRewardsPagination(prev => ({
+        ...prev,
+        totalItems: rewardsData.total,
+        totalPages: Math.ceil(rewardsData.total / prev.itemsPerPage),
+      }));
+    } catch (error) {
+      console.error('Failed to load rewards:', error);
+      toast.error('Failed to load rewards');
     }
-  }, [isAuthenticated, activeTab, downlinesPagination.currentPage]);
+  }, [rewardsPagination.currentPage, rewardsPagination.itemsPerPage]);
 
-  // Load rewards when pagination changes
-  useEffect(() => {
-    if (isAuthenticated && activeTab === 'rewards') {
-      loadRewards();
-    }
-  }, [isAuthenticated, activeTab, rewardsPagination.currentPage]);
-
-  const loadReferralData = async () => {
+  const loadReferralData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -256,48 +278,27 @@ export default function ReferralsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadDownlines, loadRewards]);
 
-  const loadDownlines = async () => {
-    try {
-      const offset = (downlinesPagination.currentPage - 1) * downlinesPagination.itemsPerPage;
-      const downlinesWithProfilesData = await getDownlines({ 
-        limit: downlinesPagination.itemsPerPage,
-        offset: offset
-      });
-      
-      setDownlinesWithProfiles(downlinesWithProfilesData.downlines);
-      setDownlinesPagination(prev => ({
-        ...prev,
-        totalItems: downlinesWithProfilesData.total,
-        totalPages: Math.ceil(downlinesWithProfilesData.total / prev.itemsPerPage)
-      }));
-    } catch (error) {
-      console.error('Failed to load downlines:', error);
-      toast.error('Failed to load downlines');
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadReferralData();
     }
-  };
+  }, [isAuthenticated, loadReferralData]);
 
-  const loadRewards = async () => {
-    try {
-      const offset = (rewardsPagination.currentPage - 1) * rewardsPagination.itemsPerPage;
-      const rewardsData = await getReferralRewards({ 
-        limit: rewardsPagination.itemsPerPage,
-        offset: offset
-      });
-      
-      setRewards(rewardsData.rewards);
-      setRewardsSummary(rewardsData.summary);
-      setRewardsPagination(prev => ({
-        ...prev,
-        totalItems: rewardsData.total,
-        totalPages: Math.ceil(rewardsData.total / prev.itemsPerPage)
-      }));
-    } catch (error) {
-      console.error('Failed to load rewards:', error);
-      toast.error('Failed to load rewards');
+  // Load downlines when pagination changes
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'downlines') {
+      loadDownlines();
     }
-  };
+  }, [isAuthenticated, activeTab, downlinesPagination.currentPage, loadDownlines]);
+
+  // Load rewards when pagination changes
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'rewards') {
+      loadRewards();
+    }
+  }, [isAuthenticated, activeTab, rewardsPagination.currentPage, loadRewards]);
 
   const handleCopyReferralLink = async () => {
     if (!profile?.referral_code) return;
@@ -336,14 +337,14 @@ export default function ReferralsPage() {
   const handleDownlinesPageChange = (page: number) => {
     setDownlinesPagination(prev => ({
       ...prev,
-      currentPage: page
+      currentPage: page,
     }));
   };
 
   const handleRewardsPageChange = (page: number) => {
     setRewardsPagination(prev => ({
       ...prev,
-      currentPage: page
+      currentPage: page,
     }));
   };
 
@@ -465,7 +466,7 @@ export default function ReferralsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Points Earned</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrencyAmount(stats?.total_points_earned.display || 0, 'POINTS')}
+                  {formatCurrencyAmount(stats?.total_points_earned.display || 0, 'PNT')}
                 </p>
               </div>
             </div>
@@ -506,7 +507,7 @@ export default function ReferralsPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Referrals by Level</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((level) => {
+                {[1, 2, 3, 4, 5, 6].map(level => {
                   const count = stats?.[`level${level}_referrals` as keyof ReferralStats] as number || 0;
                   return (
                     <div key={level} className="text-center p-4 bg-gray-50 rounded-lg">
@@ -529,7 +530,7 @@ export default function ReferralsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Referrals</h3>
               {recentReferrals && recentReferrals.length > 0 ? (
                 <div className="space-y-3">
-                  {recentReferrals.map((referral) => (
+                  {recentReferrals.map(referral => (
                     <div key={referral.user_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
@@ -579,16 +580,19 @@ export default function ReferralsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">My Downlines</h3>
               {downlinesWithProfiles && downlinesWithProfiles.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {downlinesWithProfiles.map((downline) => (
+                  {downlinesWithProfiles.map(downline => (
                     <div key={downline.user_id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="flex items-center space-x-3 mb-3">
                         <div className="flex-shrink-0">
                           {downline.profile_image_url ? (
-                            <img
-                              src={downline.profile_image_url}
-                              alt={`${downline.first_name} ${downline.last_name}`}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
+                            <div className="relative w-12 h-12">
+                              <Image
+                                src={downline.profile_image_url}
+                                alt={`${downline.first_name} ${downline.last_name}`}
+                                fill
+                                className="rounded-full object-cover"
+                              />
+                            </div>
                           ) : (
                             <UserCircleIcon className="w-12 h-12 text-gray-400" />
                           )}
@@ -719,7 +723,7 @@ export default function ReferralsPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {rewards.map((reward) => (
+                      {rewards.map(reward => (
                         <tr key={reward.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(reward.created_at).toLocaleDateString()}

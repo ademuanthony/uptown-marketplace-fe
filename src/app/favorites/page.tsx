@@ -8,7 +8,7 @@ import {
   TrashIcon, 
   MagnifyingGlassIcon,
   MapPinIcon,
-  EyeIcon
+  EyeIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/hooks/useAuth';
@@ -149,7 +149,7 @@ export default function FavoritesPage() {
                       type="text"
                       placeholder="Search favorites..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={e => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -160,7 +160,7 @@ export default function FavoritesPage() {
                 <div className="sm:w-48">
                   <select
                     value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    onChange={e => setCategoryFilter(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
                     <option value="all">All Categories</option>
@@ -207,7 +207,7 @@ export default function FavoritesPage() {
 
             {/* Favorites Grid/List */}
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
-              {filteredFavorites.map((item) => {
+              {filteredFavorites.map(item => {
                 if (!item.product) return null;
                 
                 return (

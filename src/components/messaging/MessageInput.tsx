@@ -96,7 +96,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       // Create preview for images
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
           setFilePreview(e.target?.result as string);
         };
         reader.readAsDataURL(file);
@@ -239,7 +239,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           type="submit"
           disabled={disabled || uploading || (!message.trim() && !selectedFile)}
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title={selectedFile ? "Send file" : "Send message"}
+          title={selectedFile ? 'Send file' : 'Send message'}
         >
           {uploading ? (
             <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-white"></div>

@@ -27,8 +27,8 @@ export const registerSchema = z.object({
   referralCode: z
     .string()
     .optional()
-    .refine((val) => !val || (val.length >= 6 && val.length <= 10), 'Referral code must be 6-10 characters'),
-}).refine((data) => data.password === data.confirmPassword, {
+    .refine(val => !val || (val.length >= 6 && val.length <= 10), 'Referral code must be 6-10 characters'),
+}).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
@@ -51,7 +51,7 @@ export const profileSchema = z.object({
   phone_number: z
     .string()
     .optional()
-    .refine((val) => !val || /^\+?[\d\s-()]+$/.test(val), 'Invalid phone number format'),
+    .refine(val => !val || /^\+?[\d\s-()]+$/.test(val), 'Invalid phone number format'),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -71,7 +71,7 @@ export const resetPasswordSchema = z.object({
     .string()
     .min(1, 'Please confirm your password'),
   token: z.string().min(1, 'Reset token is required'),
-}).refine((data) => data.password === data.confirmPassword, {
+}).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
@@ -88,7 +88,7 @@ export const passwordChangeSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your new password'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
+}).refine(data => data.newPassword === data.confirmPassword, {
   message: 'New passwords do not match',
   path: ['confirmPassword'],
 });
@@ -109,7 +109,7 @@ export const privacySettingsSchema = z.object({
 });
 
 export const avatarUploadSchema = z.object({
-  file: z.any().refine((file) => {
+  file: z.any().refine(file => {
     if (!file) return false;
     return file instanceof File && file.type.startsWith('image/');
   }, 'Please select a valid image file'),

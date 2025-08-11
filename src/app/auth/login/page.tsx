@@ -115,7 +115,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <form 
             className="space-y-6" 
-            onSubmit={(e) => {
+            onSubmit={e => {
               e.preventDefault();
               e.stopPropagation();
               console.log('Native form submit prevented');

@@ -14,7 +14,7 @@ import {
   UserCircleIcon,
   TagIcon,
   HomeIcon,
-  ChevronRightIcon as ChevronRightBreadcrumb
+  ChevronRightIcon as ChevronRightBreadcrumb,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { productService, type Product } from '@/services/product';
@@ -138,35 +138,33 @@ export default function ProductDetailPage() {
     }
   };
 
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatPrice = (price: number, currency: string) => 
+     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
-    }).format(price / 100); // Convert from cents
-  };
+      currency,
+    }).format(price / 100) // Convert from cents
+  ;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
-  };
 
   const isOwner = user && product && user.id === product.seller_id;
 
   const nextImage = () => {
     if (product && product.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === product.images.length - 1 ? 0 : prev + 1
+      setCurrentImageIndex(prev => 
+        prev === product.images.length - 1 ? 0 : prev + 1,
       );
     }
   };
 
   const prevImage = () => {
     if (product && product.images.length > 0) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? product.images.length - 1 : prev - 1
+      setCurrentImageIndex(prev => 
+        prev === 0 ? product.images.length - 1 : prev - 1,
       );
     }
   };
@@ -221,7 +219,7 @@ export default function ProductDetailPage() {
         type: 'direct',
         participant_ids: [product.seller_id],
         subject: product.title, // Set subject to product name
-        product_id: product.id
+        product_id: product.id,
       });
       
       // Send initial message with product link using new URL structure
@@ -234,7 +232,7 @@ Could you provide more details?`;
 
       await messagingService.sendMessage(conversation.id, {
         type: 'text',
-        content: initialMessage
+        content: initialMessage,
       });
       
       toast.success('Conversation started!');
@@ -268,7 +266,7 @@ Could you provide more details?`;
         participant_ids: [product.seller_id],
         title: `Offer for: ${product.title}`,
         subject: product.title, // Set subject to product name
-        product_id: product.id
+        product_id: product.id,
       });
       
       // Send initial message with product link using new URL structure
@@ -283,7 +281,7 @@ Let me know if you're open to offers!`;
 
       await messagingService.sendMessage(conversation.id, {
         type: 'text',
-        content: initialMessage
+        content: initialMessage,
       });
       
       toast.success('Conversation created with initial message!');

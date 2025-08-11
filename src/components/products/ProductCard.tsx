@@ -46,12 +46,10 @@ export default function ProductCard({
   const { user } = useAuth();
   
   // Generate a simple permalink from title if none provided
-  const generateSimplePermalink = (title: string) => {
-    return title
+  const generateSimplePermalink = (title: string) => title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
-  };
 
   // Use provided data or generate fallbacks
   const finalPermalink = permalink || generateSimplePermalink(title);
@@ -116,7 +114,6 @@ export default function ProductCard({
     : finalPermalink 
     ? `/products/${finalPermalink}` 
     : `/products/${id}`;
-
 
   return (
     <Link href={productUrl} className="group">

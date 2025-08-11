@@ -10,7 +10,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import invoiceService, { Invoice } from '@/services/invoice';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,7 +59,7 @@ export default function InvoicesPage() {
         const { invoices: fetchedInvoices, pagination } = await invoiceService.getUserInvoices(
           selectedStatus || undefined,
           page,
-          20
+          20,
         );
         
         setInvoices(fetchedInvoices);
@@ -107,7 +107,7 @@ export default function InvoicesPage() {
             >
               All
             </button>
-            {['pending', 'paid', 'cancelled', 'expired', 'refunded'].map((status) => (
+            {['pending', 'paid', 'cancelled', 'expired', 'refunded'].map(status => (
               <button
                 key={status}
                 onClick={() => {
@@ -171,7 +171,7 @@ export default function InvoicesPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {invoices.map((invoice) => (
+                  {invoices.map(invoice => (
                     <tr key={invoice.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>

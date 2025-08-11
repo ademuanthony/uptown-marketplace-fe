@@ -11,7 +11,7 @@ import {
   KeyIcon,
   DevicePhoneMobileIcon,
   EnvelopeIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/user';
@@ -71,26 +71,26 @@ export default function SettingsPage() {
       id: 'account' as TabType,
       name: 'Account',
       icon: UserIcon,
-      description: 'Basic account information'
+      description: 'Basic account information',
     },
     {
       id: 'security' as TabType,
       name: 'Security',
       icon: ShieldCheckIcon,
-      description: 'Password and security settings'
+      description: 'Password and security settings',
     },
     {
       id: 'notifications' as TabType,
       name: 'Notifications',
       icon: BellIcon,
-      description: 'Notification preferences'
+      description: 'Notification preferences',
     },
     {
       id: 'privacy' as TabType,
       name: 'Privacy',
       icon: EyeIcon,
-      description: 'Privacy and data settings'
-    }
+      description: 'Privacy and data settings',
+    },
   ];
 
   const handlePasswordChange = async (data: PasswordChangeData) => {
@@ -178,7 +178,7 @@ export default function SettingsPage() {
           <div className="lg:w-1/4">
             <div className="bg-white rounded-lg shadow-sm">
               <nav className="p-4 space-y-2">
-                {tabs.map((tab) => {
+                {tabs.map(tab => {
                   const Icon = tab.icon;
                   return (
                     <button
@@ -291,7 +291,7 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
               <input
                 type="password"
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={e => setCurrentPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               />
@@ -302,7 +302,7 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
               <input
                 type="password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={e => setNewPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
                 minLength={6}
@@ -314,7 +314,7 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
               <input
                 type="password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={e => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
                 minLength={6}
@@ -410,7 +410,7 @@ function NotificationSettings({ onUpdate, isLoading }: { onUpdate: (settings: No
         </p>
         
         <div className="space-y-4">
-          {notificationOptions.map((option) => {
+          {notificationOptions.map(option => {
             const Icon = option.icon;
             return (
               <SettingsItem
@@ -467,14 +467,14 @@ function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: Privacy
               { value: 'public', label: 'Public', description: 'Anyone can see your profile' },
               { value: 'private', label: 'Private', description: 'Only you can see your profile' },
               { value: 'friends', label: 'Friends Only', description: 'Only your friends can see your profile' },
-            ].map((option) => (
+            ].map(option => (
               <label key={option.value} className="flex items-center">
                 <input
                   type="radio"
                   name="profileVisibility"
                   value={option.value}
                   checked={settings.profileVisibility === option.value}
-                  onChange={(e) => handleVisibilityChange(e.target.value as 'public' | 'private' | 'friends')}
+                  onChange={e => handleVisibilityChange(e.target.value as 'public' | 'private' | 'friends')}
                   className="mr-3 text-primary-600 focus:ring-primary-500"
                 />
                 <div>

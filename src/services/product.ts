@@ -29,7 +29,6 @@ export interface ProductLocation {
   postal_code?: string;
 }
 
-
 // API response wrapper
 interface ApiResponse<T> {
   success: boolean;
@@ -59,7 +58,6 @@ export interface CreateProductResponse {
     status: string;
   };
 }
-
 
 // Product image upload response
 export interface ProductImageUploadResponse {
@@ -409,7 +407,7 @@ class ProductService {
 
       return {
         products: response.data.data.products || [],
-        total: response.data.pagination?.total || 0
+        total: response.data.pagination?.total || 0,
       };
     } catch (error) {
       console.error('Product search error:', error);

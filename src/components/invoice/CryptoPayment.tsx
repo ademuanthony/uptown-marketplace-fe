@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { QRCodeSVG } from 'react-qr-code';
+import QRCodeSVG from 'react-qr-code';
 import { 
   ClipboardDocumentIcon, 
   CheckCircleIcon,
   ArrowPathIcon,
   ClockIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -55,7 +55,7 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     name: 'Polygon', 
     icon: '🟣', 
     confirmations: 20, 
-    fee: 'Low (~$0.01)' 
+    fee: 'Low (~$0.01)', 
   };
 
   // Initiate crypto payment
@@ -71,7 +71,7 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
         body: JSON.stringify({ 
           network: selectedNetwork,
           amount: totalAmount.amount,
-          email: 'user@example.com' // This would come from user context
+          email: 'user@example.com', // This would come from user context
         }),
       });
 
@@ -88,7 +88,7 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
           amountUSDT: (data.data.amount.amount / 100).toFixed(2), // Convert cents to dollars
           amountInWei: data.data.amount.amount.toString(),
           qrCode: data.data.qr_code,
-          expiresAt: data.data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          expiresAt: data.data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };
         
         setPaymentDetails(paymentData);
@@ -102,6 +102,14 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
       setLoading(false);
     }
   };
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [pollingInterval]);
 
   // Check payment status
   const checkPaymentStatus = useCallback(async () => {
@@ -122,15 +130,15 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
       const data = await response.json();
       if (data.success && data.data) {
         // Map the unified payment verification response to the old format
-        const statusData = {
-          status: data.data.status === 'completed' ? 'confirmed' : 
+        const statusData: PaymentStatus = {
+          status: (data.data.status === 'completed' ? 'confirmed' : 
                   data.data.status === 'processing' ? 'confirming' :
-                  data.data.status === 'failed' ? 'failed' : 'pending',
+                  data.data.status === 'failed' ? 'failed' : 'pending') as 'pending' | 'confirming' | 'confirmed' | 'failed',
           transactionHash: data.data.provider_data?.transaction_hash,
           confirmations: data.data.provider_data?.confirmations || 0,
           requiredConfirmations: 20, // Default for Polygon
           amountReceived: data.data.amount ? (data.data.amount.amount / 100).toFixed(2) : undefined,
-          verifiedAt: data.data.processed_at
+          verifiedAt: data.data.processed_at,
         };
         
         setPaymentStatus(statusData);
@@ -151,7 +159,7 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     } finally {
       setChecking(false);
     }
-  }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete]);
+  }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete, stopPolling]);
 
   // Start polling for payment status
   const startPolling = () => {
@@ -166,14 +174,6 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     setPollingInterval(interval);
   };
 
-  // Stop polling
-  const stopPolling = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
-  };
-
   // Copy wallet address to clipboard
   const copyToClipboard = async () => {
     if (!paymentDetails) return;
@@ -183,17 +183,15 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
       setCopied(true);
       toast.success('Address copied to clipboard');
       setTimeout(() => setCopied(false), 3000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy address');
     }
   };
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       stopPolling();
-    };
-  }, []);
+    }, [stopPolling]);
 
   // Auto-initiate payment on mount
   useEffect(() => {
@@ -256,7 +254,6 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
                 value={paymentDetails.walletAddress}
                 size={200}
                 level="H"
-                includeMargin={true}
               />
             </div>
           </div>

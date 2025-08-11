@@ -28,11 +28,11 @@ export const createProductSchema = z.object({
     .string()
     .min(1, 'Price is required')
     .regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format')
-    .refine((val) => parseFloat(val) > 0, 'Price must be greater than 0'),
+    .refine(val => parseFloat(val) > 0, 'Price must be greater than 0'),
   currency: z.string().default('USD'),
   category_id: z.string().min(1, 'Category is required'),
   condition: z.enum(productConditions, {
-    errorMap: () => ({ message: 'Please select a condition' })
+    errorMap: () => ({ message: 'Please select a condition' }),
   }),
   location: locationSchema,
   images: z.array(z.string()).optional(),

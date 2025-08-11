@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import categoryService, { 
   Category, 
   CreateCategoryData, 
-  UpdateCategoryData 
+  UpdateCategoryData, 
 } from '@/services/category';
 
 export default function AdminCategoriesPage() {
@@ -96,7 +96,7 @@ export default function AdminCategoriesPage() {
       const data = await categoryService.updateCategory(editingCategory.id, updateFormData, user.id);
       toast.success('Category updated successfully');
       setCategories(prev => 
-        prev.map(cat => cat.id === editingCategory.id ? data.category : cat)
+        prev.map(cat => cat.id === editingCategory.id ? data.category : cat),
       );
       setEditingCategory(null);
       setUpdateFormData({});
@@ -143,7 +143,7 @@ export default function AdminCategoriesPage() {
         
       toast.success(`Category ${action}d successfully`);
       setCategories(prev => 
-        prev.map(cat => cat.id === category.id ? data.category : cat)
+        prev.map(cat => cat.id === category.id ? data.category : cat),
       );
     } catch (error) {
       console.error(`Error ${action}ing category:`, error);
@@ -227,14 +227,14 @@ export default function AdminCategoriesPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {categories.map((category) => (
+                {categories.map(category => (
                   <tr key={category.id} className={editingCategory?.id === category.id ? 'bg-blue-50' : ''}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {editingCategory?.id === category.id ? (
                         <input
                           type="text"
                           value={updateFormData.name || ''}
-                          onChange={(e) => setUpdateFormData(prev => ({ ...prev, name: e.target.value }))}
+                          onChange={e => setUpdateFormData(prev => ({ ...prev, name: e.target.value }))}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 bg-white px-3 py-2"
                         />
                       ) : (
@@ -248,7 +248,7 @@ export default function AdminCategoriesPage() {
                       {editingCategory?.id === category.id ? (
                         <textarea
                           value={updateFormData.description || ''}
-                          onChange={(e) => setUpdateFormData(prev => ({ ...prev, description: e.target.value }))}
+                          onChange={e => setUpdateFormData(prev => ({ ...prev, description: e.target.value }))}
                           rows={2}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 bg-white px-3 py-2"
                         />
@@ -345,7 +345,7 @@ export default function AdminCategoriesPage() {
                     type="text"
                     id="name"
                     value={createFormData.name}
-                    onChange={(e) => setCreateFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={e => setCreateFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 bg-white px-3 py-2"
                     required
                   />
@@ -358,7 +358,7 @@ export default function AdminCategoriesPage() {
                   <textarea
                     id="description"
                     value={createFormData.description}
-                    onChange={(e) => setCreateFormData(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={e => setCreateFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 bg-white px-3 py-2"
                   />
@@ -371,11 +371,11 @@ export default function AdminCategoriesPage() {
                   <select
                     id="parent_id"
                     value={createFormData.parent_id}
-                    onChange={(e) => setCreateFormData(prev => ({ ...prev, parent_id: e.target.value }))}
+                    onChange={e => setCreateFormData(prev => ({ ...prev, parent_id: e.target.value }))}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 bg-white px-3 py-2"
                   >
                     <option value="">None (Root Category)</option>
-                    {categories.map((category) => (
+                    {categories.map(category => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>

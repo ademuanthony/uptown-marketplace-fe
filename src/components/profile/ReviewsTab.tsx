@@ -59,7 +59,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
-      day: 'numeric' 
+      day: 'numeric', 
     });
   };
 
@@ -68,7 +68,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
     
     return (
       <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <span key={star}>
             {star <= rating ? (
               <StarIcon className={`${sizeClass} text-yellow-400`} />
@@ -141,7 +141,7 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
 
       {/* Reviews List */}
       <div className="space-y-4">
-        {reviews.map((review) => (
+        {reviews.map(review => (
           <div key={review.id} className="bg-white rounded-lg shadow p-6">
             {/* Review Header */}
             <div className="flex items-start justify-between">

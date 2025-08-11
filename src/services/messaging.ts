@@ -128,7 +128,7 @@ export class MessagingService {
     try {
       const response = await api.post<ApiResponse<SendMessageResponse>>(
         `/conversations/${conversationId}/messages`,
-        request
+        request,
       );
       
       if (response.data.success && response.data.data) {
@@ -161,7 +161,7 @@ export class MessagingService {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
+        },
       );
       
       if (response.data.success && response.data.data) {
@@ -182,14 +182,14 @@ export class MessagingService {
   async getConversationHistory(
     conversationId: string, 
     page: number = 1, 
-    pageSize: number = 20
+    pageSize: number = 20,
   ): Promise<ConversationHistoryResponse> {
     try {
       const response = await api.get<ApiResponse<ConversationHistoryResponse>>(
         `/conversations/${conversationId}/messages`,
         {
-          params: { page, page_size: pageSize }
-        }
+          params: { page, page_size: pageSize },
+        },
       );
       
       if (response.data.success && response.data.data) {
@@ -211,7 +211,7 @@ export class MessagingService {
     try {
       const response = await api.post<ApiResponse<CreateConversationResponse>>(
         '/conversations',
-        request
+        request,
       );
       
       if (response.data.success && response.data.data) {
@@ -233,7 +233,7 @@ export class MessagingService {
     page: number = 1, 
     pageSize: number = 20,
     status?: ConversationStatus,
-    type?: ConversationType
+    type?: ConversationType,
   ): Promise<UserConversationsResponse> {
     try {
       const params: Record<string, unknown> = { page, page_size: pageSize };
@@ -242,7 +242,7 @@ export class MessagingService {
 
       const response = await api.get<ApiResponse<UserConversationsResponse>>(
         '/users/conversations',
-        { params }
+        { params },
       );
       
       if (response.data.success && response.data.data) {
@@ -263,7 +263,7 @@ export class MessagingService {
   async markMessageAsRead(messageId: string): Promise<Message> {
     try {
       const response = await api.post<ApiResponse<{ message: Message }>>(
-        `/messages/${messageId}/read`
+        `/messages/${messageId}/read`,
       );
       
       if (response.data.success && response.data.data) {
@@ -295,7 +295,7 @@ export class MessagingService {
   async createGroupConversation(
     title: string, 
     participantIds: string[], 
-    description?: string
+    description?: string,
   ): Promise<Conversation> {
     const request: CreateConversationRequest = {
       type: 'group',

@@ -81,7 +81,7 @@ class AuthService {
       const firebaseResult = await signInWithEmailAndPassword(
         auth,
         credentials.email,
-        credentials.password
+        credentials.password,
       );
 
       const token = await firebaseResult.user.getIdToken();
@@ -99,7 +99,7 @@ class AuthService {
 
       // Extract the authentication response data
       const authData = result.data;
-      const user = authData.user;
+      const {user} = authData;
 
       // Store token and user data
       // Use custom_token if available, otherwise use Firebase token
@@ -125,7 +125,7 @@ class AuthService {
       const firebaseResult = await createUserWithEmailAndPassword(
         auth,
         credentials.email,
-        credentials.password
+        credentials.password,
       );
 
       const token = await firebaseResult.user.getIdToken();
@@ -155,7 +155,7 @@ class AuthService {
 
         // Extract the registration response data
         const registerData = result.data;
-        const user = registerData.user;
+        const {user} = registerData;
 
         // Store token and user data
         localStorage.setItem('auth_token', token);
@@ -229,7 +229,7 @@ class AuthService {
         }
 
         const authData = result.data;
-        const user = authData.user;
+        const {user} = authData;
         const authToken = authData.custom_token || token;
 
         localStorage.setItem('auth_token', authToken);
@@ -271,7 +271,7 @@ class AuthService {
         }
 
         const authData = result.data;
-        const user = authData.user;
+        const {user} = authData;
         const authToken = authData.custom_token || token;
 
         localStorage.setItem('auth_token', authToken);
@@ -302,7 +302,7 @@ class AuthService {
     }
 
     try {
-      const currentUser = auth.currentUser;
+      const {currentUser} = auth;
       if (!currentUser) {
         const existingUser = localStorage.getItem('user');
         return existingUser ? JSON.parse(existingUser) : null;
@@ -318,7 +318,7 @@ class AuthService {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         // The backend returns: { success: true, data: GetUserProfileResponse }
@@ -345,7 +345,7 @@ class AuthService {
     }
 
     try {
-      const currentUser = auth.currentUser;
+      const {currentUser} = auth;
       if (!currentUser) {
         return localStorage.getItem('auth_token');
       }

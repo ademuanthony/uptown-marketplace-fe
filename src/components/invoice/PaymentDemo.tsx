@@ -13,9 +13,9 @@ export default function PaymentDemo() {
     totalAmount: {
       amount: 5000, // 50.00 USD in cents
       currency: 'USD',
-      display: '$50.00'
+      display: '$50.00',
     },
-    userEmail: 'user@example.com'
+    userEmail: 'user@example.com',
   };
 
   const handlePaymentComplete = () => {

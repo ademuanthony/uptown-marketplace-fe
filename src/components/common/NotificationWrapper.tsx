@@ -4,10 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import PendingInvoiceNotification from './PendingInvoiceNotification';
 
 export default function NotificationWrapper() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   // Only show notifications for authenticated users
-  if (loading || !user) {
+  if (isLoading || !user) {
     return null;
   }
 

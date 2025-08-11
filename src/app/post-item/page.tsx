@@ -11,7 +11,7 @@ import {
   MapPinIcon,
   CurrencyDollarIcon,
   TagIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { createProductSchema, type CreateProductFormData, productConditions } from '@/schemas/product';
 import { useAuth } from '@/hooks/useAuth';
@@ -86,7 +86,7 @@ export default function PostItemPage() {
   }
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
+    const {files} = event.target;
     if (!files) return;
 
     const newFiles = Array.from(files);
@@ -240,7 +240,7 @@ export default function PostItemPage() {
                   } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white`}
                 >
                   <option value="">Select a category</option>
-                  {categories.map((category) => (
+                  {categories.map(category => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -286,7 +286,7 @@ export default function PostItemPage() {
                 Condition
               </label>
               <div className="grid grid-cols-3 gap-3">
-                {productConditions.map((condition) => (
+                {productConditions.map(condition => (
                   <label
                     key={condition}
                     className={`relative flex items-center justify-center px-4 py-3 border rounded-md cursor-pointer transition-all ${
@@ -452,7 +452,7 @@ export default function PostItemPage() {
                   type="text"
                   placeholder="Add tags separated by commas (e.g., vintage, rare, collectible)"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  onChange={(e) => {
+                  onChange={e => {
                     const tags = e.target.value.split(',').map(tag => tag.trim());
                     setValue('tags', tags);
                   }}
@@ -558,7 +558,7 @@ export default function PostItemPage() {
               <button
                 type="submit"
                 disabled={isLoading || uploadingImages}
-                onClick={(e) => {
+                onClick={e => {
                   // Check for form validation errors and show them via toast
                   if (Object.keys(errors).length > 0) {
                     e.preventDefault();

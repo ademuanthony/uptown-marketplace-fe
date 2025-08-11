@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,10 +15,9 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { productService } from '@/services/product';
 import StoreConfigModal from '@/components/store/StoreConfigModal';
@@ -77,7 +76,7 @@ export default function MyStorePage() {
       const response = await productService.listProducts({
         seller_id: user.id,
         page: 1,
-        page_size: 50
+        page_size: 50,
       });
       
       // Transform the products to match our Item interface
@@ -95,7 +94,7 @@ export default function MyStorePage() {
         tags: product.tags,
         created_at: product.created_at,
         updated_at: product.updated_at,
-        seller_id: product.seller_id
+        seller_id: product.seller_id,
       }));
       
       setItems(transformedItems);
@@ -297,14 +296,14 @@ export default function MyStorePage() {
                   type="text"
                   placeholder="Search items..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
               
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={e => setStatusFilter(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="all">All Status</option>
@@ -371,7 +370,7 @@ export default function MyStorePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredItems.map((item) => (
+                  {filteredItems.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -400,7 +399,7 @@ export default function MyStorePage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={classNames(
                           'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          getStatusColor(item.status)
+                          getStatusColor(item.status),
                         )}>
                           {getStatusIcon(item.status)}
                           <span className="ml-1 capitalize">{item.status}</span>
@@ -439,7 +438,7 @@ export default function MyStorePage() {
                                       href={item.permalink ? `/products/${item.permalink}` : `/products/${item.id}`}
                                       className={classNames(
                                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                                        'flex items-center px-4 py-2 text-sm'
+                                        'flex items-center px-4 py-2 text-sm',
                                       )}
                                     >
                                       <EyeIcon className="h-4 w-4 mr-2" />
@@ -453,7 +452,7 @@ export default function MyStorePage() {
                                       href={`/edit-item/${item.id}`}
                                       className={classNames(
                                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                                        'flex items-center px-4 py-2 text-sm'
+                                        'flex items-center px-4 py-2 text-sm',
                                       )}
                                     >
                                       <PencilIcon className="h-4 w-4 mr-2" />
@@ -467,7 +466,7 @@ export default function MyStorePage() {
                                       onClick={() => handleDeleteItem(item.id)}
                                       className={classNames(
                                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                                        'flex items-center w-full px-4 py-2 text-sm'
+                                        'flex items-center w-full px-4 py-2 text-sm',
                                       )}
                                     >
                                       <TrashIcon className="h-4 w-4 mr-2 text-red-500" />

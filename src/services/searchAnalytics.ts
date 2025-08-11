@@ -12,7 +12,7 @@ class SearchAnalyticsService implements SearchAnalytics {
     try {
       const response = await api.post<{ search_id: string, query: string, timestamp: string }>('/analytics/search/track', {
         query,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       if (response.data?.search_id) {
@@ -28,7 +28,7 @@ class SearchAnalyticsService implements SearchAnalytics {
       await api.post('/analytics/search/click', {
         search_id: searchId || this.searchId,
         product_id: productId,
-        position
+        position,
       });
     } catch (error) {
       console.error('Failed to track search click:', error);

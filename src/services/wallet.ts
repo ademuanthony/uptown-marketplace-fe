@@ -10,6 +10,16 @@ interface ApiResponse<T> {
   message?: string;
 }
 
+// Pagination interface (matching backend response)
+export interface Pagination {
+  page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
 // Paginated API response wrapper
 interface PaginatedApiResponse<T> {
   success: boolean;
@@ -48,11 +58,11 @@ export type Currency = 'USDT' | 'POL' | 'USD';
 // Wallet balance interface (matching backend response)
 export interface WalletBalance {
   currency: string;
-  balance: string;
-  available: string;
-  pending: string;
-  frozen: string;
-  usd_value: number;
+  balance: Money;
+  available: Money;
+  pending: Money;
+  frozen: Money;
+  usd_value: Money;
   usd_price: number;
   percent_change_24h: number;
 }
@@ -92,16 +102,6 @@ export interface Transaction {
   metadata?: TransactionMetadata;
   counterparty_user_id?: string;
   counterparty_wallet?: string;
-}
-
-// Pagination interface (matching backend response)
-export interface Pagination {
-  page: number;
-  per_page: number;
-  total: number;
-  total_pages: number;
-  has_next: boolean;
-  has_previous: boolean;
 }
 
 // Transaction list response
@@ -178,7 +178,7 @@ class WalletService {
       
       return {
         transactions: response.data.data || [],
-        pagination: response.data.pagination
+        pagination: response.data.pagination,
       };
     } catch (error) {
       console.error('Get transactions error:', error);
@@ -264,10 +264,10 @@ class WalletService {
     
     // Format crypto currencies with appropriate decimal places
     const decimals = currency === 'USDT' ? 6 : 18;
-    return new Intl.NumberFormat('en-US', {
+    return `${new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: decimals > 6 ? 6 : decimals,
-    }).format(numAmount) + ` ${currency}`;
+    }).format(numAmount)} ${currency}`;
   }
 
   // Get transaction type display name
@@ -310,7 +310,7 @@ class WalletService {
       'crypto_deposit', 
       'refund', 
       'escrow_release', 
-      'commission'
+      'commission',
     ];
     
     // For transfers, check if current user is recipient
@@ -322,4 +322,5 @@ class WalletService {
   }
 }
 
-export default new WalletService();
+const walletService = new WalletService();
+export default walletService;

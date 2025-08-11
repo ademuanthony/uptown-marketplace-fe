@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { productService } from '@/services/product';
-import { categoryService } from '@/services/category';
+import { productService, Product } from '@/services/product';
+import { categoryService, Category } from '@/services/category';
 import { searchAnalyticsService } from '@/services/searchAnalytics';
 import { getProductImageUrl } from '@/utils/imageUtils';
-import { Product } from '@/services/product';
-import { Category } from '@/services/category';
 import ProductCard from '@/components/products/ProductCard';
 import Pagination from '@/components/common/Pagination';
 import SearchBar from '@/components/common/SearchBar';
@@ -78,7 +76,7 @@ function SearchContent() {
         query,
         currentPage,
         pageSize,
-        searchFilters
+        searchFilters,
       );
       
       setProducts(results.products || []);
@@ -192,7 +190,7 @@ function SearchContent() {
                     </label>
                     <select
                       value={`${filters.sort_by}-${filters.sort_order}`}
-                      onChange={(e) => {
+                      onChange={e => {
                         const [sortBy, sortOrder] = e.target.value.split('-');
                         handleSortChange(sortBy, sortOrder);
                       }}
@@ -214,11 +212,11 @@ function SearchContent() {
                     </label>
                     <select
                       value={filters.category_id}
-                      onChange={(e) => handleFilterChange('category_id', e.target.value)}
+                      onChange={e => handleFilterChange('category_id', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">All Categories</option>
-                      {categories.map((category) => (
+                      {categories.map(category => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
@@ -236,14 +234,14 @@ function SearchContent() {
                         type="number"
                         placeholder="Min"
                         value={filters.min_price}
-                        onChange={(e) => handleFilterChange('min_price', e.target.value)}
+                        onChange={e => handleFilterChange('min_price', e.target.value)}
                         className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       />
                       <input
                         type="number"
                         placeholder="Max"
                         value={filters.max_price}
-                        onChange={(e) => handleFilterChange('max_price', e.target.value)}
+                        onChange={e => handleFilterChange('max_price', e.target.value)}
                         className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       />
                     </div>
@@ -256,7 +254,7 @@ function SearchContent() {
                     </label>
                     <select
                       value={filters.condition}
-                      onChange={(e) => handleFilterChange('condition', e.target.value)}
+                      onChange={e => handleFilterChange('condition', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">Any Condition</option>

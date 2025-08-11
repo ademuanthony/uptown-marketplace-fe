@@ -126,7 +126,7 @@ class FuelService {
     try {
       const response = await api.post<ApiResponse<PurchaseFuelResponse>>(
         '/fuel/purchase', 
-        { package_id: packageId }
+        { package_id: packageId },
       );
       
       if (!response.data || !response.data.success || !response.data.data) {

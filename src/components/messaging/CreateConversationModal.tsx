@@ -68,7 +68,7 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
             </label>
             <select
               value={conversationType}
-              onChange={(e) => setConversationType(e.target.value as ConversationType)}
+              onChange={e => setConversationType(e.target.value as ConversationType)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="direct">Direct Message</option>
@@ -86,7 +86,7 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
               <input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={e => setTitle(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter group name..."
@@ -103,7 +103,7 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
               <input
                 type="email"
                 value={participantEmail}
-                onChange={(e) => setParticipantEmail(e.target.value)}
+                onChange={e => setParticipantEmail(e.target.value)}
                 required={conversationType === 'direct'}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter email address..."

@@ -8,7 +8,7 @@ import {
   XMarkIcon,
   CheckIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { storeService } from '@/services/store';
 import toast from 'react-hot-toast';
@@ -21,7 +21,7 @@ const storeConfigSchema = z.object({
     .max(50, 'Permalink cannot exceed 50 characters')
     .regex(/^[a-z0-9-]+$/, 'Permalink can only contain lowercase letters, numbers, and hyphens')
     .refine(val => !val.startsWith('-') && !val.endsWith('-'), 'Permalink cannot start or end with a hyphen')
-    .refine(val => !val.includes('--'), 'Permalink cannot contain consecutive hyphens')
+    .refine(val => !val.includes('--'), 'Permalink cannot contain consecutive hyphens'),
 });
 
 type StoreConfigFormData = z.infer<typeof storeConfigSchema>;
@@ -39,7 +39,7 @@ export default function StoreConfigModal({
   onClose,
   currentStoreName,
   currentPermalink,
-  onSuccess
+  onSuccess,
 }: StoreConfigModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingPermalink, setIsCheckingPermalink] = useState(false);
@@ -52,13 +52,13 @@ export default function StoreConfigModal({
     formState: { errors },
     watch,
     setValue,
-    reset
+    reset,
   } = useForm<StoreConfigFormData>({
     resolver: zodResolver(storeConfigSchema),
     defaultValues: {
       store_name: currentStoreName || '',
-      permalink: currentPermalink
-    }
+      permalink: currentPermalink,
+    },
   });
 
   // Watch permalink changes for availability checking
@@ -69,7 +69,7 @@ export default function StoreConfigModal({
     if (isOpen) {
       reset({
         store_name: currentStoreName || '',
-        permalink: currentPermalink
+        permalink: currentPermalink,
       });
       setPermalinkAvailable(null);
     }
@@ -122,7 +122,7 @@ export default function StoreConfigModal({
     try {
       const updatedConfig = {
         store_name: data.store_name || undefined,
-        permalink: data.permalink
+        permalink: data.permalink,
       };
 
       await storeService.updateStoreConfig(updatedConfig);

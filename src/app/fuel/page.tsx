@@ -7,7 +7,7 @@ import fuelService, {
   type FuelPackage,
   type FuelTransaction,
   type TransactionSummary,
-  type PurchaseFuelResponse
+  type PurchaseFuelResponse,
 } from '@/services/fuel';
 import { 
   BoltIcon,
@@ -18,7 +18,7 @@ import {
   EyeIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  XMarkIcon
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -36,18 +36,16 @@ const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
   onClose, 
   packages, 
   onPurchase, 
-  isLoading 
+  isLoading, 
 }) => {
   if (!isOpen) return null;
 
   console.log('packages', packages);  
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.toUpperCase(),
     }).format(amount / 100);
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -64,7 +62,7 @@ const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
         </div>
 
         <div className="space-y-3 mb-6">
-          {Array.isArray(packages) && packages.length > 0 ? packages.filter(pkg => pkg.status === 'active').map((pkg) => (
+          {Array.isArray(packages) && packages.length > 0 ? packages.filter(pkg => pkg.status === 'active').map(pkg => (
             <div
               key={pkg.id}
               className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors"
@@ -128,16 +126,13 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
   </button>
 );
 
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
+const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
-};
 
 const getTransactionIcon = (type: string) => {
   switch (type) {
@@ -203,7 +198,7 @@ export default function FuelPage() {
       const [balanceData, packagesData, summaryData] = await Promise.all([
         fuelService.getFuelBalance(),
         fuelService.getFuelPackages(),
-        fuelService.getTransactionSummary()
+        fuelService.getTransactionSummary(),
       ]);
 
       setBalance(balanceData);
@@ -425,7 +420,7 @@ export default function FuelPage() {
             {Array.isArray(transactions) && transactions.length > 0 ? (
               <>
                 <div className="divide-y divide-gray-200">
-                  {transactions.map((transaction) => (
+                  {transactions.map(transaction => (
                     <div key={transaction.id} className="p-6 flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">

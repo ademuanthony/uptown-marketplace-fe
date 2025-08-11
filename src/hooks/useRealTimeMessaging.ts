@@ -90,14 +90,16 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
       cleanup();
       initialized.current = false;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => 
+     () => {
       cleanup();
-    };
-  }, []);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  , []);
 
   const startPolling = useCallback(() => {
     if (pollingService.isEnabled()) {
@@ -117,7 +119,7 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
     if (!user) return;
 
     // Setup WebSocket connection status listener
-    const unsubscribeWsConnection = webSocketService.onConnectionChange((connected) => {
+    const unsubscribeWsConnection = webSocketService.onConnectionChange(connected => {
       setConnectionStatus(prev => ({ ...prev, websocket: connected }));
 
       if (!connected && fallbackToPolling && enablePolling) {
@@ -268,9 +270,7 @@ export function useRealTimeMessaging(options: UseRealTimeMessagingOptions = {}):
     return webSocketService.onUserStatusChange(wrappedCallback);
   }, []);
 
-  const onMessageRead = useCallback((callback: (event: MessageReadEvent) => void) => {
-    return webSocketService.onMessageRead(callback);
-  }, []);
+  const onMessageRead = useCallback((callback: (event: MessageReadEvent) => void) => webSocketService.onMessageRead(callback), []);
 
   // Actions
   const sendTyping = useCallback((conversationId: string, isTyping: boolean) => {

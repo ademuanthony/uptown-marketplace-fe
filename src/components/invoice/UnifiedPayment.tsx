@@ -9,7 +9,7 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   ArrowTopRightOnSquareIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import PaymentMethodSelector, { PaymentMethod } from './PaymentMethodSelector';
@@ -25,6 +25,39 @@ interface UnifiedPaymentProps {
   };
   userEmail: string;
   onPaymentComplete?: () => void;
+}
+
+// Backend response type (snake_case)
+interface BackendPaymentResponse {
+  transaction_id: string;
+  provider: string;
+  provider_reference: string;
+  authorization_url?: string;
+  client_secret?: string;
+  status: string;
+  amount: {
+    amount: number;
+    currency: string;
+    display: string;
+  };
+  expires_at?: string;
+  instructions: {
+    provider: string;
+    method: string;
+    instructions: string[];
+    testCards?: Array<{
+      number: string;
+      brand: string;
+      cvv: string;
+      expiry: string;
+      purpose: string;
+    }>;
+  };
+  // Crypto-specific fields
+  wallet_address?: string;
+  network?: string;
+  qr_code?: string;
+  required_confirmations?: number;
 }
 
 interface PaymentDetails {
@@ -59,6 +92,21 @@ interface PaymentDetails {
   requiredConfirms?: number;
 }
 
+interface BackendPaymentStatus {
+  transaction_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  amount: {
+    amount: number;
+    currency: string;
+    display: string;
+  };
+  fee?: {
+    amount: number;
+    currency: string;
+    display: string;
+  };
+}
+
 interface PaymentStatus {
   transactionId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -81,7 +129,7 @@ export default function UnifiedPayment({
   invoiceId, 
   totalAmount, 
   userEmail, 
-  onPaymentComplete 
+  onPaymentComplete, 
 }: UnifiedPaymentProps) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('wallet');
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
@@ -131,27 +179,30 @@ export default function UnifiedPayment({
         {
           network: selectedMethod === 'crypto' ? 'polygon' : undefined,
           returnUrl: selectedMethod !== 'crypto' ? returnUrl : undefined,
-        }
+        },
       );
       if (data) {
         console.log('Payment response from backend:', data); // Debug log
         
+        // Cast to backend response type
+        const backendData = data as BackendPaymentResponse;
+        
         // Map snake_case backend response to camelCase frontend interface
         const mappedData: PaymentDetails = {
-          transactionId: (data as any).transaction_id,
-          provider: (data as any).provider,
-          providerReference: (data as any).provider_reference,
-          authorizationUrl: (data as any).authorization_url,
-          clientSecret: (data as any).client_secret,
-          status: (data as any).status,
-          amount: (data as any).amount,
-          expiresAt: (data as any).expires_at,
-          instructions: (data as any).instructions,
+          transactionId: backendData.transaction_id,
+          provider: backendData.provider,
+          providerReference: backendData.provider_reference,
+          authorizationUrl: backendData.authorization_url,
+          clientSecret: backendData.client_secret,
+          status: backendData.status,
+          amount: backendData.amount,
+          expiresAt: backendData.expires_at,
+          instructions: backendData.instructions,
           // Crypto-specific fields
-          walletAddress: (data as any).wallet_address,
-          network: (data as any).network,
-          qrCode: (data as any).qr_code,
-          requiredConfirms: (data as any).required_confirmations,
+          walletAddress: backendData.wallet_address,
+          network: backendData.network,
+          qrCode: backendData.qr_code,
+          requiredConfirms: backendData.required_confirmations,
         };
         
         console.log('Mapped payment data:', mappedData); // Debug log
@@ -176,6 +227,14 @@ export default function UnifiedPayment({
     }
   };
 
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [pollingInterval]);
+
   // Check payment status
   const checkPaymentStatus = useCallback(async (reference?: string) => {
     if (!paymentDetails && !reference) return;
@@ -187,16 +246,28 @@ export default function UnifiedPayment({
     try {
       const data = await invoiceService.checkPaymentStatus(invoiceId, paymentRef);
       if (data) {
-        setPaymentStatus(data);
+        // Cast to backend response type
+        const statusData = data as BackendPaymentStatus;
+        
+        // Map backend response to frontend interface
+        const mappedStatus: PaymentStatus = {
+          transactionId: statusData.transaction_id,
+          status: statusData.status,
+          amount: statusData.amount,
+          fee: statusData.fee,
+          walletCredited: false, // Default value, update based on actual backend response if available
+        };
+        
+        setPaymentStatus(mappedStatus);
         
         // Check if payment is completed
-        if ((data as any).status === 'completed') {
+        if (statusData.status === 'completed') {
           stopPolling();
           toast.success('Payment completed successfully!');
           if (onPaymentComplete) {
             onPaymentComplete();
           }
-        } else if ((data as any).status === 'processing') {
+        } else if (statusData.status === 'processing') {
           toast.loading('Payment is being processed...');
         }
       }
@@ -205,7 +276,7 @@ export default function UnifiedPayment({
     } finally {
       setChecking(false);
     }
-  }, [invoiceId, paymentDetails, onPaymentComplete]);
+  }, [invoiceId, paymentDetails, onPaymentComplete, stopPolling]);
 
   // Start polling for payment status (crypto payments)
   const startPolling = (reference: string) => {
@@ -218,14 +289,6 @@ export default function UnifiedPayment({
     }, 10000);
     
     setPollingInterval(interval);
-  };
-
-  // Stop polling
-  const stopPolling = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
   };
 
   // Copy wallet address to clipboard (crypto payments)
@@ -271,11 +334,9 @@ export default function UnifiedPayment({
   };
 
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(() => () => {
       stopPolling();
-    };
-  }, []);
+    }, [stopPolling]);
 
   // Handle payment callback (for traditional payments)
   useEffect(() => {

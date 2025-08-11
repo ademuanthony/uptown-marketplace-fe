@@ -1,7 +1,5 @@
 // Get API base URL from environment or fallback
-const getApiBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-};
+const getApiBaseUrl = () => process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export interface PublicUserProfile {
   id: string;
@@ -63,7 +61,7 @@ class PublicProfileService {
     const date = new Date(joinedAt);
     return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
-      month: 'long' 
+      month: 'long', 
     });
   }
 }

@@ -234,8 +234,8 @@ export const formatCurrencyAmount = (amount: number, currency: string): string =
     style: 'currency',
     currency: currency || 'NGN',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount / 100); // Assuming amount is in smallest unit (kobo for NGN)
+    maximumFractionDigits: 4,
+  }).format(amount); // Assuming amount is in smallest unit (kobo for NGN)
 };
 
 // Get level name

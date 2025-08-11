@@ -1,6 +1,6 @@
 import api from './api';
 import { isAxiosError } from 'axios';
-import { Currency, NetworkType } from './deposits';
+import { DepositCurrency as Currency, NetworkType } from './deposits';
 
 // API response wrapper
 interface ApiResponse<T> {
@@ -130,7 +130,7 @@ class WithdrawalService {
           total_pages: number;
         };
       }>>('/wallet/withdrawals', {
-        params: { page, limit }
+        params: { page, limit },
       });
       
       if (!response.data?.success || !response.data.data) {
@@ -316,7 +316,6 @@ class WithdrawalService {
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
     
     switch (network) {
-      case 'ethereum':
       case 'polygon':
         return ethAddressRegex.test(address);
       default:
@@ -340,20 +339,6 @@ class WithdrawalService {
         fee_amount: 0.01,
         fee_currency: 'POL',
         estimated_time: '2-5 minutes',
-      },
-      'USDT-ethereum': {
-        currency: 'USDT',
-        network: 'ethereum',
-        fee_amount: 15,
-        fee_currency: 'ETH',
-        estimated_time: '5-15 minutes',
-      },
-      'ETH-ethereum': {
-        currency: 'ETH',
-        network: 'ethereum',
-        fee_amount: 0.003,
-        fee_currency: 'ETH',
-        estimated_time: '5-15 minutes',
       },
     };
     
@@ -386,12 +371,6 @@ class WithdrawalService {
             name: 'Polygon',
             min_amount: 1,
             fee_estimate: '~$0.01',
-          },
-          {
-            network: 'ethereum',
-            name: 'Ethereum',
-            min_amount: 10,
-            fee_estimate: '~$15-50',
           },
         ],
       },
@@ -447,4 +426,5 @@ class WithdrawalService {
   }
 }
 
-export default new WithdrawalService();
+const withdrawalService = new WithdrawalService();
+export default withdrawalService;

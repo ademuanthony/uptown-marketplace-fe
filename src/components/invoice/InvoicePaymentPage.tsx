@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CreditCardIcon,
@@ -23,15 +23,10 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  useEffect(() => {
-    loadInvoice();
-  }, [invoiceId]);
-
-  const loadInvoice = async () => {
+  const loadInvoice = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -43,10 +38,13 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [invoiceId]);
+
+  useEffect(() => {
+    loadInvoice();
+  }, [loadInvoice]);
 
   const handlePaymentMethodSelect = (method: string) => {
-    setSelectedPaymentMethod(method);
     if (method === 'wallet') {
       setShowWalletModal(true);
     }
@@ -55,7 +53,6 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
   const handleWalletPaymentSuccess = (updatedInvoice: Invoice) => {
     setInvoice(updatedInvoice);
     setShowWalletModal(false);
-    setSelectedPaymentMethod('');
   };
 
   const handleTraditionalPayment = async (method: 'crypto' | 'bank_transfer' | 'card') => {
@@ -71,7 +68,7 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
         {
           network: method === 'crypto' ? 'polygon' : undefined,
           returnUrl: method !== 'crypto' ? `${window.location.origin}/invoices/${invoice.id}/payment-result` : undefined,
-        }
+        },
       );
 
       // Handle different payment method responses
@@ -81,7 +78,10 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
       } else {
         // Redirect to payment provider (Paystack/Stripe)
         if (paymentData && typeof paymentData === 'object' && 'authorization_url' in paymentData) {
-          window.location.href = (paymentData as any).authorization_url;
+          interface PaymentDataWithUrl {
+            authorization_url: string;
+          }
+          window.location.href = (paymentData as PaymentDataWithUrl).authorization_url;
         }
       }
     } catch (err) {
@@ -101,9 +101,7 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
     );
   };
 
-  const canPayInvoice = (invoice: Invoice) => {
-    return invoiceService.canPayInvoice(invoice);
-  };
+  const canPayInvoice = (invoice: Invoice) => invoiceService.canPayInvoice(invoice);
 
   if (loading) {
     return (
@@ -190,7 +188,7 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Items</h3>
                 <div className="space-y-3">
-                  {invoice.line_items.map((item) => (
+                  {invoice.line_items.map(item => (
                     <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                       <div className="flex-1">
                         <p className="text-gray-900">{item.description}</p>

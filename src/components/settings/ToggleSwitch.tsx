@@ -9,24 +9,24 @@ export default function ToggleSwitch({
   enabled, 
   onToggle, 
   disabled = false, 
-  size = 'md' 
+  size = 'md', 
 }: ToggleSwitchProps) {
   const sizeClasses = {
     sm: 'h-4 w-8',
     md: 'h-6 w-11',
-    lg: 'h-8 w-14'
+    lg: 'h-8 w-14',
   };
 
   const thumbSizeClasses = {
     sm: 'h-3 w-3',
     md: 'h-4 w-4',
-    lg: 'h-6 w-6'
+    lg: 'h-6 w-6',
   };
 
   const translateClasses = {
     sm: enabled ? 'translate-x-4' : 'translate-x-0.5',
     md: enabled ? 'translate-x-6' : 'translate-x-1',
-    lg: enabled ? 'translate-x-8' : 'translate-x-1'
+    lg: enabled ? 'translate-x-8' : 'translate-x-1',
   };
 
   return (

@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Navbar from "@/components/common/Navbar";
-import Footer from "@/components/common/Footer";
-import NotificationWrapper from "@/components/common/NotificationWrapper";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Navbar from '@/components/common/Navbar';
+import Footer from '@/components/common/Footer';
+import NotificationWrapper from '@/components/common/NotificationWrapper';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Uptown Marketplace",
-  description: "Your trusted marketplace platform",
+  title: 'Uptown Marketplace',
+  description: 'Your trusted marketplace platform',
 };
 
 export default function RootLayout({

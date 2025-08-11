@@ -12,7 +12,7 @@ interface MessageBubbleProps {
 const MessageBubble: React.FC<MessageBubbleProps> = ({ 
   message, 
   onReply, 
-  onMarkAsRead 
+  onMarkAsRead, 
 }) => {
   const { user } = useAuth();
   const isOwnMessage = message.sender_id === user?.id;
@@ -147,7 +147,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {/* Action buttons */}
         {onReply && !isOwnMessage && (
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               onReply(message);
             }}

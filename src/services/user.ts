@@ -50,7 +50,7 @@ class UserService {
         throw new Error(response.data?.message || 'Failed to update profile');
       }
 
-      const user = response.data.data.user;
+      const {user} = response.data.data;
       
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
@@ -84,7 +84,7 @@ class UserService {
         throw new Error(response.data?.message || 'Failed to upload avatar');
       }
 
-      const user = response.data.data.user;
+      const {user} = response.data.data;
       
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
@@ -111,7 +111,7 @@ class UserService {
         throw new Error(response.data?.message || 'Failed to remove avatar');
       }
 
-      const user = response.data.data.user;
+      const {user} = response.data.data;
       
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
@@ -158,7 +158,7 @@ class UserService {
         throw new Error(response.data?.message || 'Failed to get profile');
       }
 
-      const user = response.data.data.user;
+      const {user} = response.data.data;
       
       // Update localStorage with fresh user data
       localStorage.setItem('user', JSON.stringify(user));

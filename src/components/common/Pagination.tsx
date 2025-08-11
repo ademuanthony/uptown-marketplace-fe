@@ -43,7 +43,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         </>
       )}
 
-      {pageNumbers.map((number) => (
+      {pageNumbers.map(number => (
         <button
           key={number}
           onClick={() => onPageChange(number)}

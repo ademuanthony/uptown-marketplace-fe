@@ -13,7 +13,7 @@ export default function SettingsItem({
   description, 
   children, 
   icon, 
-  className = '' 
+  className = '', 
 }: SettingsItemProps) {
   return (
     <div className={`flex items-center justify-between p-4 bg-gray-50 rounded-lg ${className}`}>

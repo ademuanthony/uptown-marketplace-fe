@@ -50,16 +50,16 @@ export default function TrendingProducts() {
   const handleFavoriteChange = (productId: string, isFavorited: boolean) => {
     setFavoriteStatus(prev => ({
       ...prev,
-      [productId]: isFavorited
+      [productId]: isFavorited,
     }));
   };
 
   const scrollLeft = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
+    setCurrentIndex(prev => Math.max(0, prev - 1));
   };
 
   const scrollRight = () => {
-    setCurrentIndex((prev) => Math.min(products.length - 4, prev + 1));
+    setCurrentIndex(prev => Math.min(products.length - 4, prev + 1));
   };
 
   if (isLoading) {
@@ -130,7 +130,7 @@ export default function TrendingProducts() {
           className="flex gap-6 transition-transform duration-300"
           style={{ transform: `translateX(-${currentIndex * 25}%)` }}
         >
-          {products.map((product) => (
+          {products.map(product => (
             <div key={product.id} className="w-full sm:w-1/2 lg:w-1/4 flex-shrink-0">
               <ProductCard
                 id={product.id}

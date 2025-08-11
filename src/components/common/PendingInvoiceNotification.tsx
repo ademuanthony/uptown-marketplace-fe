@@ -39,7 +39,7 @@ export default function PendingInvoiceNotification() {
         const dismissedIds = sessionDismissed ? JSON.parse(sessionDismissed) : [];
         
         const activePendingInvoices = (invoices || []).filter(
-          invoice => !dismissedIds.includes(invoice.id)
+          invoice => !dismissedIds.includes(invoice.id),
         );
         
         setPendingInvoices(activePendingInvoices);

@@ -16,8 +16,7 @@ import {
   LinkIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
-import { Transaction, TransactionType, TransactionStatus } from '../../services/wallet';
-import walletService from '../../services/wallet';
+import walletService, { Transaction, TransactionType, TransactionStatus } from '../../services/wallet';
 
 interface TransactionListProps {
   userId?: string;
@@ -37,7 +36,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       label: 'Deposit',
-      direction: 'incoming'
+      direction: 'incoming',
     },
     crypto_deposit: {
       icon: ArrowTrendingDownIcon,
@@ -45,7 +44,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       label: 'Crypto Deposit',
-      direction: 'incoming'
+      direction: 'incoming',
     },
     withdrawal: {
       icon: ArrowTrendingUpIcon,
@@ -53,7 +52,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       label: 'Withdrawal',
-      direction: 'outgoing'
+      direction: 'outgoing',
     },
     crypto_withdraw: {
       icon: ArrowTrendingUpIcon,
@@ -61,7 +60,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       label: 'Crypto Withdrawal',
-      direction: 'outgoing'
+      direction: 'outgoing',
     },
     transfer: {
       icon: ArrowsRightLeftIcon,
@@ -69,7 +68,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
       label: 'Transfer',
-      direction: 'neutral'
+      direction: 'neutral',
     },
     purchase: {
       icon: ShoppingCartIcon,
@@ -77,7 +76,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
       label: 'Purchase',
-      direction: 'outgoing'
+      direction: 'outgoing',
     },
     refund: {
       icon: BanknotesIcon,
@@ -85,7 +84,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       label: 'Refund',
-      direction: 'incoming'
+      direction: 'incoming',
     },
     escrow_lock: {
       icon: ClockIcon,
@@ -93,7 +92,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-orange-50',
       borderColor: 'border-orange-200',
       label: 'Escrow Lock',
-      direction: 'neutral'
+      direction: 'neutral',
     },
     escrow_release: {
       icon: CheckCircleIcon,
@@ -101,7 +100,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       label: 'Escrow Release',
-      direction: 'incoming'
+      direction: 'incoming',
     },
     fee: {
       icon: BanknotesIcon,
@@ -109,7 +108,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-gray-50',
       borderColor: 'border-gray-200',
       label: 'Fee',
-      direction: 'outgoing'
+      direction: 'outgoing',
     },
     commission: {
       icon: BanknotesIcon,
@@ -117,7 +116,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       label: 'Commission',
-      direction: 'incoming'
+      direction: 'incoming',
     },
   };
   
@@ -127,7 +126,7 @@ const getTransactionTypeConfig = (type: TransactionType) => {
     bgColor: 'bg-gray-50',
     borderColor: 'border-gray-200',
     label: 'Transaction',
-    direction: 'neutral'
+    direction: 'neutral',
   };
 };
 
@@ -137,32 +136,32 @@ const getTransactionStatusConfig = (status: TransactionStatus) => {
     pending: {
       color: 'text-orange-600 bg-orange-100',
       label: 'Pending',
-      icon: ClockIcon
+      icon: ClockIcon,
     },
     processing: {
       color: 'text-blue-600 bg-blue-100',
       label: 'Processing',
-      icon: ClockIcon
+      icon: ClockIcon,
     },
     completed: {
       color: 'text-green-600 bg-green-100',
       label: 'Completed',
-      icon: CheckCircleIcon
+      icon: CheckCircleIcon,
     },
     failed: {
       color: 'text-red-600 bg-red-100',
       label: 'Failed',
-      icon: XCircleIcon
+      icon: XCircleIcon,
     },
     cancelled: {
       color: 'text-gray-600 bg-gray-100',
       label: 'Cancelled',
-      icon: XCircleIcon
+      icon: XCircleIcon,
     },
     expired: {
       color: 'text-red-600 bg-red-100',
       label: 'Expired',
-      icon: ExclamationTriangleIcon
+      icon: ExclamationTriangleIcon,
     },
   };
   
@@ -174,7 +173,7 @@ const formatTransactionAmount = (transaction: Transaction, userId?: string) => {
   const typeConfig = getTransactionTypeConfig(transaction.type as TransactionType);
   // Parse amount as float from string - backend sends amount as string
   const amount = parseFloat(transaction.amount) || 0;
-  const currency = transaction.currency;
+  const {currency} = transaction;
   
   // Determine if this is an incoming or outgoing transaction
   let isIncoming = typeConfig.direction === 'incoming';
@@ -197,7 +196,7 @@ const formatTransactionAmount = (transaction: Transaction, userId?: string) => {
   return {
     display: `${sign}${formattedAmount}${currency !== 'USD' ? ` ${currency}` : ''}`,
     colorClass,
-    isIncoming
+    isIncoming,
   };
 };
 
@@ -215,7 +214,7 @@ const formatRelativeDate = (dateString: string): string => {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   });
 };
 
@@ -236,6 +235,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   useEffect(() => {
     loadTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filterType, filterStatus, limit]);
 
   const loadTransactions = async () => {
@@ -247,7 +247,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
         currentPage,
         limit,
         filterType,
-        filterStatus
+        filterStatus,
       );
       
       setTransactions(response.transactions);
@@ -325,7 +325,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {transactions.map((transaction) => {
+      {transactions.map(transaction => {
         const typeConfig = getTransactionTypeConfig(transaction.type as TransactionType);
         const statusConfig = getTransactionStatusConfig(transaction.status as TransactionStatus);
         const amountInfo = formatTransactionAmount(transaction, userId);
@@ -391,7 +391,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     <div className="text-xs text-gray-500 mt-1">
                       Fee: {walletService.formatCurrency(
                         transaction.metadata.fee_amount.amount || 0,
-                        transaction.metadata.fee_amount.currency || 'USD'
+                        transaction.metadata.fee_amount.currency || 'USD',
                       )}
                     </div>
                   )}
@@ -472,7 +472,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             day: 'numeric',
                             year: 'numeric',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
                           })}
                         </span>
                       </div>
@@ -486,7 +486,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                               day: 'numeric',
                               year: 'numeric',
                               hour: '2-digit',
-                              minute: '2-digit'
+                              minute: '2-digit',
                             })}
                           </span>
                         </div>

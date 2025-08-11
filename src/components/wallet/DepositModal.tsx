@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   XMarkIcon,
   QrCodeIcon,
@@ -53,9 +54,10 @@ const DepositModal: React.FC<DepositModalProps> = ({
     return () => {
       document.body.style.overflow = 'unset';
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, selectedCurrency, selectedNetwork]);
 
-  const generateDepositAddress = async () => {
+  const generateDepositAddress = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -84,7 +86,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
       const qrCode = await depositService.generateDepositQRCode(
         address.address,
         selectedCurrency,
-        selectedNetwork
+        selectedNetwork,
       );
       console.log('Generated QR code:', qrCode);
       setQrCodeDataUrl(qrCode.qr_code_data_url);
@@ -95,7 +97,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCurrency, selectedNetwork, networks]);
 
   const handleCopyAddress = async () => {
     try {
@@ -117,26 +119,18 @@ const DepositModal: React.FC<DepositModalProps> = ({
     }
   };
 
-  const getAvailableNetworks = () => {
-    return networks.filter(network => network.currencies.includes(selectedCurrency));
-  };
+  const getAvailableNetworks = () => networks.filter(network => network.currencies.includes(selectedCurrency));
 
-  const getCurrentNetwork = () => {
-    return networks.find(n => n.type === selectedNetwork);
-  };
+  const getCurrentNetwork = () => networks.find(n => n.type === selectedNetwork);
 
   const getExplorerUrl = () => {
     if (!depositAddress) return '';
     return depositService.getExplorerUrl(selectedNetwork, depositAddress);
   };
 
-  const getDepositInstructions = () => {
-    return depositService.getDepositInstructions(selectedCurrency, selectedNetwork);
-  };
+  const getDepositInstructions = () => depositService.getDepositInstructions(selectedCurrency, selectedNetwork);
 
-  const getMinimumDeposit = () => {
-    return depositService.getMinimumDepositAmount(selectedCurrency);
-  };
+  const getMinimumDeposit = () => depositService.getMinimumDepositAmount(selectedCurrency);
 
   const getCurrencyIcon = (currency: DepositCurrency) => {
     const icons = {
@@ -188,7 +182,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
               Select Currency
             </label>
             <div className="grid grid-cols-3 sm:grid-cols-2 gap-3">
-              {['USDT', 'POL'].map((currency) => (
+              {['USDT', 'POL'].map(currency => (
                 <button
                   key={currency}
                   onClick={() => handleCurrencyChange(currency as DepositCurrency)}
@@ -213,7 +207,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
               Select Network
             </label>
             <div className="space-y-2">
-              {getAvailableNetworks().map((network) => (
+              {getAvailableNetworks().map(network => (
                 <button
                   key={network.type}
                   onClick={() => setSelectedNetwork(network.type)}
@@ -269,11 +263,14 @@ const DepositModal: React.FC<DepositModalProps> = ({
                   <div className="bg-white p-4 rounded-lg shadow-md border">
                     {qrCodeDataUrl ? (
                       <div className="flex flex-col items-center">
-                        <img
-                          src={qrCodeDataUrl}
-                          alt="Deposit Address QR Code"
-                          className="w-48 h-48 rounded border"
-                        />
+                        <div className="relative w-48 h-48">
+                          <Image
+                            src={qrCodeDataUrl}
+                            alt="Deposit Address QR Code"
+                            fill
+                            className="rounded border object-contain"
+                          />
+                        </div>
                         <p className="text-xs text-gray-500 mt-2 text-center">
                           Scan with your wallet app
                         </p>

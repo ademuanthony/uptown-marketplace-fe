@@ -151,7 +151,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           </div>
         ) : (
           <div className="space-y-1">
-            {conversations.map((conversation) => {
+            {conversations.map(conversation => {
               const unreadCount = getUserUnreadCount(conversation);
               const isSelected = conversation.id === selectedConversationId;
 

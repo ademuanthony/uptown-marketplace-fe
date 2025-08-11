@@ -9,7 +9,7 @@ import {
   SparklesIcon,
   TruckIcon,
   BookOpenIcon,
-  CameraIcon
+  CameraIcon,
 } from '@heroicons/react/24/outline';
 
 const categories = [
@@ -28,7 +28,7 @@ export default function CategoryGrid() {
     <section>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse Categories</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-        {categories.map((category) => {
+        {categories.map(category => {
           const Icon = category.icon;
           return (
             <Link

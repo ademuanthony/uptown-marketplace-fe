@@ -6,7 +6,7 @@ import {
   BanknotesIcon,
   CurrencyDollarIcon,
   WalletIcon,
-  CheckCircleIcon 
+  CheckCircleIcon, 
 } from '@heroicons/react/24/outline';
 
 export type PaymentMethod = 'wallet' | 'crypto' | 'bank_transfer' | 'card';
@@ -33,7 +33,7 @@ const paymentMethods: PaymentMethodOption[] = [
     description: 'Pay instantly from your wallet balance',
     icon: WalletIcon,
     processingTime: 'Instant confirmation',
-    fees: 'No fees'
+    fees: 'No fees',
   },
   {
     id: 'crypto',
@@ -41,7 +41,7 @@ const paymentMethods: PaymentMethodOption[] = [
     description: 'Pay with USDT on Polygon network',
     icon: CurrencyDollarIcon,
     processingTime: 'Instant confirmation',
-    fees: 'Low network fees (~$0.01)'
+    fees: 'Low network fees (~$0.01)',
   },
   {
     id: 'bank_transfer',
@@ -49,7 +49,7 @@ const paymentMethods: PaymentMethodOption[] = [
     description: 'Direct bank transfer via Paystack',
     icon: BanknotesIcon,
     processingTime: '5-10 minutes',
-    fees: 'No additional fees'
+    fees: 'No additional fees',
   },
   {
     id: 'card',
@@ -57,14 +57,14 @@ const paymentMethods: PaymentMethodOption[] = [
     description: 'Pay with your debit or credit card',
     icon: CreditCardIcon,
     processingTime: 'Instant confirmation',
-    fees: 'Standard processing fees'
-  }
+    fees: 'Standard processing fees',
+  },
 ];
 
 export default function PaymentMethodSelector({ 
   selectedMethod, 
   onMethodChange, 
-  disabled = false 
+  disabled = false, 
 }: PaymentMethodSelectorProps) {
   return (
     <div className="space-y-4">
@@ -76,7 +76,7 @@ export default function PaymentMethodSelector({
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {paymentMethods.map((method) => {
+        {paymentMethods.map(method => {
           const isSelected = selectedMethod === method.id;
           const IconComponent = method.icon;
           

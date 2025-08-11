@@ -102,7 +102,7 @@ export class WebSocketService {
 
   async connect(userId: string) {
     this.userId = userId;
-    const currentUser = auth.currentUser;
+    const {currentUser} = auth;
     if (!currentUser) {
       console.error('No current user found');
       return;
@@ -137,7 +137,7 @@ export class WebSocketService {
         this.processPendingActions();
       };
 
-      this.ws.onmessage = (event) => {
+      this.ws.onmessage = event => {
         try {
           const wsMessage: WebSocketMessage = JSON.parse(event.data);
           this.handleMessage(wsMessage);
@@ -146,7 +146,7 @@ export class WebSocketService {
         }
       };
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = event => {
         console.log('WebSocket disconnected:', event.code, event.reason);
         this.isConnected = false;
         this.stopHeartbeat();
@@ -157,7 +157,7 @@ export class WebSocketService {
         }
       };
 
-      this.ws.onerror = (error) => {
+      this.ws.onerror = error => {
         console.error('WebSocket error:', error);
         this.isConnected = false;
         this.notifyConnectionListeners(false);
@@ -394,7 +394,7 @@ export class WebSocketService {
         data: {
           conversation_id: conversationId,
           is_typing: isTyping,
-        }
+        },
       }));
     }
   }
@@ -412,7 +412,7 @@ export class WebSocketService {
           type: 'join_conversation',
           data: {
             conversation_id: conversationId,
-          }
+          },
         }));
       }
     };
@@ -436,7 +436,7 @@ export class WebSocketService {
         type: 'leave_conversation',
         data: {
           conversation_id: conversationId,
-        }
+        },
       }));
     }
   }

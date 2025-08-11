@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser) => {
+    const unsubscribe = authService.onAuthStateChanged(async firebaseUser => {
       console.log('Auth state changed:', firebaseUser?.uid);
       setFirebaseUser(firebaseUser);
       

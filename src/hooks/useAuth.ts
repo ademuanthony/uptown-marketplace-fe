@@ -164,7 +164,7 @@ export function useAuth() {
   const updateUser = (updatedUser: User) => {
     setAuthState(prev => ({
       ...prev,
-      user: updatedUser
+      user: updatedUser,
     }));
   };
 

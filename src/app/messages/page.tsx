@@ -46,7 +46,7 @@ const MessagesContent: React.FC = () => {
 
   // Setup real-time conversation updates
   useEffect(() => {
-    const unsubscribeConversationUpdate = onConversationUpdate((event) => {
+    const unsubscribeConversationUpdate = onConversationUpdate(event => {
       setConversations(prev => {
         const existingIndex = prev.findIndex(conv => conv.id === event.conversation_id);
         if (existingIndex >= 0) {
@@ -78,7 +78,7 @@ const MessagesContent: React.FC = () => {
       });
     });
 
-    const unsubscribeNewMessage = onNewMessage((event) => {
+    const unsubscribeNewMessage = onNewMessage(event => {
       // Update conversation list to reflect new message
       setConversations(prev => {
         const updated = prev.map(conv => {
@@ -164,7 +164,7 @@ const MessagesContent: React.FC = () => {
   const handleCreateConversationSubmit = async (
     type: ConversationType, 
     title?: string, 
-    participantIds?: string[]
+    participantIds?: string[],
   ) => {
     try {
       let conversation: Conversation;
@@ -174,7 +174,7 @@ const MessagesContent: React.FC = () => {
       } else if (type === 'group' && title) {
         conversation = await messagingService.createGroupConversation(
           title,
-          participantIds || []
+          participantIds || [],
         );
       } else if (type === 'support') {
         // For support conversations, we might need a different approach
@@ -335,12 +335,10 @@ const MessagesContent: React.FC = () => {
 };
 
 // Main page component with Suspense boundary
-const MessagesPage: React.FC = () => {
-  return (
+const MessagesPage: React.FC = () => (
     <Suspense fallback={<MessagesLoading />}>
       <MessagesContent />
     </Suspense>
   );
-};
 
 export default MessagesPage;

@@ -6,7 +6,7 @@ import {
   EyeSlashIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  ClockIcon
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 
 interface WalletCardProps {
@@ -29,7 +29,7 @@ const getCurrencyStyle = (currency: string) => {
       text: 'text-green-800',
       accent: 'text-green-600',
       icon: '💰',
-      color: '#10B981'
+      color: '#10B981',
     },
     POL: {
       background: 'bg-gradient-to-br from-purple-50 to-purple-100',
@@ -37,7 +37,7 @@ const getCurrencyStyle = (currency: string) => {
       text: 'text-purple-800',
       accent: 'text-purple-600',
       icon: '🔷',
-      color: '#8B5CF6'
+      color: '#8B5CF6',
     },
     USD: {
       background: 'bg-gradient-to-br from-blue-50 to-blue-100',
@@ -45,8 +45,8 @@ const getCurrencyStyle = (currency: string) => {
       text: 'text-blue-800',
       accent: 'text-blue-600',
       icon: '💵',
-      color: '#3B82F6'
-    }
+      color: '#3B82F6',
+    },
   };
   
   return styles[currency as keyof typeof styles] || styles.USD;

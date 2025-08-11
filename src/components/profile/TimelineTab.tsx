@@ -25,7 +25,7 @@ export function TimelineTab({ timelinePosts }: TimelineTabProps) {
       return date.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
       });
     }
   };
@@ -44,7 +44,7 @@ export function TimelineTab({ timelinePosts }: TimelineTabProps) {
 
   return (
     <div className="space-y-6">
-      {timelinePosts.map((post) => (
+      {timelinePosts.map(post => (
         <div key={post.id} className="bg-white rounded-lg shadow p-6">
           {/* Post Header */}
           <div className="flex items-center text-sm text-gray-500 mb-4">

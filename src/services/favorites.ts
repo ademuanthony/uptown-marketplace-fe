@@ -43,7 +43,7 @@ class FavoritesService {
 
       const response = await api.post<ApiResponse<Favorite>>(
         `/products/${productId}/favorites`,
-        requestData
+        requestData,
       );
       
       if (!response.data || !response.data.success || !response.data.data) {
@@ -85,7 +85,7 @@ class FavoritesService {
   async isFavorited(productId: string): Promise<boolean> {
     try {
       const response = await api.get<ApiResponse<FavoriteStatus>>(
-        `/products/${productId}/favorites/status`
+        `/products/${productId}/favorites/status`,
       );
       
       if (!response.data || !response.data.success || !response.data.data) {
@@ -135,7 +135,7 @@ class FavoritesService {
       params.append('offset', offset.toString());
 
       const response = await api.get<ApiResponse<UserFavoritesResponse>>(
-        `/users/favorites?${params.toString()}`
+        `/users/favorites?${params.toString()}`,
       );
       
       if (!response.data || !response.data.success || !response.data.data) {

@@ -54,6 +54,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       leaveConversation(conversation.id);
       setTypingUsers([]);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.id, joinConversation, leaveConversation]);
 
   // Handle scroll behavior based on context
@@ -85,7 +86,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Setup real-time message listener
   useEffect(() => {
-    const unsubscribe = onNewMessage((event) => {
+    const unsubscribe = onNewMessage(event => {
       if (event.conversation_id === conversation.id) {
         setMessages(prev => {
           // Check if this is a message from the current user (sender)
@@ -165,7 +166,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           
           // Sort to ensure proper order
           return newMessages.sort((a, b) => 
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
           );
         });
       }
@@ -176,7 +177,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Setup typing indicator listener
   useEffect(() => {
-    const unsubscribe = onTyping((event) => {
+    const unsubscribe = onTyping(event => {
       if (event.conversation_id === conversation.id && event.user_id !== user?.id) {
         setTypingUsers(prev => {
           if (event.type === 'typing_start') {
@@ -193,12 +194,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Setup message read listener
   useEffect(() => {
-    const unsubscribe = onMessageRead((event) => {
+    const unsubscribe = onMessageRead(event => {
       if (event.conversation_id === conversation.id) {
         setMessages(prev => prev.map(msg => 
           msg.id === event.message_id 
             ? { ...msg, status: 'read', read_at: event.read_at }
-            : msg
+            : msg,
         ));
       }
     });
@@ -223,12 +224,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const response = await messagingService.getConversationHistory(
         conversation.id,
         pageNum,
-        20
+        20,
       );
       
       // Sort messages by created_at to ensure chronological order (oldest to newest)
       const sortedMessages = response.messages.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
       
       if (reset) {
@@ -303,7 +304,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Replace optimistic message with actual message from server
       setMessages(prev => prev.map(msg => 
-        msg.id === optimisticMessage.id ? response : msg
+        msg.id === optimisticMessage.id ? response : msg,
       ));
       
     } catch (error) {
@@ -312,7 +313,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Mark optimistic message as failed
       setMessages(prev => prev.map(msg => 
-        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg
+        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg,
       ));
     } finally {
       setSending(false);
@@ -363,7 +364,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       const response = await messagingService.sendFileMessage(
         conversation.id,
         file,
-        content
+        content,
       );
       
       // Replace optimistic message with actual message from server
@@ -384,7 +385,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       
       // Mark optimistic message as failed
       setMessages(prev => prev.map(msg => 
-        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg
+        msg.id.startsWith('temp-') ? { ...msg, status: 'failed' } : msg,
       ));
     } finally {
       setSending(false);
@@ -399,7 +400,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setMessages(prev => prev.map(msg => 
         msg.id === messageId 
           ? { ...msg, status: 'read', read_at: new Date().toISOString() }
-          : msg
+          : msg,
       ));
       
     } catch (error) {
@@ -559,7 +560,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         )}
 
         {/* Messages */}
-        {messages.map((message) => (
+        {messages.map(message => (
           <MessageBubble
             key={message.id}
             message={message}
