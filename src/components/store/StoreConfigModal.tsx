@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
+import {
   XMarkIcon,
   CheckIcon,
   ExclamationTriangleIcon,
@@ -15,12 +15,21 @@ import toast from 'react-hot-toast';
 
 // Validation schema for store configuration
 const storeConfigSchema = z.object({
-  store_name: z.string().min(1, 'Store name is required').max(100, 'Store name cannot exceed 100 characters').optional().or(z.literal('')),
-  permalink: z.string()
+  store_name: z
+    .string()
+    .min(1, 'Store name is required')
+    .max(100, 'Store name cannot exceed 100 characters')
+    .optional()
+    .or(z.literal('')),
+  permalink: z
+    .string()
     .min(3, 'Permalink must be at least 3 characters')
     .max(50, 'Permalink cannot exceed 50 characters')
     .regex(/^[a-z0-9-]+$/, 'Permalink can only contain lowercase letters, numbers, and hyphens')
-    .refine(val => !val.startsWith('-') && !val.endsWith('-'), 'Permalink cannot start or end with a hyphen')
+    .refine(
+      val => !val.startsWith('-') && !val.endsWith('-'),
+      'Permalink cannot start or end with a hyphen',
+    )
     .refine(val => !val.includes('--'), 'Permalink cannot contain consecutive hyphens'),
 });
 
@@ -126,12 +135,13 @@ export default function StoreConfigModal({
       };
 
       await storeService.updateStoreConfig(updatedConfig);
-      
+
       toast.success('Store configuration updated successfully!');
       onSuccess(updatedConfig);
       onClose();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update store configuration';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update store configuration';
       toast.error(errorMessage);
       console.error('Store configuration update error:', error);
     } finally {
@@ -146,14 +156,14 @@ export default function StoreConfigModal({
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-    
+
     setValue('permalink', permalink);
   };
 
   const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     setValue('store_name', name);
-    
+
     // Auto-generate permalink if it's empty or matches the current store name pattern
     if (!watchedPermalink || watchedPermalink === currentPermalink) {
       generatePermalinkFromName(name);
@@ -166,15 +176,16 @@ export default function StoreConfigModal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          onClick={onClose}
+        />
 
         {/* Modal */}
         <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Store Configuration
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900">Store Configuration</h3>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -219,12 +230,16 @@ export default function StoreConfigModal({
                     type="text"
                     placeholder="your-store-url"
                     className={`w-full px-3 py-2 border ${
-                      errors.permalink ? 'border-red-300' : 
-                      permalinkAvailable === false ? 'border-red-300' :
-                      permalinkAvailable === true ? 'border-green-300' : 'border-gray-300'
+                      errors.permalink
+                        ? 'border-red-300'
+                        : permalinkAvailable === false
+                          ? 'border-red-300'
+                          : permalinkAvailable === true
+                            ? 'border-green-300'
+                            : 'border-gray-300'
                     } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10`}
                   />
-                  
+
                   {/* Availability indicator */}
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                     {isCheckingPermalink && (
@@ -239,7 +254,7 @@ export default function StoreConfigModal({
                   </div>
                 </div>
               </div>
-              
+
               {errors.permalink && (
                 <p className="mt-1 text-sm text-red-600">{errors.permalink.message}</p>
               )}
@@ -249,11 +264,12 @@ export default function StoreConfigModal({
               {!errors.permalink && permalinkAvailable === true && (
                 <p className="mt-1 text-sm text-green-600">This URL is available</p>
               )}
-              
+
               <div className="mt-2 flex items-start space-x-2 text-sm text-gray-500">
                 <InformationCircleIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <p>
-                  This will be your store&apos;s public URL. Use lowercase letters, numbers, and hyphens only.
+                  This will be your store&apos;s public URL. Use lowercase letters, numbers, and
+                  hyphens only.
                 </p>
               </div>
             </div>

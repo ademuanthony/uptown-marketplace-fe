@@ -8,12 +8,12 @@ interface SettingsCardProps {
   className?: string;
 }
 
-export default function SettingsCard({ 
-  title, 
-  description, 
-  children, 
-  icon, 
-  className = '', 
+export default function SettingsCard({
+  title,
+  description,
+  children,
+  icon,
+  className = '',
 }: SettingsCardProps) {
   return (
     <div className={`bg-gray-50 rounded-lg p-6 ${className}`}>
@@ -21,9 +21,7 @@ export default function SettingsCard({
         {icon && <div className="mr-3 text-gray-600">{icon}</div>}
         <div>
           <h3 className="text-md font-medium text-gray-900">{title}</h3>
-          {description && (
-            <p className="text-sm text-gray-600">{description}</p>
-          )}
+          {description && <p className="text-sm text-gray-600">{description}</p>}
         </div>
       </div>
       {children}

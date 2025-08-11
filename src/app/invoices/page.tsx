@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { 
-  DocumentTextIcon, 
+import {
+  DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -55,13 +55,13 @@ export default function InvoicesPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const { invoices: fetchedInvoices, pagination } = await invoiceService.getUserInvoices(
           selectedStatus || undefined,
           page,
           20,
         );
-        
+
         setInvoices(fetchedInvoices);
         setTotalPages(pagination.total_pages);
       } catch (err) {
@@ -175,12 +175,8 @@ export default function InvoicesPage() {
                     <tr key={invoice.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {invoice.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {invoice.number}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{invoice.title}</div>
+                          <div className="text-sm text-gray-500">{invoice.number}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -31,18 +31,17 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
       try {
         setLoading(true);
         setError(null);
-        
+
         // TODO: Replace with actual API call to get user's reviews
         // For now, we'll show a placeholder
-        
+
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Mock data - replace with actual API call
         setReviews([]);
         setAverageRating(0);
         setTotalReviews(0);
-        
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to load reviews';
         setError(errorMessage);
@@ -56,16 +55,16 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const renderStars = (rating: number, size: 'sm' | 'md' = 'sm') => {
     const sizeClass = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
-    
+
     return (
       <div className="flex items-center">
         {[1, 2, 3, 4, 5].map(star => (
@@ -155,20 +154,18 @@ export function ReviewsTab({ userId }: ReviewsTabProps) {
                   <p className="font-medium text-gray-900">{review.reviewer_name}</p>
                   <div className="flex items-center space-x-2 mt-1">
                     {renderStars(review.rating)}
-                    <span className="text-sm text-gray-500">
-                      {formatDate(review.created_at)}
-                    </span>
+                    <span className="text-sm text-gray-500">{formatDate(review.created_at)}</span>
                   </div>
                 </div>
               </div>
-              
+
               {review.type === 'product' && review.product_name && (
                 <div className="text-right">
                   <p className="text-sm text-gray-500">Product Review</p>
                   <p className="text-sm font-medium text-gray-900">{review.product_name}</p>
                 </div>
               )}
-              
+
               {review.type === 'seller' && (
                 <div className="text-right">
                   <p className="text-sm text-gray-500">Seller Review</p>

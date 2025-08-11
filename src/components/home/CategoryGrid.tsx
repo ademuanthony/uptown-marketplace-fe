@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { 
+import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   HomeIcon,
@@ -13,14 +13,49 @@ import {
 } from '@heroicons/react/24/outline';
 
 const categories = [
-  { slug: 'electronics', name: 'Electronics', icon: DevicePhoneMobileIcon, color: 'bg-secondary-100 text-secondary-600' },
-  { slug: 'computers', name: 'Computers', icon: ComputerDesktopIcon, color: 'bg-accent-100 text-accent-600' },
-  { slug: 'home-garden', name: 'Home & Garden', icon: HomeIcon, color: 'bg-primary-100 text-primary-600' },
-  { slug: 'fashion', name: 'Fashion', icon: ShoppingBagIcon, color: 'bg-primary-100 text-primary-600' },
-  { slug: 'beauty', name: 'Beauty', icon: SparklesIcon, color: 'bg-secondary-100 text-secondary-600' },
-  { slug: 'automotive', name: 'Automotive', icon: TruckIcon, color: 'bg-accent-100 text-accent-600' },
+  {
+    slug: 'electronics',
+    name: 'Electronics',
+    icon: DevicePhoneMobileIcon,
+    color: 'bg-secondary-100 text-secondary-600',
+  },
+  {
+    slug: 'computers',
+    name: 'Computers',
+    icon: ComputerDesktopIcon,
+    color: 'bg-accent-100 text-accent-600',
+  },
+  {
+    slug: 'home-garden',
+    name: 'Home & Garden',
+    icon: HomeIcon,
+    color: 'bg-primary-100 text-primary-600',
+  },
+  {
+    slug: 'fashion',
+    name: 'Fashion',
+    icon: ShoppingBagIcon,
+    color: 'bg-primary-100 text-primary-600',
+  },
+  {
+    slug: 'beauty',
+    name: 'Beauty',
+    icon: SparklesIcon,
+    color: 'bg-secondary-100 text-secondary-600',
+  },
+  {
+    slug: 'automotive',
+    name: 'Automotive',
+    icon: TruckIcon,
+    color: 'bg-accent-100 text-accent-600',
+  },
   { slug: 'books', name: 'Books', icon: BookOpenIcon, color: 'bg-primary-100 text-primary-600' },
-  { slug: 'photography', name: 'Photography', icon: CameraIcon, color: 'bg-secondary-100 text-secondary-600' },
+  {
+    slug: 'photography',
+    name: 'Photography',
+    icon: CameraIcon,
+    color: 'bg-secondary-100 text-secondary-600',
+  },
 ];
 
 export default function CategoryGrid() {
@@ -36,12 +71,12 @@ export default function CategoryGrid() {
               href={`/${category.slug}`}
               className="flex flex-col items-center p-4 rounded-lg hover:shadow-md transition-shadow group"
             >
-              <div className={`p-3 rounded-full ${category.color} mb-3 group-hover:scale-110 transition-transform`}>
+              <div
+                className={`p-3 rounded-full ${category.color} mb-3 group-hover:scale-110 transition-transform`}
+              >
                 <Icon className="h-6 w-6" />
               </div>
-              <span className="text-sm font-medium text-gray-700 text-center">
-                {category.name}
-              </span>
+              <span className="text-sm font-medium text-gray-700 text-center">{category.name}</span>
             </Link>
           );
         })}

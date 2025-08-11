@@ -44,26 +44,29 @@ class UserService {
   // Update user profile
   async updateProfile(profileData: ProfileUpdateRequest): Promise<User> {
     try {
-      const response = await api.put<ApiResponse<ProfileUpdateResponse>>('/user/profile', profileData);
-      
+      const response = await api.put<ApiResponse<ProfileUpdateResponse>>(
+        '/user/profile',
+        profileData,
+      );
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to update profile');
       }
 
-      const {user} = response.data.data;
-      
+      const { user } = response.data.data;
+
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Profile update error:', error);
-      
+
       // If it's an axios error, extract the message
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to update profile');
     }
   }
@@ -79,25 +82,25 @@ class UserService {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to upload avatar');
       }
 
-      const {user} = response.data.data;
-      
+      const { user } = response.data.data;
+
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Avatar upload error:', error);
-      
+
       // If it's an axios error, extract the message
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to upload avatar');
     }
   }
@@ -106,25 +109,25 @@ class UserService {
   async removeAvatar(): Promise<User> {
     try {
       const response = await api.delete<ApiResponse<AvatarUploadResponse>>('/user/avatar');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to remove avatar');
       }
 
-      const {user} = response.data.data;
-      
+      const { user } = response.data.data;
+
       // Update localStorage with new user data
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Avatar removal error:', error);
-      
+
       // If it's an axios error, extract the message
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to remove avatar');
     }
   }
@@ -132,19 +135,22 @@ class UserService {
   // Change password
   async changePassword(passwordData: PasswordChangeRequest): Promise<void> {
     try {
-      const response = await api.post<ApiResponse<PasswordChangeResponse>>('/user/change-password', passwordData);
-      
+      const response = await api.post<ApiResponse<PasswordChangeResponse>>(
+        '/user/change-password',
+        passwordData,
+      );
+
       if (!response.data || !response.data.success) {
         throw new Error(response.data?.message || 'Failed to change password');
       }
     } catch (error) {
       console.error('Password change error:', error);
-      
+
       // If it's an axios error, extract the message
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to change password');
     }
   }
@@ -153,25 +159,25 @@ class UserService {
   async getProfile(): Promise<User> {
     try {
       const response = await api.get<ApiResponse<{ user: User }>>('/user/profile');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get profile');
       }
 
-      const {user} = response.data.data;
-      
+      const { user } = response.data.data;
+
       // Update localStorage with fresh user data
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return user;
     } catch (error) {
       console.error('Get profile error:', error);
-      
+
       // If it's an axios error, extract the message
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to get profile');
     }
   }

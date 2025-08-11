@@ -15,6 +15,7 @@ This document outlines coding standards, patterns, and rules to prevent common e
 ### Rule 1: Always Use Type Guards for Error Handling
 
 ❌ **Bad:**
+
 ```typescript
 catch (error) {
   if (error.response?.data?.message) {
@@ -24,6 +25,7 @@ catch (error) {
 ```
 
 ✅ **Good:**
+
 ```typescript
 import { isAxiosError } from 'axios';
 
@@ -38,6 +40,7 @@ catch (error) {
 ### Rule 2: Always Import isAxiosError for API Services
 
 **Required imports for all service files:**
+
 ```typescript
 import { isAxiosError } from 'axios';
 ```
@@ -45,6 +48,7 @@ import { isAxiosError } from 'axios';
 ### Rule 3: Proper Error Type Handling
 
 ❌ **Bad:**
+
 ```typescript
 catch (error: unknown) {
   console.error('Error:', error.message); // Error: Property 'message' does not exist
@@ -52,6 +56,7 @@ catch (error: unknown) {
 ```
 
 ✅ **Good:**
+
 ```typescript
 catch (error: unknown) {
   console.error('Error:', error instanceof Error ? error.message : 'Unknown error');
@@ -61,12 +66,14 @@ catch (error: unknown) {
 ### Rule 4: Type Assertions Must Be Safe
 
 ❌ **Bad:**
+
 ```typescript
 const data = response.data as MyType;
 data.someProperty; // Could be undefined
 ```
 
 ✅ **Good:**
+
 ```typescript
 const data = response.data as MyType;
 if (data && typeof data === 'object' && 'someProperty' in data) {
@@ -88,6 +95,7 @@ if (!response.data || !response.data.success || !response.data.data) {
 ### Rule 1: Always Wrap useSearchParams in Suspense
 
 ❌ **Bad:**
+
 ```typescript
 export default function MyPage() {
   const searchParams = useSearchParams(); // Will cause CSR bailout error
@@ -96,6 +104,7 @@ export default function MyPage() {
 ```
 
 ✅ **Good:**
+
 ```typescript
 import { Suspense } from 'react';
 
@@ -129,10 +138,7 @@ const PageLoading = () => (
 ```typescript
 import dynamic from 'next/dynamic';
 
-const ClientOnlyComponent = dynamic(
-  () => import('./ClientOnlyComponent'),
-  { ssr: false }
-);
+const ClientOnlyComponent = dynamic(() => import('./ClientOnlyComponent'), { ssr: false });
 ```
 
 ## API Service Patterns
@@ -154,19 +160,19 @@ class MyService {
   async myMethod(): Promise<MyType> {
     try {
       const response = await api.get<ApiResponse<MyType>>('/endpoint');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.error || response.data?.message || 'Request failed');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('My method error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
   }
@@ -178,19 +184,19 @@ class MyService {
 ```typescript
 catch (error) {
   console.error('Operation error:', error);
-  
+
   // Handle Axios errors
   if (isAxiosError(error)) {
     if (error.response?.status === 401) {
       // Handle auth errors
       throw new Error('Authentication required');
     }
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
   }
-  
+
   // Handle generic errors
   throw new Error(error instanceof Error ? error.message : 'Operation failed');
 }
@@ -199,6 +205,7 @@ catch (error) {
 ### Rule 3: Type-Safe URL Parameter Building
 
 ❌ **Bad:**
+
 ```typescript
 Object.keys(filters).forEach(key => {
   if (filters[key]) params.append(key, filters[key]); // Type error
@@ -206,6 +213,7 @@ Object.keys(filters).forEach(key => {
 ```
 
 ✅ **Good:**
+
 ```typescript
 (Object.keys(filters) as Array<keyof typeof filters>).forEach(key => {
   const value = filters[key];
@@ -230,16 +238,19 @@ Object.keys(filters).forEach(key => {
 ### Specific Checks
 
 #### Error Handling
+
 - [ ] `isAxiosError(error)` before accessing `error.response`
 - [ ] Fallback error messages for all catch blocks
 - [ ] Proper type checking with `instanceof Error`
 
 #### Next.js Patterns
+
 - [ ] Client components use `'use client'` directive
 - [ ] Dynamic imports for SSR-incompatible components
 - [ ] Proper loading states for async operations
 
 #### Type Safety
+
 - [ ] No `any` types without justification
 - [ ] Type assertions are safe and necessary
 - [ ] Interface definitions match API contracts
@@ -254,19 +265,19 @@ module.exports = {
     // Prevent accessing properties on unknown types
     '@typescript-eslint/no-unsafe-member-access': 'error',
     '@typescript-eslint/no-unsafe-assignment': 'error',
-    
+
     // Require proper error handling
     '@typescript-eslint/no-throw-literal': 'error',
-    
+
     // Prevent improper type assertions
     '@typescript-eslint/consistent-type-assertions': [
       'error',
-      { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' }
+      { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' },
     ],
-    
+
     // Require proper async/await usage
     '@typescript-eslint/await-thenable': 'error',
-    
+
     // Custom rules for our patterns
     'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
@@ -276,9 +287,9 @@ module.exports = {
       rules: {
         // Require axios error handling import
         'import/no-unresolved': ['error', { ignore: ['axios'] }],
-      }
-    }
-  ]
+      },
+    },
+  ],
 };
 ```
 
@@ -322,21 +333,23 @@ Add to `.vscode/settings.json`:
 ## Common Patterns Quick Reference
 
 ### Error Handling Template
+
 ```typescript
 try {
   // API call
 } catch (error) {
   console.error('Operation error:', error);
-  
+
   if (isAxiosError(error) && error.response?.data?.message) {
     throw new Error(error.response.data.message);
   }
-  
+
   throw new Error(error instanceof Error ? error.message : 'Operation failed');
 }
 ```
 
 ### Suspense Template
+
 ```typescript
 function Content() {
   const searchParams = useSearchParams();
@@ -353,6 +366,7 @@ export default function Page() {
 ```
 
 ### Type-Safe Filter Building
+
 ```typescript
 const processedFilters = { ...filters };
 (Object.keys(processedFilters) as Array<keyof typeof processedFilters>).forEach(key => {

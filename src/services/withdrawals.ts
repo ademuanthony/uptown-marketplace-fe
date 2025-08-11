@@ -76,11 +76,11 @@ class WithdrawalService {
   async createWithdrawal(request: WithdrawalRequest): Promise<WithdrawalResponse> {
     try {
       const response = await api.post<ApiResponse<WithdrawalResponse>>('/wallet/withdraw', request);
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to create withdrawal');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Create withdrawal error:', error);
@@ -94,12 +94,14 @@ class WithdrawalService {
   // Get withdrawal by ID
   async getWithdrawal(withdrawalId: string): Promise<WithdrawalResponse> {
     try {
-      const response = await api.get<ApiResponse<WithdrawalResponse>>(`/wallet/withdrawals/${withdrawalId}`);
-      
+      const response = await api.get<ApiResponse<WithdrawalResponse>>(
+        `/wallet/withdrawals/${withdrawalId}`,
+      );
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get withdrawal details');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get withdrawal error:', error);
@@ -111,7 +113,10 @@ class WithdrawalService {
   }
 
   // Get user's withdrawal history
-  async getWithdrawalHistory(page: number = 1, limit: number = 20): Promise<{
+  async getWithdrawalHistory(
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
     withdrawals: WithdrawalResponse[];
     pagination: {
       page: number;
@@ -121,22 +126,24 @@ class WithdrawalService {
     };
   }> {
     try {
-      const response = await api.get<ApiResponse<{
-        withdrawals: WithdrawalResponse[];
-        pagination: {
-          page: number;
-          per_page: number;
-          total_count: number;
-          total_pages: number;
-        };
-      }>>('/wallet/withdrawals', {
+      const response = await api.get<
+        ApiResponse<{
+          withdrawals: WithdrawalResponse[];
+          pagination: {
+            page: number;
+            per_page: number;
+            total_count: number;
+            total_pages: number;
+          };
+        }>
+      >('/wallet/withdrawals', {
         params: { page, limit },
       });
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get withdrawal history');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get withdrawal history error:', error);
@@ -148,30 +155,34 @@ class WithdrawalService {
   }
 
   // Get network fees for withdrawal
-  async getNetworkFee(currency: Currency, network: NetworkType, amount?: number): Promise<NetworkFee> {
+  async getNetworkFee(
+    currency: Currency,
+    network: NetworkType,
+    amount?: number,
+  ): Promise<NetworkFee> {
     try {
       const params: Record<string, string> = {
         currency,
         network,
       };
-      
+
       if (amount) {
         params.amount = amount.toString();
       }
 
       const response = await api.get<ApiResponse<NetworkFee>>('/wallet/network-fees', { params });
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get network fees');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get network fee error:', error);
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       // Return default fee if API fails
       return this.getDefaultNetworkFee(currency, network);
     }
@@ -180,12 +191,14 @@ class WithdrawalService {
   // Get withdrawal limits for user
   async getWithdrawalLimits(currency: Currency): Promise<WithdrawalLimits> {
     try {
-      const response = await api.get<ApiResponse<WithdrawalLimits>>(`/wallet/withdrawal-limits/${currency}`);
-      
+      const response = await api.get<ApiResponse<WithdrawalLimits>>(
+        `/wallet/withdrawal-limits/${currency}`,
+      );
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get withdrawal limits');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get withdrawal limits error:', error);
@@ -197,28 +210,34 @@ class WithdrawalService {
   }
 
   // Validate withdrawal address
-  async validateWithdrawalAddress(address: string, currency: Currency, network: NetworkType): Promise<{
+  async validateWithdrawalAddress(
+    address: string,
+    currency: Currency,
+    network: NetworkType,
+  ): Promise<{
     is_valid: boolean;
     is_contract?: boolean;
     risk_level?: 'low' | 'medium' | 'high';
     warnings?: string[];
   }> {
     try {
-      const response = await api.post<ApiResponse<{
-        is_valid: boolean;
-        is_contract?: boolean;
-        risk_level?: 'low' | 'medium' | 'high';
-        warnings?: string[];
-      }>>('/wallet/validate-address', {
+      const response = await api.post<
+        ApiResponse<{
+          is_valid: boolean;
+          is_contract?: boolean;
+          risk_level?: 'low' | 'medium' | 'high';
+          warnings?: string[];
+        }>
+      >('/wallet/validate-address', {
         address,
         currency,
         network,
       });
-      
+
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to validate address');
       }
-      
+
       return response.data.data || { is_valid: false };
     } catch (error) {
       console.error('Validate address error:', error);
@@ -233,14 +252,17 @@ class WithdrawalService {
   // Cancel withdrawal (if still pending)
   async cancelWithdrawal(withdrawalId: string, reason?: string): Promise<WithdrawalResponse> {
     try {
-      const response = await api.post<ApiResponse<WithdrawalResponse>>(`/wallet/withdrawals/${withdrawalId}/cancel`, {
-        reason: reason || 'User requested cancellation',
-      });
-      
+      const response = await api.post<ApiResponse<WithdrawalResponse>>(
+        `/wallet/withdrawals/${withdrawalId}/cancel`,
+        {
+          reason: reason || 'User requested cancellation',
+        },
+      );
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to cancel withdrawal');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Cancel withdrawal error:', error);
@@ -254,12 +276,13 @@ class WithdrawalService {
   // Get address book entries
   async getAddressBook(): Promise<AddressBookEntry[]> {
     try {
-      const response = await api.get<ApiResponse<{ addresses: AddressBookEntry[] }>>('/wallet/address-book');
-      
+      const response =
+        await api.get<ApiResponse<{ addresses: AddressBookEntry[] }>>('/wallet/address-book');
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get address book');
       }
-      
+
       return response.data.data.addresses || [];
     } catch (error) {
       console.error('Get address book error:', error);
@@ -271,7 +294,12 @@ class WithdrawalService {
   }
 
   // Add address to address book
-  async addToAddressBook(name: string, address: string, currency: Currency, network: NetworkType): Promise<AddressBookEntry> {
+  async addToAddressBook(
+    name: string,
+    address: string,
+    currency: Currency,
+    network: NetworkType,
+  ): Promise<AddressBookEntry> {
     try {
       const response = await api.post<ApiResponse<AddressBookEntry>>('/wallet/address-book', {
         name,
@@ -279,11 +307,11 @@ class WithdrawalService {
         currency,
         network,
       });
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to add address to book');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Add to address book error:', error);
@@ -298,7 +326,7 @@ class WithdrawalService {
   async removeFromAddressBook(addressId: string): Promise<void> {
     try {
       const response = await api.delete<ApiResponse<void>>(`/wallet/address-book/${addressId}`);
-      
+
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to remove address');
       }
@@ -314,7 +342,7 @@ class WithdrawalService {
   // Basic client-side address validation
   private basicAddressValidation(address: string, network: NetworkType): boolean {
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    
+
     switch (network) {
       case 'polygon':
         return ethAddressRegex.test(address);
@@ -341,15 +369,17 @@ class WithdrawalService {
         estimated_time: '2-5 minutes',
       },
     };
-    
+
     const key = `${currency}-${network}`;
-    return defaultFees[key] || {
-      currency,
-      network,
-      fee_amount: 0,
-      fee_currency: currency,
-      estimated_time: '5-30 minutes',
-    };
+    return (
+      defaultFees[key] || {
+        currency,
+        network,
+        fee_amount: 0,
+        fee_currency: currency,
+        estimated_time: '5-30 minutes',
+      }
+    );
   }
 
   // Get supported withdrawal methods
@@ -421,7 +451,7 @@ class WithdrawalService {
         description: 'Withdrawal was cancelled, funds have been returned',
       },
     };
-    
+
     return statusInfo[status] || statusInfo.pending;
   }
 }

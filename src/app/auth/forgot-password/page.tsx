@@ -48,28 +48,40 @@ export default function ForgotPasswordPage() {
             <div>
               <div className="flex justify-center">
                 <div className="w-12 h-12">
-                  <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 32 32"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <defs>
                       <linearGradient id="forgotLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:'#3b82f6',stopOpacity:1}} />
-                        <stop offset="100%" style={{stopColor:'#ec4899',stopOpacity:1}} />
+                        <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#ec4899', stopOpacity: 1 }} />
                       </linearGradient>
                     </defs>
-                    <circle cx="16" cy="16" r="16" fill="url(#forgotLogoGradient)"/>
-                    <path d="M8 10V18C8 20.2091 9.79086 22 12 22H20C22.2091 22 24 20.2091 24 18V10" 
-                          stroke="white" 
-                          strokeWidth="2.5" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                          fill="none"/>
-                    <path d="M11 10V9C11 7.34315 12.3431 6 14 6H18C19.6569 6 21 7.34315 21 9V10" 
-                          stroke="white" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                          fill="none"/>
-                    <path d="M16 14L17.09 16.26L19.5 16.5L17.75 18.14L18.18 20.5L16 19.27L13.82 20.5L14.25 18.14L12.5 16.5L14.91 16.26L16 14Z" 
-                          fill="white"/>
+                    <circle cx="16" cy="16" r="16" fill="url(#forgotLogoGradient)" />
+                    <path
+                      d="M8 10V18C8 20.2091 9.79086 22 12 22H20C22.2091 22 24 20.2091 24 18V10"
+                      stroke="white"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                    <path
+                      d="M11 10V9C11 7.34315 12.3431 6 14 6H18C19.6569 6 21 7.34315 21 9V10"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                    <path
+                      d="M16 14L17.09 16.26L19.5 16.5L17.75 18.14L18.18 20.5L16 19.27L13.82 20.5L14.25 18.14L12.5 16.5L14.91 16.26L16 14Z"
+                      fill="white"
+                    />
                   </svg>
                 </div>
               </div>
@@ -80,7 +92,7 @@ export default function ForgotPasswordPage() {
                 Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-lg p-8">
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 <div>
@@ -112,9 +124,25 @@ export default function ForgotPasswordPage() {
                   >
                     {isLoading ? (
                       <div className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Sending...
                       </div>
@@ -131,9 +159,7 @@ export default function ForgotPasswordPage() {
             <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
               <EnvelopeIcon className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Check your email
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Check your email</h3>
             <p className="text-gray-600 mb-6">
               We&apos;ve sent a password reset link to{' '}
               <span className="font-medium text-gray-900">{email}</span>

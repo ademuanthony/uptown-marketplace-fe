@@ -22,7 +22,7 @@ If the pre-commit hook blocks your commit, you'll see clear error messages about
 # Fix lint issues automatically
 npm run lint:fix
 
-# Fix formatting issues automatically  
+# Fix formatting issues automatically
 npm run format
 
 # Check TypeScript issues
@@ -61,6 +61,7 @@ git commit --no-verify -m "Emergency commit message"
 ## Hook Configuration
 
 The pre-commit hook is located at:
+
 - `.git/hooks/pre-commit` - The Git hook itself
 - `scripts/pre-commit-checks.sh` - The comprehensive check script
 - `scripts/quick-checks.sh` - A faster version for development
@@ -76,6 +77,7 @@ The pre-commit hook is located at:
 ## Troubleshooting
 
 ### "Permission denied" errors
+
 ```bash
 chmod +x scripts/pre-commit-checks.sh
 chmod +x scripts/quick-checks.sh
@@ -83,10 +85,13 @@ chmod +x .git/hooks/pre-commit
 ```
 
 ### "Command not found" errors
+
 Make sure you're in the frontend directory and have run `npm install`.
 
 ### Hook not running
+
 Check if the hook file exists and is executable:
+
 ```bash
 ls -la .git/hooks/pre-commit
 ```

@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  HeartIcon, 
-  TrashIcon, 
+import {
+  HeartIcon,
+  TrashIcon,
   MagnifyingGlassIcon,
   MapPinIcon,
   EyeIcon,
@@ -81,7 +81,7 @@ export default function FavoritesPage() {
         // Remove all favorites one by one
         const promises = favorites.map(fav => favoritesService.removeFromFavorites(fav.product_id));
         await Promise.all(promises);
-        
+
         setFavorites([]);
         toast.success('All favorites cleared');
       } catch (error) {
@@ -104,8 +104,10 @@ export default function FavoritesPage() {
   const categories = Array.from(new Set(favorites.map(item => item.product?.category_id || '')));
 
   const filteredFavorites = favorites.filter(item => {
-    const matchesSearch = item.product?.title.toLowerCase().includes(searchQuery.toLowerCase()) || false;
-    const matchesCategory = categoryFilter === 'all' || item.product?.category_id === categoryFilter;
+    const matchesSearch =
+      item.product?.title.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+    const matchesCategory =
+      categoryFilter === 'all' || item.product?.category_id === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -128,12 +130,11 @@ export default function FavoritesPage() {
               </button>
             )}
           </div>
-          
+
           <p className="text-gray-600">
-            {favorites.length === 0 
+            {favorites.length === 0
               ? "You haven't added any items to your favorites yet."
-              : `${favorites.length} items in your favorites`
-            }
+              : `${favorites.length} items in your favorites`}
           </p>
         </div>
 
@@ -179,7 +180,12 @@ export default function FavoritesPage() {
                     className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      />
                     </svg>
                   </button>
                   <button
@@ -187,7 +193,12 @@ export default function FavoritesPage() {
                     className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -206,10 +217,16 @@ export default function FavoritesPage() {
             )}
 
             {/* Favorites Grid/List */}
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
+            <div
+              className={
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                  : 'space-y-4'
+              }
+            >
               {filteredFavorites.map(item => {
                 if (!item.product) return null;
-                
+
                 return (
                   <div key={item.favorite_id} className="relative">
                     {viewMode === 'grid' ? (
@@ -222,7 +239,10 @@ export default function FavoritesPage() {
                           rating={0} // TODO: Add rating from backend
                           reviewCount={0} // TODO: Add review count from backend
                           sellerName={undefined} // TODO: Add seller name from backend
-                          location={`${item.product.location?.city || ''} ${item.product.location?.state || ''}`.trim() || undefined}
+                          location={
+                            `${item.product.location?.city || ''} ${item.product.location?.state || ''}`.trim() ||
+                            undefined
+                          }
                           isFavorited={true}
                           permalink={item.product.permalink}
                           categoryId={item.product.category_id}
@@ -234,7 +254,13 @@ export default function FavoritesPage() {
                       </div>
                     ) : (
                       <div className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4">
-                        <Link href={item.product.permalink ? `/products/${item.product.permalink}` : `/products/${item.product.id}`}>
+                        <Link
+                          href={
+                            item.product.permalink
+                              ? `/products/${item.product.permalink}`
+                              : `/products/${item.product.id}`
+                          }
+                        >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={getProductImageUrl(item.product.images?.[0])}
@@ -242,31 +268,40 @@ export default function FavoritesPage() {
                             className="h-24 w-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                           />
                         </Link>
-                        
+
                         <div className="flex-1">
-                          <Link 
-                            href={item.product.permalink ? `/products/${item.product.permalink}` : `/products/${item.product.id}`}
+                          <Link
+                            href={
+                              item.product.permalink
+                                ? `/products/${item.product.permalink}`
+                                : `/products/${item.product.id}`
+                            }
                             className="text-lg font-medium text-gray-900 hover:text-primary-600"
                           >
                             {item.product.title}
                           </Link>
-                          
+
                           <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
                             <span className="flex items-center">
                               <MapPinIcon className="h-4 w-4 mr-1" />
-                              {`${item.product.location?.city || ''} ${item.product.location?.state || ''}`.trim() || 'Location not specified'}
+                              {`${item.product.location?.city || ''} ${item.product.location?.state || ''}`.trim() ||
+                                'Location not specified'}
                             </span>
                             <span>Added {new Date(item.created_at).toLocaleDateString()}</span>
                           </div>
-                          
+
                           <div className="mt-2 text-xl font-semibold text-gray-900">
                             ${(item.product.price / 100).toFixed(2)}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           <Link
-                            href={item.product.permalink ? `/products/${item.product.permalink}` : `/products/${item.product.id}`}
+                            href={
+                              item.product.permalink
+                                ? `/products/${item.product.permalink}`
+                                : `/products/${item.product.id}`
+                            }
                             className="p-2 text-gray-400 hover:text-gray-600"
                           >
                             <EyeIcon className="h-5 w-5" />

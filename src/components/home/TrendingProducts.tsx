@@ -126,7 +126,7 @@ export default function TrendingProducts() {
       </div>
 
       <div className="relative overflow-hidden">
-        <div 
+        <div
           className="flex gap-6 transition-transform duration-300"
           style={{ transform: `translateX(-${currentIndex * 25}%)` }}
         >
@@ -140,7 +140,10 @@ export default function TrendingProducts() {
                 rating={0} // TODO: Add rating to backend response
                 reviewCount={0} // TODO: Add review count to backend response
                 sellerName={undefined} // TODO: Add seller name to backend response
-                location={`${product.location?.city || ''} ${product.location?.state || ''}`.trim() || undefined}
+                location={
+                  `${product.location?.city || ''} ${product.location?.state || ''}`.trim() ||
+                  undefined
+                }
                 isFavorited={favoriteStatus[product.id] || false}
                 permalink={product.permalink}
                 categoryId={product.category_id}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   Cog6ToothIcon,
   ShieldCheckIcon,
   BellIcon,
@@ -205,9 +205,7 @@ export default function SettingsPage() {
           {/* Main Content */}
           <div className="lg:w-3/4">
             <div className="bg-white rounded-lg shadow-sm">
-              <div className="p-6">
-                {renderTabContent()}
-              </div>
+              <div className="p-6">{renderTabContent()}</div>
             </div>
           </div>
         </div>
@@ -228,7 +226,11 @@ function AccountSettings() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-            <p className="text-gray-900">{user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : 'Not set'}</p>
+            <p className="text-gray-900">
+              {user?.first_name && user?.last_name
+                ? `${user.first_name} ${user.last_name}`
+                : 'Not set'}
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -261,7 +263,13 @@ function AccountSettings() {
 }
 
 // Security Settings Component
-function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (data: PasswordChangeData) => void, isLoading: boolean }) {
+function SecuritySettings({
+  onPasswordChange,
+  isLoading,
+}: {
+  onPasswordChange: (data: PasswordChangeData) => void;
+  isLoading: boolean;
+}) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -278,16 +286,14 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-medium text-gray-900 mb-4">Security Settings</h2>
-        
+
         {/* Password Change Form */}
-        <SettingsCard 
-          title="Change Password" 
-          icon={<KeyIcon className="h-5 w-5" />}
-        >
-          
+        <SettingsCard title="Change Password" icon={<KeyIcon className="h-5 w-5" />}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Password
+              </label>
               <input
                 type="password"
                 value={currentPassword}
@@ -296,7 +302,7 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
               <input
@@ -308,9 +314,11 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
                 minLength={6}
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password
+              </label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -320,30 +328,23 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
                 minLength={6}
               />
             </div>
-            
-            <LoadingButton
-              type="submit"
-              loading={isLoading}
-              disabled={isLoading}
-            >
+
+            <LoadingButton type="submit" loading={isLoading} disabled={isLoading}>
               Change Password
             </LoadingButton>
           </form>
         </SettingsCard>
 
         {/* Future: Two-Factor Authentication */}
-        <SettingsCard 
-          title="Two-Factor Authentication" 
+        <SettingsCard
+          title="Two-Factor Authentication"
           icon={<DevicePhoneMobileIcon className="h-5 w-5" />}
           className="mt-6"
         >
           <p className="text-sm text-gray-600 mb-4">
             Add an extra layer of security to your account by enabling two-factor authentication.
           </p>
-          <LoadingButton
-            disabled
-            variant="secondary"
-          >
+          <LoadingButton disabled variant="secondary">
             Coming Soon
           </LoadingButton>
         </SettingsCard>
@@ -353,7 +354,13 @@ function SecuritySettings({ onPasswordChange, isLoading }: { onPasswordChange: (
 }
 
 // Notification Settings Component
-function NotificationSettings({ onUpdate, isLoading }: { onUpdate: (settings: NotificationSettings) => void, isLoading: boolean }) {
+function NotificationSettings({
+  onUpdate,
+  isLoading,
+}: {
+  onUpdate: (settings: NotificationSettings) => void;
+  isLoading: boolean;
+}) {
   const [settings, setSettings] = useState<NotificationSettings>({
     emailNotifications: true,
     pushNotifications: true,
@@ -408,7 +415,7 @@ function NotificationSettings({ onUpdate, isLoading }: { onUpdate: (settings: No
         <p className="text-sm text-gray-600 mb-6">
           Choose how you want to be notified about activity on your account.
         </p>
-        
+
         <div className="space-y-4">
           {notificationOptions.map(option => {
             const Icon = option.icon;
@@ -434,7 +441,13 @@ function NotificationSettings({ onUpdate, isLoading }: { onUpdate: (settings: No
 }
 
 // Privacy Settings Component
-function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: PrivacySettings) => void, isLoading: boolean }) {
+function PrivacySettings({
+  onUpdate,
+  isLoading,
+}: {
+  onUpdate: (settings: PrivacySettings) => void;
+  isLoading: boolean;
+}) {
   const [settings, setSettings] = useState<PrivacySettings>({
     profileVisibility: 'public',
     showEmail: false,
@@ -459,14 +472,18 @@ function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: Privacy
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-medium text-gray-900 mb-4">Privacy Settings</h2>
-        
+
         {/* Profile Visibility */}
         <SettingsCard title="Profile Visibility" className="mb-6">
           <div className="space-y-3">
             {[
               { value: 'public', label: 'Public', description: 'Anyone can see your profile' },
               { value: 'private', label: 'Private', description: 'Only you can see your profile' },
-              { value: 'friends', label: 'Friends Only', description: 'Only your friends can see your profile' },
+              {
+                value: 'friends',
+                label: 'Friends Only',
+                description: 'Only your friends can see your profile',
+              },
             ].map(option => (
               <label key={option.value} className="flex items-center">
                 <input
@@ -474,7 +491,9 @@ function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: Privacy
                   name="profileVisibility"
                   value={option.value}
                   checked={settings.profileVisibility === option.value}
-                  onChange={e => handleVisibilityChange(e.target.value as 'public' | 'private' | 'friends')}
+                  onChange={e =>
+                    handleVisibilityChange(e.target.value as 'public' | 'private' | 'friends')
+                  }
                   className="mr-3 text-primary-600 focus:ring-primary-500"
                 />
                 <div>
@@ -499,7 +518,7 @@ function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: Privacy
                 disabled={isLoading}
               />
             </SettingsItem>
-            
+
             <SettingsItem
               title="Show Phone Number"
               description="Allow others to see your phone number"
@@ -510,7 +529,7 @@ function PrivacySettings({ onUpdate, isLoading }: { onUpdate: (settings: Privacy
                 disabled={isLoading}
               />
             </SettingsItem>
-            
+
             <SettingsItem
               title="Allow Data Sharing"
               description="Share anonymized data for platform improvements"

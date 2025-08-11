@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  getUserReferralStats, 
+import {
+  getUserReferralStats,
   getReferralRewards,
   getRecentReferrals,
   getDownlines,
@@ -20,8 +20,8 @@ import {
   type RecentReferralWithProfile,
   type DownlineWithProfile,
 } from '@/services/referral';
-import { 
-  ShareIcon, 
+import {
+  ShareIcon,
   DocumentDuplicateIcon,
   UsersIcon,
   CurrencyDollarIcon,
@@ -64,12 +64,12 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ 
-  currentPage, 
-  totalPages, 
-  totalItems, 
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  totalItems,
   itemsPerPage,
-  onPageChange, 
+  onPageChange,
 }) => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -77,7 +77,7 @@ const Pagination: React.FC<PaginationProps> = ({
   const getVisiblePages = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -105,7 +105,7 @@ const Pagination: React.FC<PaginationProps> = ({
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
@@ -138,7 +138,10 @@ const Pagination: React.FC<PaginationProps> = ({
           </p>
         </div>
         <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -150,14 +153,14 @@ const Pagination: React.FC<PaginationProps> = ({
             {getVisiblePages().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
+                onClick={() => (typeof page === 'number' ? onPageChange(page) : undefined)}
                 disabled={page === '...'}
                 className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                   page === currentPage
                     ? 'z-10 bg-primary-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
                     : page === '...'
-                    ? 'text-gray-700 ring-1 ring-inset ring-gray-300 cursor-default'
-                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                      ? 'text-gray-700 ring-1 ring-inset ring-gray-300 cursor-default'
+                      : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
                 }`}
               >
                 {page}
@@ -181,9 +184,11 @@ const Pagination: React.FC<PaginationProps> = ({
 export default function ReferralsPage() {
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'downlines' | 'rewards' | 'leaderboard'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'downlines' | 'rewards' | 'leaderboard'>(
+    'overview',
+  );
   const [copySuccess, setCopySuccess] = useState(false);
-  
+
   // Data states
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [profile, setProfile] = useState<ReferralProfile | null>(null);
@@ -192,7 +197,7 @@ export default function ReferralsPage() {
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
   const [rewardsSummary, setRewardsSummary] = useState<ReferralRewardsSummary | null>(null);
   const [recentReferrals, setRecentReferrals] = useState<RecentReferralWithProfile[]>([]);
-  
+
   // Pagination states
   const [downlinesPagination, setDownlinesPagination] = useState({
     currentPage: 1,
@@ -200,7 +205,7 @@ export default function ReferralsPage() {
     totalItems: 0,
     totalPages: 0,
   });
-  
+
   const [rewardsPagination, setRewardsPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
@@ -211,11 +216,11 @@ export default function ReferralsPage() {
   const loadDownlines = useCallback(async () => {
     try {
       const offset = (downlinesPagination.currentPage - 1) * downlinesPagination.itemsPerPage;
-      const downlinesWithProfilesData = await getDownlines({ 
+      const downlinesWithProfilesData = await getDownlines({
         limit: downlinesPagination.itemsPerPage,
         offset,
       });
-      
+
       setDownlinesWithProfiles(downlinesWithProfilesData.downlines);
       setDownlinesPagination(prev => ({
         ...prev,
@@ -231,11 +236,11 @@ export default function ReferralsPage() {
   const loadRewards = useCallback(async () => {
     try {
       const offset = (rewardsPagination.currentPage - 1) * rewardsPagination.itemsPerPage;
-      const rewardsData = await getReferralRewards({ 
+      const rewardsData = await getReferralRewards({
         limit: rewardsPagination.itemsPerPage,
         offset,
       });
-      
+
       setRewards(rewardsData.rewards);
       setRewardsSummary(rewardsData.summary);
       setRewardsPagination(prev => ({
@@ -252,26 +257,25 @@ export default function ReferralsPage() {
   const loadReferralData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Load stats and profile
       const statsData = await getUserReferralStats();
       setStats(statsData.stats);
       setProfile(statsData.profile);
 
       console.info(statsData);
-      
+
       // Load downlines (basic relationships for stats)
       // const downlinesData = await getUserReferrals({ limit: 50 });
       // setDownlines(downlinesData.referrals);
-      
+
       // Load recent referrals
       const recentReferralsData = await getRecentReferrals({ limit: 5 });
       setRecentReferrals(recentReferralsData.recent_referrals);
-      
+
       // Load initial downlines and rewards (will be updated by pagination effects)
       await loadDownlines();
       await loadRewards();
-      
     } catch (error) {
       console.error('Failed to load referral data:', error);
       toast.error('Failed to load referral data');
@@ -302,7 +306,7 @@ export default function ReferralsPage() {
 
   const handleCopyReferralLink = async () => {
     if (!profile?.referral_code) return;
-    
+
     const success = await copyReferralLink(profile.referral_code);
     if (success) {
       setCopySuccess(true);
@@ -315,9 +319,9 @@ export default function ReferralsPage() {
 
   const handleShareReferralLink = async () => {
     if (!profile?.referral_code) return;
-    
+
     const link = generateReferralLink(profile.referral_code);
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -354,7 +358,10 @@ export default function ReferralsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-6">Please log in to view your referral dashboard.</p>
-          <Link href="/auth/login" className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+          <Link
+            href="/auth/login"
+            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+          >
             Log In
           </Link>
         </div>
@@ -413,12 +420,14 @@ export default function ReferralsPage() {
               </button>
             </div>
           </div>
-          
+
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Referral Code:</p>
-                <p className="text-lg font-mono font-semibold text-gray-900">{profile?.referral_code}</p>
+                <p className="text-lg font-mono font-semibold text-gray-900">
+                  {profile?.referral_code}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-600 mb-1">Referral Link:</p>
@@ -452,7 +461,10 @@ export default function ReferralsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Cash Earned</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrencyAmount(stats?.total_cash_earned.display || 0, stats?.cash_currency || 'NGN')}
+                  {formatCurrencyAmount(
+                    stats?.total_cash_earned.display || 0,
+                    stats?.cash_currency || 'NGN',
+                  )}
                 </p>
               </div>
             </div>
@@ -508,7 +520,8 @@ export default function ReferralsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Referrals by Level</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[1, 2, 3, 4, 5, 6].map(level => {
-                  const count = stats?.[`level${level}_referrals` as keyof ReferralStats] as number || 0;
+                  const count =
+                    (stats?.[`level${level}_referrals` as keyof ReferralStats] as number) || 0;
                   return (
                     <div key={level} className="text-center p-4 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-600">{getLevelName(level)}</p>
@@ -531,7 +544,10 @@ export default function ReferralsPage() {
               {recentReferrals && recentReferrals.length > 0 ? (
                 <div className="space-y-3">
                   {recentReferrals.map(referral => (
-                    <div key={referral.user_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={referral.user_id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
                           <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
@@ -540,10 +556,9 @@ export default function ReferralsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">
-                            {referral.first_name && referral.last_name 
+                            {referral.first_name && referral.last_name
                               ? `${referral.first_name} ${referral.last_name}`
-                              : referral.email
-                            }
+                              : referral.email}
                           </p>
                           <p className="text-xs text-gray-500">
                             {referral.phone_number && `${referral.phone_number} • `}
@@ -558,9 +573,11 @@ export default function ReferralsPage() {
                         <p className="text-sm font-semibold text-gray-900">
                           {getLevelName(referral.level)}
                         </p>
-                        <p className={`text-xs ${
-                          referral.is_active ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <p
+                          className={`text-xs ${
+                            referral.is_active ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
                           {referral.is_active ? 'Active' : 'Inactive'}
                         </p>
                       </div>
@@ -568,7 +585,9 @@ export default function ReferralsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No referrals yet. Share your referral link to get started!</p>
+                <p className="text-gray-500 text-center py-8">
+                  No referrals yet. Share your referral link to get started!
+                </p>
               )}
             </div>
           </div>
@@ -581,7 +600,10 @@ export default function ReferralsPage() {
               {downlinesWithProfiles && downlinesWithProfiles.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {downlinesWithProfiles.map(downline => (
-                    <div key={downline.user_id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div
+                      key={downline.user_id}
+                      className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                    >
                       <div className="flex items-center space-x-3 mb-3">
                         <div className="flex-shrink-0">
                           {downline.profile_image_url ? (
@@ -599,45 +621,48 @@ export default function ReferralsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {downline.first_name && downline.last_name 
+                            {downline.first_name && downline.last_name
                               ? `${downline.first_name} ${downline.last_name}`
-                              : downline.email
-                            }
+                              : downline.email}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {downline.email}
-                          </p>
+                          <p className="text-xs text-gray-500 truncate">{downline.email}</p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2 mb-3">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500">Referral Code:</span>
-                          <span className="text-xs font-mono font-medium text-gray-900">{downline.referral_code}</span>
+                          <span className="text-xs font-mono font-medium text-gray-900">
+                            {downline.referral_code}
+                          </span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500">Level:</span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            downline.level === 1 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              downline.level === 1
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-purple-100 text-purple-800'
+                            }`}
+                          >
                             {getLevelName(downline.level)}
                           </span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500">Status:</span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            downline.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              downline.is_active
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
                             {downline.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500">Joined:</span>
                           <span className="text-xs text-gray-700">
@@ -645,7 +670,7 @@ export default function ReferralsPage() {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="pt-3 border-t border-gray-200">
                         <Link
                           href={`/messages?userId=${downline.user_id}`}
@@ -659,7 +684,9 @@ export default function ReferralsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No downlines yet. Share your referral link to get started!</p>
+                <p className="text-gray-500 text-center py-8">
+                  No downlines yet. Share your referral link to get started!
+                </p>
               )}
             </div>
             {downlinesWithProfiles && downlinesWithProfiles.length > 0 && (
@@ -678,13 +705,16 @@ export default function ReferralsPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Reward History</h3>
-              
+
               {rewardsSummary && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="p-4 bg-green-50 rounded-lg">
                     <p className="text-sm text-green-600 font-medium">Total Cash Rewards</p>
                     <p className="text-lg font-bold text-green-900">
-                      {formatCurrencyAmount(rewardsSummary.total_cash_rewards.display, rewardsSummary.cash_currency)}
+                      {formatCurrencyAmount(
+                        rewardsSummary.total_cash_rewards.display,
+                        rewardsSummary.cash_currency,
+                      )}
                     </p>
                   </div>
                   <div className="p-4 bg-purple-50 rounded-lg">
@@ -695,7 +725,9 @@ export default function ReferralsPage() {
                   </div>
                   <div className="p-4 bg-yellow-50 rounded-lg">
                     <p className="text-sm text-yellow-600 font-medium">Pending Rewards</p>
-                    <p className="text-lg font-bold text-yellow-900">{formatCurrencyAmount(rewardsSummary.pending_rewards.display, 'PNT')}</p>
+                    <p className="text-lg font-bold text-yellow-900">
+                      {formatCurrencyAmount(rewardsSummary.pending_rewards.display, 'PNT')}
+                    </p>
                   </div>
                 </div>
               )}
@@ -738,13 +770,15 @@ export default function ReferralsPage() {
                             {formatCurrencyAmount(reward.amount.display, reward.currency)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              reward.status === 'processed' 
-                                ? 'bg-green-100 text-green-800'
-                                : reward.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                reward.status === 'processed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : reward.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                              }`}
+                            >
                               {reward.status}
                             </span>
                           </td>
@@ -754,7 +788,9 @@ export default function ReferralsPage() {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No rewards yet. Start referring friends to earn rewards!</p>
+                <p className="text-gray-500 text-center py-8">
+                  No rewards yet. Start referring friends to earn rewards!
+                </p>
               )}
             </div>
             {rewards && rewards.length > 0 && (

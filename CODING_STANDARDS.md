@@ -1,11 +1,13 @@
 # Frontend Coding Standards & Best Practices
 
 ## 🎯 Overview
+
 This document outlines the coding standards and best practices for the Uptown Marketplace frontend to prevent common errors and maintain code quality.
 
 ## 📋 Pre-Development Checklist
 
 Before starting any new feature:
+
 1. Run `npm run type-check` to ensure no existing type errors
 2. Run `npm run lint` to check for linting issues
 3. Pull latest changes from main branch
@@ -14,6 +16,7 @@ Before starting any new feature:
 ## 🔒 TypeScript Best Practices
 
 ### 1. **Never Use `any` Type**
+
 ```typescript
 // ❌ Bad
 const data: any = await fetchData();
@@ -28,6 +31,7 @@ const data: DataResponse = await fetchData();
 ```
 
 ### 2. **Define Interfaces for All API Responses**
+
 ```typescript
 // Create separate interfaces for backend (snake_case) and frontend (camelCase)
 interface BackendUserResponse {
@@ -51,6 +55,7 @@ const mapUser = (backend: BackendUserResponse): User => ({
 ```
 
 ### 3. **Avoid Unused Variables**
+
 ```typescript
 // ❌ Bad
 const [user, setUser] = useState();
@@ -64,13 +69,14 @@ const [_user, setUser] = useState();
 ## ⚛️ React & Hooks Best Practices
 
 ### 1. **Declare Functions Before Using in Hooks**
+
 ```typescript
 // ❌ Bad - Using function before declaration
 const Component = () => {
   useEffect(() => {
     loadData();
   }, [loadData]); // Error: loadData used before declaration
-  
+
   const loadData = useCallback(() => {
     // ...
   }, []);
@@ -81,7 +87,7 @@ const Component = () => {
   const loadData = useCallback(() => {
     // ...
   }, []);
-  
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -89,6 +95,7 @@ const Component = () => {
 ```
 
 ### 2. **Handle useEffect Dependencies Properly**
+
 ```typescript
 // ✅ Option 1: Include all dependencies
 const loadData = useCallback(async () => {
@@ -107,6 +114,7 @@ useEffect(() => {
 ```
 
 ### 3. **Wrap Functions in useCallback When Used as Dependencies**
+
 ```typescript
 // ❌ Bad
 const handleClick = () => {
@@ -130,6 +138,7 @@ useEffect(() => {
 ## 🖼️ Next.js Specific Rules
 
 ### 1. **Always Use Next.js Image Component**
+
 ```typescript
 // ❌ Bad
 <img src="/logo.png" alt="Logo" />
@@ -140,6 +149,7 @@ import Image from 'next/image';
 ```
 
 ### 2. **Use Proper Imports for Client Components**
+
 ```typescript
 // Always add 'use client' directive for client-side components
 'use client';
@@ -151,6 +161,7 @@ import { useState } from 'react';
 ## 📦 Import/Export Best Practices
 
 ### 1. **No Anonymous Default Exports**
+
 ```typescript
 // ❌ Bad
 export default new MyService();
@@ -161,6 +172,7 @@ export default myService;
 ```
 
 ### 2. **Use Named Exports for Better Tree Shaking**
+
 ```typescript
 // ✅ Preferred
 export const userService = new UserService();
@@ -173,11 +185,13 @@ import { userService } from '@/services';
 ## 🧹 Code Quality Rules
 
 ### 1. **Console Logs**
+
 - Remove all `console.log` before committing
 - Use `console.warn` or `console.error` for important messages
 - Use proper logging service in production
 
 ### 2. **Error Handling**
+
 ```typescript
 // ✅ Always handle errors properly
 try {
@@ -192,6 +206,7 @@ try {
 ```
 
 ### 3. **Loading States**
+
 ```typescript
 // ✅ Always show loading states
 const [loading, setLoading] = useState(false);
@@ -214,11 +229,13 @@ const fetchData = async () => {
 ### Before Committing Code
 
 1. **Run Type Check**
+
    ```bash
    npm run type-check
    ```
 
 2. **Run Linting**
+
    ```bash
    npm run lint
    # Auto-fix issues
@@ -226,6 +243,7 @@ const fetchData = async () => {
    ```
 
 3. **Format Code**
+
    ```bash
    npm run format
    ```
@@ -272,5 +290,5 @@ const fetchData = async () => {
 
 ---
 
-*Last Updated: [Current Date]*
-*Version: 1.0.0*
+_Last Updated: [Current Date]_
+_Version: 1.0.0_

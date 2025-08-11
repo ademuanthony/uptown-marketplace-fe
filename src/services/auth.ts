@@ -70,7 +70,6 @@ interface BackendRegisterResponse {
 }
 
 class AuthService {
-
   // Firebase Authentication Methods
   async signIn(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
@@ -99,7 +98,7 @@ class AuthService {
 
       // Extract the authentication response data
       const authData = result.data;
-      const {user} = authData;
+      const { user } = authData;
 
       // Store token and user data
       // Use custom_token if available, otherwise use Firebase token
@@ -108,7 +107,6 @@ class AuthService {
       localStorage.setItem('user', JSON.stringify(user));
 
       return { user, token: authToken };
-
     } catch (firebaseError) {
       console.error('Authentication failed:', firebaseError);
       const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Login failed';
@@ -144,7 +142,10 @@ class AuthService {
           registerPayload.upline_code = credentials.referralCode;
         }
 
-        const response = await api.post<ApiResponse<BackendRegisterResponse>>('/auth/register', registerPayload);
+        const response = await api.post<ApiResponse<BackendRegisterResponse>>(
+          '/auth/register',
+          registerPayload,
+        );
 
         // The backend returns: { success: true, data: RegisterUserResponse }
         const result = response.data;
@@ -155,7 +156,7 @@ class AuthService {
 
         // Extract the registration response data
         const registerData = result.data;
-        const {user} = registerData;
+        const { user } = registerData;
 
         // Store token and user data
         localStorage.setItem('auth_token', token);
@@ -163,12 +164,14 @@ class AuthService {
 
         return { user, token };
       } catch (backendError) {
-        const errorMessage = backendError instanceof Error ? backendError.message : 'Registration failed';
+        const errorMessage =
+          backendError instanceof Error ? backendError.message : 'Registration failed';
         console.error('Backend registration failed:', errorMessage);
         throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Registration failed';
+      const errorMessage =
+        firebaseError instanceof Error ? firebaseError.message : 'Registration failed';
       console.error('Firebase registration failed:', errorMessage);
       throw new Error(errorMessage);
     }
@@ -199,7 +202,8 @@ class AuthService {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (firebaseError) {
-      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Password reset failed';
+      const errorMessage =
+        firebaseError instanceof Error ? firebaseError.message : 'Password reset failed';
       throw new Error(errorMessage);
     }
   }
@@ -223,13 +227,13 @@ class AuthService {
 
         // The backend returns: { success: true, data: AuthenticateUserResponse }
         const result = response.data;
-        
+
         if (!result || !result.success || !result.data) {
           throw new Error(result.message || 'Social login failed');
         }
 
         const authData = result.data;
-        const {user} = authData;
+        const { user } = authData;
         const authToken = authData.custom_token || token;
 
         localStorage.setItem('auth_token', authToken);
@@ -237,11 +241,13 @@ class AuthService {
 
         return { user, token: authToken };
       } catch (backendError) {
-        const errorMessage = backendError instanceof Error ? backendError.message : 'Social login failed';
+        const errorMessage =
+          backendError instanceof Error ? backendError.message : 'Social login failed';
         throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Google login failed';
+      const errorMessage =
+        firebaseError instanceof Error ? firebaseError.message : 'Google login failed';
       throw new Error(errorMessage);
     }
   }
@@ -265,13 +271,13 @@ class AuthService {
 
         // The backend returns: { success: true, data: AuthenticateUserResponse }
         const result = response.data;
-        
+
         if (!result || !result.success || !result.data) {
           throw new Error(result.message || 'Social login failed');
         }
 
         const authData = result.data;
-        const {user} = authData;
+        const { user } = authData;
         const authToken = authData.custom_token || token;
 
         localStorage.setItem('auth_token', authToken);
@@ -279,11 +285,13 @@ class AuthService {
 
         return { user, token: authToken };
       } catch (backendError) {
-        const errorMessage = backendError instanceof Error ? backendError.message : 'Social login failed';
+        const errorMessage =
+          backendError instanceof Error ? backendError.message : 'Social login failed';
         throw new Error(errorMessage);
       }
     } catch (firebaseError) {
-      const errorMessage = firebaseError instanceof Error ? firebaseError.message : 'Facebook login failed';
+      const errorMessage =
+        firebaseError instanceof Error ? firebaseError.message : 'Facebook login failed';
       throw new Error(errorMessage);
     }
   }
@@ -302,7 +310,7 @@ class AuthService {
     }
 
     try {
-      const {currentUser} = auth;
+      const { currentUser } = auth;
       if (!currentUser) {
         const existingUser = localStorage.getItem('user');
         return existingUser ? JSON.parse(existingUser) : null;
@@ -312,25 +320,23 @@ class AuthService {
 
       try {
         // Get user data from backend
-        const response = await api.get<ApiResponse<{ user: User }>>(
-          '/auth/me',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await api.get<ApiResponse<{ user: User }>>('/auth/me', {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         // The backend returns: { success: true, data: GetUserProfileResponse }
         const result = response.data;
-        
+
         if (!result || !result.success || !result.data) {
           throw new Error(result.message || 'Failed to get user data');
         }
 
         return result.data.user;
       } catch (backendError) {
-        const errorMessage = backendError instanceof Error ? backendError.message : 'Failed to get user data';
+        const errorMessage =
+          backendError instanceof Error ? backendError.message : 'Failed to get user data';
         throw new Error(errorMessage);
       }
     } catch (error) {
@@ -345,7 +351,7 @@ class AuthService {
     }
 
     try {
-      const {currentUser} = auth;
+      const { currentUser } = auth;
       if (!currentUser) {
         return localStorage.getItem('auth_token');
       }

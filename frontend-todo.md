@@ -1,9 +1,11 @@
 # Frontend Development Todo - Uptown Marketplace
 
 ## 📋 Project Overview
+
 Building a modern, responsive React/Next.js frontend for the Uptown Marketplace with pink/blue theme, comprehensive user experience, and integration with the Go backend API.
 
 ## 🎯 Current Status
+
 - ✅ **Basic Setup**: Next.js 15, TypeScript, Tailwind CSS
 - ✅ **Theme**: Pink/blue color scheme implemented
 - ✅ **Core Components**: Navbar, Footer, Search, Product Cards
@@ -15,6 +17,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🚀 Phase 1: Foundation & Core Features ✅ **COMPLETED**
 
 ### ✅ Project Setup
+
 - [x] Next.js 15 with TypeScript
 - [x] Tailwind CSS configuration
 - [x] Pink/blue theme colors
@@ -22,6 +25,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [x] Basic routing setup
 
 ### ✅ Core Components
+
 - [x] Navbar with logo and navigation
 - [x] Footer with links and branding
 - [x] Search bar component
@@ -29,6 +33,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [x] Authentication hook (useAuth)
 
 ### ✅ Homepage Design
+
 - [x] Hero section with prominent search
 - [x] Category grid (8 categories)
 - [x] Trending products section
@@ -40,6 +45,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🔄 Phase 2: Authentication & User Management **IN PROGRESS**
 
 ### 🔨 Authentication Pages
+
 - [ ] Login page with form validation
 - [ ] Register page with form validation
 - [ ] Forgot password page
@@ -48,6 +54,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Social login integration (Google, Facebook)
 
 ### 🔨 User Dashboard
+
 - [ ] User profile page
 - [ ] Edit profile functionality
 - [ ] Profile picture upload
@@ -56,6 +63,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Notification preferences
 
 ### 🔨 User Items Management
+
 - [ ] My Items page (user's listings)
 - [ ] Item status management
 - [ ] Edit/delete item functionality
@@ -67,6 +75,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🛍️ Phase 3: Product Management & Shopping
 
 ### 🔨 Product Pages
+
 - [ ] Product detail page
 - [ ] Product image gallery
 - [ ] Product reviews and ratings
@@ -75,6 +84,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Product comparison feature
 
 ### 🔨 Product Listing & Management
+
 - [ ] Post item form (multi-step)
 - [ ] Image upload with preview
 - [ ] Category selection
@@ -83,6 +93,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Item condition selection
 
 ### 🔨 Search & Discovery
+
 - [ ] Advanced search page
 - [ ] Search filters (price, category, location, etc.)
 - [ ] Search results page
@@ -91,6 +102,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Search analytics
 
 ### 🔨 Category Pages
+
 - [ ] Category listing pages
 - [ ] Subcategory navigation
 - [ ] Category-specific filters
@@ -102,6 +114,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🛒 Phase 4: Shopping Experience
 
 ### 🔨 Shopping Cart & Checkout
+
 - [ ] Shopping cart component
 - [ ] Cart sidebar/modal
 - [ ] Checkout process (multi-step)
@@ -110,6 +123,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Guest checkout option
 
 ### 🔨 Order Management
+
 - [ ] Order history page
 - [ ] Order details page
 - [ ] Order tracking
@@ -118,6 +132,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Return/refund requests
 
 ### 🔨 Messaging System
+
 - [ ] Chat/messaging interface
 - [ ] Conversation list
 - [ ] Real-time messaging
@@ -130,6 +145,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🔥 Phase 5: Advanced Features
 
 ### 🔨 Reviews & Ratings
+
 - [ ] Review submission form
 - [ ] Rating system (stars)
 - [ ] Review display and pagination
@@ -138,6 +154,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Seller rating system
 
 ### 🔨 Social Features
+
 - [ ] User profiles (public view)
 - [ ] Follow/unfollow users
 - [ ] Activity feed
@@ -146,6 +163,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Community features
 
 ### 🔨 Premium Features
+
 - [ ] Premium listing creation
 - [ ] Payment for premium features
 - [ ] Premium listing analytics
@@ -157,6 +175,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 📊 Phase 6: Analytics & Insights
 
 ### 🔨 User Analytics
+
 - [ ] User dashboard analytics
 - [ ] Item performance metrics
 - [ ] Sales insights
@@ -164,6 +183,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Conversion tracking
 
 ### 🔨 Admin Features
+
 - [ ] Admin dashboard
 - [ ] User management
 - [ ] Content moderation
@@ -175,6 +195,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🎨 Phase 7: UI/UX Enhancements
 
 ### 🔨 Design Improvements
+
 - [ ] Loading states and skeletons
 - [ ] Error boundaries and error pages
 - [ ] Empty states
@@ -183,6 +204,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Accessibility improvements (WCAG compliance)
 
 ### 🔨 Performance Optimization
+
 - [ ] Image optimization
 - [ ] Code splitting
 - [ ] Lazy loading
@@ -195,6 +217,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 📱 Phase 8: Mobile Experience
 
 ### 🔨 Mobile Optimization
+
 - [ ] Mobile-first responsive design
 - [ ] Touch gestures
 - [ ] Mobile navigation improvements
@@ -207,6 +230,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🧪 Phase 9: Testing & Quality
 
 ### 🔨 Testing Implementation
+
 - [ ] Unit tests (Jest/React Testing Library)
 - [ ] Integration tests
 - [ ] E2E tests (Playwright/Cypress)
@@ -215,6 +239,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Cross-browser testing
 
 ### 🔨 Code Quality
+
 - [ ] ESLint configuration
 - [ ] Prettier setup
 - [ ] TypeScript strict mode
@@ -227,6 +252,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🚀 Phase 10: Deployment & DevOps
 
 ### 🔨 Deployment Setup
+
 - [ ] Production build optimization
 - [ ] Environment configuration
 - [ ] Docker containerization
@@ -235,6 +261,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] SSL certificate
 
 ### 🔨 Monitoring & Maintenance
+
 - [ ] Error tracking (Sentry)
 - [ ] Performance monitoring
 - [ ] User analytics (Google Analytics)
@@ -246,6 +273,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🎯 Current Priority Tasks
 
 ### 🔥 **HIGH PRIORITY**
+
 1. **Authentication Pages** - Login, Register, Profile
 2. **Product Detail Page** - Core shopping experience
 3. **Post Item Form** - User content creation
@@ -253,6 +281,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 5. **Backend API Integration** - Connect with Go API
 
 ### 🔧 **MEDIUM PRIORITY**
+
 1. **Shopping Cart** - E-commerce functionality
 2. **Messaging System** - User communication
 3. **Reviews & Ratings** - Trust and feedback
@@ -260,6 +289,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 5. **Performance Optimization** - Speed and UX
 
 ### 📋 **LOW PRIORITY**
+
 1. **Advanced Analytics** - Business insights
 2. **Admin Features** - Management tools
 3. **Social Features** - Community building
@@ -271,22 +301,26 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 📚 Technical Stack
 
 ### **Frontend Framework**
+
 - Next.js 15 (App Router)
 - React 19
 - TypeScript 5
 
 ### **Styling & UI**
+
 - Tailwind CSS 3.4
 - Headless UI
 - Heroicons
 - Framer Motion (animations)
 
 ### **State Management**
+
 - Zustand (global state)
 - React Hook Form (forms)
 - TanStack Query (server state)
 
 ### **Development Tools**
+
 - ESLint
 - Prettier
 - TypeScript
@@ -294,6 +328,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - Playwright (E2E testing)
 
 ### **Backend Integration**
+
 - Axios (HTTP client)
 - WebSocket (real-time features)
 - Go API endpoints
@@ -303,6 +338,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🔄 Workflow Guidelines
 
 ### **Development Process**
+
 1. **Planning** - Update this todo list
 2. **Design** - Create/review component designs
 3. **Development** - Implement features
@@ -311,12 +347,14 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 6. **Deployment** - Push to production
 
 ### **Git Workflow**
+
 - `main` - Production branch
 - `develop` - Development branch
 - `feature/*` - Feature branches
 - `hotfix/*` - Hotfix branches
 
 ### **Naming Conventions**
+
 - Components: PascalCase (`UserProfile.tsx`)
 - Hooks: camelCase with `use` prefix (`useAuth.ts`)
 - Utils: camelCase (`formatPrice.ts`)
@@ -327,18 +365,21 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 📝 Notes
 
 ### **API Integration**
+
 - Backend API base URL: `http://localhost:8080/api/v1`
 - Authentication: JWT tokens
 - Error handling: Consistent error responses
 - File uploads: Multipart form data
 
 ### **Performance Targets**
+
 - First Contentful Paint: < 2s
 - Largest Contentful Paint: < 3s
 - Time to Interactive: < 3s
 - Cumulative Layout Shift: < 0.1
 
 ### **Browser Support**
+
 - Chrome (latest 2 versions)
 - Firefox (latest 2 versions)
 - Safari (latest 2 versions)
@@ -349,6 +390,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 ## 🎉 Completion Criteria
 
 ### **MVP (Minimum Viable Product)**
+
 - [ ] User authentication
 - [ ] Product listing and search
 - [ ] Basic shopping experience
@@ -356,6 +398,7 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 - [ ] Messaging system
 
 ### **Full Feature Release**
+
 - [ ] All Phase 1-5 features complete
 - [ ] Mobile optimization
 - [ ] Performance optimization
@@ -364,5 +407,5 @@ Building a modern, responsive React/Next.js frontend for the Uptown Marketplace 
 
 ---
 
-*Last Updated: 2024-07-14*
-*Next Review: Weekly*
+_Last Updated: 2024-07-14_
+_Next Review: Weekly_

@@ -11,8 +11,8 @@ interface SearchBarProps {
   initialValue?: string;
 }
 
-export default function SearchBar({ 
-  placeholder = 'Search for products, categories, or sellers...', 
+export default function SearchBar({
+  placeholder = 'Search for products, categories, or sellers...',
   className = '',
   onSearch,
   initialValue = '',

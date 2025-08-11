@@ -28,13 +28,13 @@ body {
 }
 
 /* Global form input styles to ensure text visibility */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="url"],
-input[type="search"],
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
+input[type='tel'],
+input[type='url'],
+input[type='search'],
 textarea,
 select {
   @apply text-gray-900 bg-white;
@@ -66,13 +66,13 @@ select:disabled {
 
 /* Dark mode support - keep white backgrounds but adjust text */
 @media (prefers-color-scheme: dark) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="search"],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='tel'],
+  input[type='url'],
+  input[type='search'],
   textarea,
   select {
     @apply bg-white border-gray-300;

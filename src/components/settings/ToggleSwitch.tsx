@@ -5,11 +5,11 @@ interface ToggleSwitchProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export default function ToggleSwitch({ 
-  enabled, 
-  onToggle, 
-  disabled = false, 
-  size = 'md', 
+export default function ToggleSwitch({
+  enabled,
+  onToggle,
+  disabled = false,
+  size = 'md',
 }: ToggleSwitchProps) {
   const sizeClasses = {
     sm: 'h-4 w-8',

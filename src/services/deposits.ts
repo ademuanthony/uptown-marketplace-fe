@@ -43,21 +43,24 @@ export interface DepositQRCode {
 
 class DepositService {
   // Get or create deposit address for a specific currency/network
-  async getOrCreateDepositAddress(currency: DepositCurrency, chainId: number): Promise<DepositAddress> {
+  async getOrCreateDepositAddress(
+    currency: DepositCurrency,
+    chainId: number,
+  ): Promise<DepositAddress> {
     try {
       console.info('Sending deposit address request:', { currency, chain_id: chainId });
-      
+
       const response = await api.post<ApiResponse<DepositAddress>>('/deposit-addresses', {
         currency,
         chain_id: chainId,
       });
-      
+
       console.info('Deposit address API response:', response.data);
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get deposit address');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get deposit address error:', error);
@@ -72,12 +75,15 @@ class DepositService {
   // Get user's deposit addresses
   async getUserDepositAddresses(): Promise<DepositAddress[]> {
     try {
-      const response = await api.get<ApiResponse<{ deposit_addresses: DepositAddress[] }>>('/deposit-addresses/user');
-      
+      const response =
+        await api.get<ApiResponse<{ deposit_addresses: DepositAddress[] }>>(
+          '/deposit-addresses/user',
+        );
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get deposit addresses');
       }
-      
+
       return response.data.data.deposit_addresses || [];
     } catch (error) {
       console.error('Get user deposit addresses error:', error);
@@ -91,12 +97,14 @@ class DepositService {
   // Get deposit address by chain type
   async getDepositAddressByChain(chainType: NetworkType): Promise<DepositAddress | null> {
     try {
-      const response = await api.get<ApiResponse<DepositAddress>>(`/deposit-addresses/chain/${chainType}`);
-      
+      const response = await api.get<ApiResponse<DepositAddress>>(
+        `/deposit-addresses/chain/${chainType}`,
+      );
+
       if (!response.data?.success) {
         return null;
       }
-      
+
       return response.data.data || null;
     } catch (error) {
       console.error('Get deposit address by chain error:', error);
@@ -105,11 +113,16 @@ class DepositService {
   }
 
   // Generate QR code for deposit address
-  async generateDepositQRCode(address: string, currency: DepositCurrency, network: string, amount?: number): Promise<DepositQRCode> {
+  async generateDepositQRCode(
+    address: string,
+    currency: DepositCurrency,
+    network: string,
+    amount?: number,
+  ): Promise<DepositQRCode> {
     try {
       const qrData = this.createQRData(address, currency, network, amount);
       const qrCodeDataUrl = await this.generateQRCodeDataUrl(qrData);
-      
+
       return {
         address,
         qr_code_data_url: qrCodeDataUrl,
@@ -123,9 +136,14 @@ class DepositService {
   }
 
   // Create QR code data string
-  private createQRData(address: string, currency: DepositCurrency, network: string, amount?: number): string {
+  private createQRData(
+    address: string,
+    currency: DepositCurrency,
+    network: string,
+    amount?: number,
+  ): string {
     let qrData = '';
-    
+
     switch (network.toLowerCase()) {
       case 'polygon':
         if (currency === 'POL') {
@@ -139,11 +157,11 @@ class DepositService {
       default:
         qrData = address;
     }
-    
+
     if (amount && amount > 0) {
       qrData += `${qrData.includes('?') ? '&' : '?'}value=${amount}`;
     }
-    
+
     return qrData;
   }
 
@@ -160,7 +178,7 @@ class DepositService {
         },
         errorCorrectionLevel: 'M',
       });
-      
+
       return qrCodeDataUrl;
     } catch (error) {
       console.error('QR code generation error:', error);
@@ -169,7 +187,13 @@ class DepositService {
   }
 
   // Get supported networks
-  getSupportedNetworks(): { id: number; name: string; type: NetworkType; os: NetworkOs; currencies: DepositCurrency[] }[] {
+  getSupportedNetworks(): {
+    id: number;
+    name: string;
+    type: NetworkType;
+    os: NetworkOs;
+    currencies: DepositCurrency[];
+  }[] {
     return [
       {
         id: 137,
@@ -182,7 +206,9 @@ class DepositService {
   }
 
   // Get network by chain ID
-  getNetworkByChainId(chainId: number): { id: number; name: string; type: NetworkType; currencies: DepositCurrency[] } | null {
+  getNetworkByChainId(
+    chainId: number,
+  ): { id: number; name: string; type: NetworkType; currencies: DepositCurrency[] } | null {
     return this.getSupportedNetworks().find(network => network.id === chainId) || null;
   }
 
@@ -196,7 +222,7 @@ class DepositService {
   validateDepositAddress(address: string, network: NetworkType): boolean {
     // Basic Ethereum address validation (works for Polygon too)
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    
+
     switch (network) {
       case 'polygon':
         return ethAddressRegex.test(address);
@@ -206,24 +232,28 @@ class DepositService {
   }
 
   // Get network explorer URL
-  getExplorerUrl(network: NetworkType, address: string, type: 'address' | 'tx' = 'address'): string {
+  getExplorerUrl(
+    network: NetworkType,
+    address: string,
+    type: 'address' | 'tx' = 'address',
+  ): string {
     const baseUrls: Record<NetworkType, string> = {
       polygon: 'https://polygonscan.com',
     };
-    
+
     const baseUrl = baseUrls[network];
     if (!baseUrl) return '';
-    
+
     return `${baseUrl}/${type}/${address}`;
   }
 
   // Get minimum deposit amounts
   getMinimumDepositAmount(currency: DepositCurrency): number {
     const minimums: Record<DepositCurrency, number> = {
-      USDT: 1,     // 1 USDT minimum
-      POL: 0.1,    // 0.1 POL minimum
+      USDT: 1, // 1 USDT minimum
+      POL: 0.1, // 0.1 POL minimum
     };
-    
+
     return minimums[currency] || 0;
   }
 
@@ -237,11 +267,11 @@ class DepositService {
       'Deposits are credited after network confirmations.',
       'Processing time: 5-30 minutes depending on network congestion.',
     ];
-    
+
     if (currency === 'USDT' && network === 'polygon') {
       instructions.push('Make sure to use Polygon USDT contract address.');
     }
-    
+
     return instructions;
   }
 }

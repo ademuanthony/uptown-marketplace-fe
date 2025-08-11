@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { 
-  APIResponse, 
-  APIError, 
+import {
+  APIResponse,
+  APIError,
   AuthResponse,
   User,
   UserLoginRequest,
@@ -72,7 +72,7 @@ apiClient.interceptors.response.use(
       // Handle unauthorized - clear token and redirect to login
       setAuthToken(null);
       localStorage.removeItem('user_id');
-      
+
       // Only redirect if we're not already on the login page
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
@@ -119,11 +119,9 @@ export const authAPI = {
   register: (userData: UserRegistrationRequest): Promise<AuthResponse> =>
     apiRequest<AuthResponse>('POST', '/auth/register', userData),
 
-  logout: (): Promise<APIResponse> =>
-    apiRequest<APIResponse>('POST', '/auth/logout'),
+  logout: (): Promise<APIResponse> => apiRequest<APIResponse>('POST', '/auth/logout'),
 
-  refreshToken: (): Promise<AuthResponse> =>
-    apiRequest<AuthResponse>('POST', '/auth/refresh'),
+  refreshToken: (): Promise<AuthResponse> => apiRequest<AuthResponse>('POST', '/auth/refresh'),
 
   forgotPassword: (email: string): Promise<APIResponse> =>
     apiRequest<APIResponse>('POST', '/auth/forgot-password', { email }),
@@ -137,17 +135,18 @@ export const authAPI = {
 
 // Users API
 export const usersAPI = {
-  getProfile: (): Promise<User> =>
-    apiRequest<User>('GET', '/users/profile'),
+  getProfile: (): Promise<User> => apiRequest<User>('GET', '/users/profile'),
 
   updateProfile: (userData: Partial<User>): Promise<User> =>
     apiRequest<User>('PUT', '/users/profile', userData),
 
-  getUserById: (userId: string): Promise<User> =>
-    apiRequest<User>('GET', `/users/${userId}`),
+  getUserById: (userId: string): Promise<User> => apiRequest<User>('GET', `/users/${userId}`),
 
   searchUsers: (query: string, limit = 20, offset = 0): Promise<PaginatedResponse<User>> =>
-    apiRequest<PaginatedResponse<User>>('GET', `/users/search?query=${query}&limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<User>>(
+      'GET',
+      `/users/search?query=${query}&limit=${limit}&offset=${offset}`,
+    ),
 };
 
 // Products API
@@ -174,8 +173,10 @@ export const productsAPI = {
   createProduct: (productData: CreateProductRequest): Promise<Product> =>
     apiRequest<Product>('POST', '/products', productData),
 
-  updateProduct: (productId: string, productData: Partial<CreateProductRequest>): Promise<Product> =>
-    apiRequest<Product>('PUT', `/products/${productId}`, productData),
+  updateProduct: (
+    productId: string,
+    productData: Partial<CreateProductRequest>,
+  ): Promise<Product> => apiRequest<Product>('PUT', `/products/${productId}`, productData),
 
   deleteProduct: (productId: string): Promise<APIResponse> =>
     apiRequest<APIResponse>('DELETE', `/products/${productId}`),
@@ -196,13 +197,15 @@ export const productsAPI = {
     apiRequest<APIResponse>('DELETE', `/products/${productId}/favorite`),
 
   getFavorites: (limit = 20, offset = 0): Promise<PaginatedResponse<Product>> =>
-    apiRequest<PaginatedResponse<Product>>('GET', `/products/favorites?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<Product>>(
+      'GET',
+      `/products/favorites?limit=${limit}&offset=${offset}`,
+    ),
 };
 
 // Categories API
 export const categoriesAPI = {
-  getCategories: (): Promise<Category[]> =>
-    apiRequest<Category[]>('GET', '/categories'),
+  getCategories: (): Promise<Category[]> => apiRequest<Category[]>('GET', '/categories'),
 
   getCategory: (categoryId: string): Promise<Category> =>
     apiRequest<Category>('GET', `/categories/${categoryId}`),
@@ -210,8 +213,15 @@ export const categoriesAPI = {
   getCategoryHierarchy: (): Promise<Category[]> =>
     apiRequest<Category[]>('GET', '/categories/hierarchy'),
 
-  getCategoryProducts: (categoryId: string, limit = 20, offset = 0): Promise<PaginatedResponse<Product>> =>
-    apiRequest<PaginatedResponse<Product>>('GET', `/categories/${categoryId}/products?limit=${limit}&offset=${offset}`),
+  getCategoryProducts: (
+    categoryId: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<PaginatedResponse<Product>> =>
+    apiRequest<PaginatedResponse<Product>>(
+      'GET',
+      `/categories/${categoryId}/products?limit=${limit}&offset=${offset}`,
+    ),
 };
 
 // Social API
@@ -229,8 +239,7 @@ export const socialAPI = {
   updateProfile: (profileData: Partial<SocialProfile>): Promise<SocialProfile> =>
     apiRequest<SocialProfile>('PUT', '/social/profile', profileData),
 
-  deleteProfile: (): Promise<APIResponse> =>
-    apiRequest<APIResponse>('DELETE', '/social/profile'),
+  deleteProfile: (): Promise<APIResponse> => apiRequest<APIResponse>('DELETE', '/social/profile'),
 
   searchProfiles: (params: Record<string, unknown>): Promise<PaginatedResponse<SocialProfile>> =>
     apiRequest<PaginatedResponse<SocialProfile>>('GET', '/social/profiles/search', { params }),
@@ -261,25 +270,45 @@ export const socialAPI = {
     apiRequest<APIResponse>('DELETE', `/social/users/${userId}/unblock`),
 
   getFollowers: (userId: string, limit = 20, offset = 0): Promise<PaginatedResponse<User>> =>
-    apiRequest<PaginatedResponse<User>>('GET', `/social/users/${userId}/followers?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<User>>(
+      'GET',
+      `/social/users/${userId}/followers?limit=${limit}&offset=${offset}`,
+    ),
 
   getFollowing: (userId: string, limit = 20, offset = 0): Promise<PaginatedResponse<User>> =>
-    apiRequest<PaginatedResponse<User>>('GET', `/social/users/${userId}/following?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<User>>(
+      'GET',
+      `/social/users/${userId}/following?limit=${limit}&offset=${offset}`,
+    ),
 
   getFriends: (userId: string, limit = 20, offset = 0): Promise<PaginatedResponse<User>> =>
-    apiRequest<PaginatedResponse<User>>('GET', `/social/users/${userId}/friends?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<User>>(
+      'GET',
+      `/social/users/${userId}/friends?limit=${limit}&offset=${offset}`,
+    ),
 
   getPendingRequests: (limit = 20, offset = 0): Promise<PaginatedResponse<SocialConnection>> =>
-    apiRequest<PaginatedResponse<SocialConnection>>('GET', `/social/friend-requests/pending?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<SocialConnection>>(
+      'GET',
+      `/social/friend-requests/pending?limit=${limit}&offset=${offset}`,
+    ),
 
-  getConnectionStatus: (userId: string): Promise<{ connected: boolean; connection_type?: string }> =>
-    apiRequest<{ connected: boolean; connection_type?: string }>('GET', `/social/users/${userId}/connection-status`),
+  getConnectionStatus: (
+    userId: string,
+  ): Promise<{ connected: boolean; connection_type?: string }> =>
+    apiRequest<{ connected: boolean; connection_type?: string }>(
+      'GET',
+      `/social/users/${userId}/connection-status`,
+    ),
 };
 
 // Messaging API
 export const messagingAPI = {
   getConversations: (limit = 20, offset = 0): Promise<PaginatedResponse<Conversation>> =>
-    apiRequest<PaginatedResponse<Conversation>>('GET', `/messaging/conversations?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<Conversation>>(
+      'GET',
+      `/messaging/conversations?limit=${limit}&offset=${offset}`,
+    ),
 
   getConversation: (conversationId: string): Promise<Conversation> =>
     apiRequest<Conversation>('GET', `/messaging/conversations/${conversationId}`),
@@ -287,18 +316,34 @@ export const messagingAPI = {
   createConversation: (participantIds: string[], title?: string): Promise<Conversation> =>
     apiRequest<Conversation>('POST', '/messaging/conversations', { participantIds, title }),
 
-  getMessages: (conversationId: string, limit = 50, offset = 0): Promise<PaginatedResponse<Message>> =>
-    apiRequest<PaginatedResponse<Message>>('GET', `/messaging/conversations/${conversationId}/messages?limit=${limit}&offset=${offset}`),
+  getMessages: (
+    conversationId: string,
+    limit = 50,
+    offset = 0,
+  ): Promise<PaginatedResponse<Message>> =>
+    apiRequest<PaginatedResponse<Message>>(
+      'GET',
+      `/messaging/conversations/${conversationId}/messages?limit=${limit}&offset=${offset}`,
+    ),
 
-  sendMessage: (conversationId: string, content: string, attachments?: File[]): Promise<Message> => {
+  sendMessage: (
+    conversationId: string,
+    content: string,
+    attachments?: File[],
+  ): Promise<Message> => {
     const formData = new FormData();
     formData.append('content', content);
     if (attachments) {
       attachments.forEach(file => formData.append('attachments', file));
     }
-    return apiRequest<Message>('POST', `/messaging/conversations/${conversationId}/messages`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return apiRequest<Message>(
+      'POST',
+      `/messaging/conversations/${conversationId}/messages`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    );
   },
 
   markAsRead: (messageId: string): Promise<APIResponse> =>
@@ -307,10 +352,20 @@ export const messagingAPI = {
 
 // Reviews API
 export const reviewsAPI = {
-  getProductReviews: (productId: string, limit = 20, offset = 0): Promise<PaginatedResponse<ProductReview>> =>
-    apiRequest<PaginatedResponse<ProductReview>>('GET', `/reviews/products/${productId}?limit=${limit}&offset=${offset}`),
+  getProductReviews: (
+    productId: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<PaginatedResponse<ProductReview>> =>
+    apiRequest<PaginatedResponse<ProductReview>>(
+      'GET',
+      `/reviews/products/${productId}?limit=${limit}&offset=${offset}`,
+    ),
 
-  createProductReview: (productId: string, reviewData: Partial<ProductReview>): Promise<ProductReview> =>
+  createProductReview: (
+    productId: string,
+    reviewData: Partial<ProductReview>,
+  ): Promise<ProductReview> =>
     apiRequest<ProductReview>('POST', `/reviews/products/${productId}`, reviewData),
 
   updateReview: (reviewId: string, reviewData: Partial<ProductReview>): Promise<ProductReview> =>
@@ -325,14 +380,33 @@ export const reviewsAPI = {
 
 // Premium API
 export const premiumAPI = {
-  getPremiumOptions: (): Promise<{ options: Array<{ id: string; name: string; duration_days: number; price_cents: number; features: string[] }> }> =>
-    apiRequest<{ options: Array<{ id: string; name: string; duration_days: number; price_cents: number; features: string[] }> }>('GET', '/premium/options'),
+  getPremiumOptions: (): Promise<{
+    options: Array<{
+      id: string;
+      name: string;
+      duration_days: number;
+      price_cents: number;
+      features: string[];
+    }>;
+  }> =>
+    apiRequest<{
+      options: Array<{
+        id: string;
+        name: string;
+        duration_days: number;
+        price_cents: number;
+        features: string[];
+      }>;
+    }>('GET', '/premium/options'),
 
   createPremiumListing: (listingData: Partial<PremiumListing>): Promise<PremiumListing> =>
     apiRequest<PremiumListing>('POST', '/premium/listings', listingData),
 
   getPremiumListings: (limit = 20, offset = 0): Promise<PaginatedResponse<PremiumListing>> =>
-    apiRequest<PaginatedResponse<PremiumListing>>('GET', `/premium/listings?limit=${limit}&offset=${offset}`),
+    apiRequest<PaginatedResponse<PremiumListing>>(
+      'GET',
+      `/premium/listings?limit=${limit}&offset=${offset}`,
+    ),
 
   cancelPremiumListing: (listingId: string): Promise<APIResponse> =>
     apiRequest<APIResponse>('DELETE', `/premium/listings/${listingId}`),
@@ -340,7 +414,9 @@ export const premiumAPI = {
 
 // Shipping API
 export const shippingAPI = {
-  calculateShippingCost: (shippingData: Record<string, unknown>): Promise<Record<string, unknown>> =>
+  calculateShippingCost: (
+    shippingData: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> =>
     apiRequest<Record<string, unknown>>('POST', '/shipping/calculate', shippingData),
 
   createShipment: (shipmentData: Partial<Shipment>): Promise<Shipment> =>
@@ -352,7 +428,10 @@ export const shippingAPI = {
   trackShipment: (trackingNumber: string): Promise<Record<string, unknown>> =>
     apiRequest<Record<string, unknown>>('GET', `/shipping/track/${trackingNumber}`),
 
-  confirmDelivery: (shipmentId: string, confirmationData: Record<string, unknown>): Promise<APIResponse> =>
+  confirmDelivery: (
+    shipmentId: string,
+    confirmationData: Record<string, unknown>,
+  ): Promise<APIResponse> =>
     apiRequest<APIResponse>('POST', `/shipping/shipments/${shipmentId}/confirm`, confirmationData),
 };
 
@@ -360,11 +439,11 @@ export const shippingAPI = {
 export const uploadFile = async (file: File, endpoint: string): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await apiRequest<{ url: string }>('POST', endpoint, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  
+
   return response.url;
 };
 

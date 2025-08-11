@@ -9,7 +9,7 @@ import fuelService, {
   type TransactionSummary,
   type PurchaseFuelResponse,
 } from '@/services/fuel';
-import { 
+import {
   BoltIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -31,18 +31,19 @@ interface FuelPurchaseModalProps {
   isLoading: boolean;
 }
 
-const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  packages, 
-  onPurchase, 
-  isLoading, 
+const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
+  isOpen,
+  onClose,
+  packages,
+  onPurchase,
+  isLoading,
 }) => {
   if (!isOpen) return null;
 
-  console.info('packages', packages);  
+  console.info('packages', packages);
 
-  const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number, currency: string) =>
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.toUpperCase(),
     }).format(amount / 100);
@@ -62,36 +63,40 @@ const FuelPurchaseModal: React.FC<FuelPurchaseModalProps> = ({
         </div>
 
         <div className="space-y-3 mb-6">
-          {Array.isArray(packages) && packages.length > 0 ? packages.filter(pkg => pkg.status === 'active').map(pkg => (
-            <div
-              key={pkg.id}
-              className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-medium text-gray-900">{pkg.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {pkg.fuel_amount.toLocaleString()} fuel units
-                  </p>
-                  {pkg.description && (
-                    <p className="text-xs text-gray-400 mt-1">{pkg.description}</p>
-                  )}
+          {Array.isArray(packages) && packages.length > 0 ? (
+            packages
+              .filter(pkg => pkg.status === 'active')
+              .map(pkg => (
+                <div
+                  key={pkg.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{pkg.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        {pkg.fuel_amount.toLocaleString()} fuel units
+                      </p>
+                      {pkg.description && (
+                        <p className="text-xs text-gray-400 mt-1">{pkg.description}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg text-primary-600">
+                        {formatCurrency(pkg.price.amount / 100, pkg.price.currency)}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onPurchase(pkg.id)}
+                    disabled={isLoading}
+                    className="w-full mt-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isLoading ? 'Processing...' : 'Select Package'}
+                  </button>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-lg text-primary-600">
-                    {formatCurrency(pkg.price.amount/100, pkg.price.currency)}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => onPurchase(pkg.id)}
-                disabled={isLoading}
-                className="w-full mt-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? 'Processing...' : 'Select Package'}
-              </button>
-            </div>
-          )) : (
+              ))
+          ) : (
             <div className="text-center py-8 text-gray-500">
               <p className="text-lg mb-2">No fuel packages available</p>
               <p className="text-sm">Please check back later or contact support</p>
@@ -126,7 +131,8 @@ const TabButton: React.FC<TabButtonProps> = ({ active, onClick, children }) => (
   </button>
 );
 
-const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
+const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -228,13 +234,13 @@ export default function FuelPage() {
     try {
       setPurchaseLoading(true);
       const purchaseResponse: PurchaseFuelResponse = await fuelService.purchaseFuel(packageId);
-      
+
       // Show success message
       toast.success('Purchase initiated! Redirecting to payment...');
-      
+
       // Close modal
       setShowPurchaseModal(false);
-      
+
       // Redirect to invoice payment page
       window.location.href = `/invoices/${purchaseResponse.invoice.id}`;
     } catch (error) {
@@ -262,7 +268,7 @@ export default function FuelPage() {
         <div className="text-center">
           <BoltIcon className="h-12 w-12 text-gray-400 mx-auto" />
           <p className="mt-2 text-gray-600">Please log in to view your fuel account</p>
-          <Link 
+          <Link
             href="/auth/login"
             className="mt-4 inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
           >
@@ -351,17 +357,11 @@ export default function FuelPage() {
         {/* Tabs */}
         <div className="mb-6">
           <div className="flex space-x-2">
-            <TabButton 
-              active={activeTab === 'overview'} 
-              onClick={() => setActiveTab('overview')}
-            >
+            <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
               <EyeIcon className="h-4 w-4 mr-2 inline" />
               Overview
             </TabButton>
-            <TabButton 
-              active={activeTab === 'history'} 
-              onClick={() => setActiveTab('history')}
-            >
+            <TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
               <ClockIcon className="h-4 w-4 mr-2 inline" />
               Transaction History
             </TabButton>
@@ -372,7 +372,7 @@ export default function FuelPage() {
         {activeTab === 'overview' && (
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Account Overview</h2>
-            
+
             {summary && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -380,11 +380,16 @@ export default function FuelPage() {
                   <dl className="space-y-2">
                     <div className="flex justify-between">
                       <dt className="text-sm text-gray-600">Total Transactions:</dt>
-                      <dd className="text-sm font-medium text-gray-900">{summary?.transaction_count || 0}</dd>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {summary?.transaction_count || 0}
+                      </dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-sm text-gray-600">Current Balance:</dt>
-                      <dd className="text-sm font-medium text-gray-900">{summary?.current_balance ? summary.current_balance.toLocaleString() : '0'} units</dd>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {summary?.current_balance ? summary.current_balance.toLocaleString() : '0'}{' '}
+                        units
+                      </dd>
                     </div>
                     {summary?.last_transaction_date && (
                       <div className="flex justify-between">
@@ -437,7 +442,9 @@ export default function FuelPage() {
                       </div>
 
                       <div className="text-right">
-                        <p className={`text-sm font-medium ${getTransactionColor(transaction.transaction_type)}`}>
+                        <p
+                          className={`text-sm font-medium ${getTransactionColor(transaction.transaction_type)}`}
+                        >
                           {transaction.transaction_type === 'spend' ? '-' : '+'}
                           {transaction.amount?.toLocaleString() || '0'}
                         </p>

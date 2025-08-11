@@ -31,8 +31,21 @@ export interface MessageReadData {
 }
 
 export interface WebSocketMessage {
-  type: 'message' | 'conversation_update' | 'user_online' | 'user_offline' | 'typing' | 'message_read' | 'pong';
-  data: MessageData | ConversationUpdateData | UserStatusData | TypingData | MessageReadData | unknown;
+  type:
+    | 'message'
+    | 'conversation_update'
+    | 'user_online'
+    | 'user_offline'
+    | 'typing'
+    | 'message_read'
+    | 'pong';
+  data:
+    | MessageData
+    | ConversationUpdateData
+    | UserStatusData
+    | TypingData
+    | MessageReadData
+    | unknown;
   timestamp: string;
 }
 
@@ -68,7 +81,12 @@ export interface MessageReadEvent {
   read_at: string;
 }
 
-export type RealtimeEvent = MessageEvent | ConversationUpdateEvent | UserStatusEvent | TypingEvent | MessageReadEvent;
+export type RealtimeEvent =
+  | MessageEvent
+  | ConversationUpdateEvent
+  | UserStatusEvent
+  | TypingEvent
+  | MessageReadEvent;
 
 export class WebSocketService {
   private ws: WebSocket | null = null;
@@ -80,7 +98,7 @@ export class WebSocketService {
   private connectionListeners: Set<(connected: boolean) => void> = new Set();
   private isConnected = false;
   private userId: string | null = null;
-  
+
   // Queue for pending actions while disconnected
   private pendingActions: Array<() => void> = [];
   private joinedConversations: Set<string> = new Set();
@@ -102,7 +120,7 @@ export class WebSocketService {
 
   async connect(userId: string) {
     this.userId = userId;
-    const {currentUser} = auth;
+    const { currentUser } = auth;
     if (!currentUser) {
       console.error('No current user found');
       return;
@@ -112,7 +130,7 @@ export class WebSocketService {
       console.error('No token found');
       return;
     }
-    
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       return;
     }
@@ -124,15 +142,17 @@ export class WebSocketService {
     }
 
     try {
-      this.ws = new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}&user_id=${encodeURIComponent(userId)}`);
-      
+      this.ws = new WebSocket(
+        `${wsUrl}?token=${encodeURIComponent(token)}&user_id=${encodeURIComponent(userId)}`,
+      );
+
       this.ws.onopen = () => {
         console.info('WebSocket connected');
         this.isConnected = true;
         this.reconnectAttempts = 0;
         this.startHeartbeat();
         this.notifyConnectionListeners(true);
-        
+
         // Process pending actions
         this.processPendingActions();
       };
@@ -152,7 +172,8 @@ export class WebSocketService {
         this.stopHeartbeat();
         this.notifyConnectionListeners(false);
 
-        if (event.code !== 1000) { // Not a normal closure
+        if (event.code !== 1000) {
+          // Not a normal closure
           this.scheduleReconnect();
         }
       };
@@ -162,7 +183,6 @@ export class WebSocketService {
         this.isConnected = false;
         this.notifyConnectionListeners(false);
       };
-
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
     }
@@ -243,7 +263,7 @@ export class WebSocketService {
           read_at: readData.read_at,
         };
         break;
-        
+
       case 'pong':
         // Handle pong response from server
         console.info('🏓 Received pong from server');
@@ -315,20 +335,20 @@ export class WebSocketService {
 
   disconnect() {
     this.stopHeartbeat();
-    
+
     if (this.ws) {
       this.ws.close(1000, 'User disconnect');
       this.ws = null;
     }
-    
+
     this.isConnected = false;
     this.reconnectAttempts = 0;
     this.userId = null;
-    
+
     // Clear pending actions and joined conversations on explicit disconnect
     this.pendingActions = [];
     this.joinedConversations.clear();
-    
+
     this.notifyConnectionListeners(false);
   }
 
@@ -342,9 +362,15 @@ export class WebSocketService {
   }
 
   onUserStatusChange(callback: (event: UserStatusEvent) => void): () => void {
-    const unsubscribeOnline = this.addEventListener('user_online', callback as (event: RealtimeEvent) => void);
-    const unsubscribeOffline = this.addEventListener('user_offline', callback as (event: RealtimeEvent) => void);
-    
+    const unsubscribeOnline = this.addEventListener(
+      'user_online',
+      callback as (event: RealtimeEvent) => void,
+    );
+    const unsubscribeOffline = this.addEventListener(
+      'user_offline',
+      callback as (event: RealtimeEvent) => void,
+    );
+
     return () => {
       unsubscribeOnline();
       unsubscribeOffline();
@@ -352,9 +378,15 @@ export class WebSocketService {
   }
 
   onTyping(callback: (event: TypingEvent) => void): () => void {
-    const unsubscribeStart = this.addEventListener('typing_start', callback as (event: RealtimeEvent) => void);
-    const unsubscribeStop = this.addEventListener('typing_stop', callback as (event: RealtimeEvent) => void);
-    
+    const unsubscribeStart = this.addEventListener(
+      'typing_start',
+      callback as (event: RealtimeEvent) => void,
+    );
+    const unsubscribeStop = this.addEventListener(
+      'typing_stop',
+      callback as (event: RealtimeEvent) => void,
+    );
+
     return () => {
       unsubscribeStart();
       unsubscribeStop();
@@ -367,53 +399,60 @@ export class WebSocketService {
 
   onConnectionChange(callback: (connected: boolean) => void): () => void {
     this.connectionListeners.add(callback);
-    
+
     return () => {
       this.connectionListeners.delete(callback);
     };
   }
 
-  private addEventListener(eventType: string, callback: (event: RealtimeEvent) => void): () => void {
+  private addEventListener(
+    eventType: string,
+    callback: (event: RealtimeEvent) => void,
+  ): () => void {
     const listeners = this.listeners.get(eventType);
     if (listeners) {
       listeners.add(callback);
-      
+
       return () => {
         listeners.delete(callback);
       };
     }
-    
+
     return () => {};
   }
 
   // Send methods
   sendTyping(conversationId: string, isTyping: boolean) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'typing',
-        data: {
-          conversation_id: conversationId,
-          is_typing: isTyping,
-        },
-      }));
+      this.ws.send(
+        JSON.stringify({
+          type: 'typing',
+          data: {
+            conversation_id: conversationId,
+            is_typing: isTyping,
+          },
+        }),
+      );
     }
   }
 
   joinConversation(conversationId: string) {
     console.info('🔗 Attempting to join conversation:', conversationId);
-    
+
     // Add to joined conversations set
     this.joinedConversations.add(conversationId);
-    
+
     const joinAction = () => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         console.info('📤 Sending join_conversation message for:', conversationId);
-        this.ws.send(JSON.stringify({
-          type: 'join_conversation',
-          data: {
-            conversation_id: conversationId,
-          },
-        }));
+        this.ws.send(
+          JSON.stringify({
+            type: 'join_conversation',
+            data: {
+              conversation_id: conversationId,
+            },
+          }),
+        );
       }
     };
 
@@ -427,27 +466,29 @@ export class WebSocketService {
 
   leaveConversation(conversationId: string) {
     console.info('👋 Leaving conversation:', conversationId);
-    
+
     // Remove from joined conversations set
     this.joinedConversations.delete(conversationId);
-    
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'leave_conversation',
-        data: {
-          conversation_id: conversationId,
-        },
-      }));
+      this.ws.send(
+        JSON.stringify({
+          type: 'leave_conversation',
+          data: {
+            conversation_id: conversationId,
+          },
+        }),
+      );
     }
   }
-  
+
   private processPendingActions() {
     console.info('🔄 Processing pending actions:', this.pendingActions.length);
-    
+
     // Execute all pending actions
     const actions = [...this.pendingActions];
     this.pendingActions = [];
-    
+
     actions.forEach(action => {
       try {
         action();
@@ -455,7 +496,7 @@ export class WebSocketService {
         console.error('Error executing pending action:', error);
       }
     });
-    
+
     console.info('✅ Pending actions processed');
   }
 

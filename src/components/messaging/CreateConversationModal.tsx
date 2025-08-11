@@ -23,13 +23,13 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
 
     try {
       setLoading(true);
-      
+
       // For now, we'll use email as participant ID
       // In a real implementation, you'd lookup user by email first
       const participantIds = participantEmail ? [participantEmail] : [];
-      
+
       await onCreate(conversationType, title || undefined, participantIds);
-      
+
       // Reset form
       setTitle('');
       setParticipantEmail('');
@@ -47,15 +47,15 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Start New Conversation
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <h2 className="text-lg font-semibold text-gray-900">Start New Conversation</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -80,9 +80,7 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
           {/* Title (for group chats) */}
           {conversationType === 'group' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Group Name *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Group Name *</label>
               <input
                 type="text"
                 value={title}

@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = authService.onAuthStateChanged(async firebaseUser => {
       console.info('Auth state changed:', firebaseUser?.uid);
       setFirebaseUser(firebaseUser);
-      
+
       if (firebaseUser) {
         try {
           const user = await authService.getCurrentUser();
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setUser(null);
       }
-      
+
       setLoading(false);
     });
 

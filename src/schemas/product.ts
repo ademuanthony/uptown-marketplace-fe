@@ -46,4 +46,4 @@ export const updateProductSchema = createProductSchema.partial();
 export type LocationFormData = z.infer<typeof locationSchema>;
 export type CreateProductFormData = z.infer<typeof createProductSchema>;
 export type UpdateProductFormData = z.infer<typeof updateProductSchema>;
-export type ProductCondition = typeof productConditions[number];
+export type ProductCondition = (typeof productConditions)[number];

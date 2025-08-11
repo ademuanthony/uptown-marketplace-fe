@@ -10,10 +10,13 @@ class SearchAnalyticsService implements SearchAnalytics {
 
   async trackSearch(query: string): Promise<void> {
     try {
-      const response = await api.post<{ search_id: string, query: string, timestamp: string }>('/analytics/search/track', {
-        query,
-        timestamp: new Date().toISOString(),
-      });
+      const response = await api.post<{ search_id: string; query: string; timestamp: string }>(
+        '/analytics/search/track',
+        {
+          query,
+          timestamp: new Date().toISOString(),
+        },
+      );
 
       if (response.data?.search_id) {
         this.searchId = response.data.search_id;

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import QRCodeSVG from 'react-qr-code';
-import { 
-  ClipboardDocumentIcon, 
+import {
+  ClipboardDocumentIcon,
   CheckCircleIcon,
   ArrowPathIcon,
   ClockIcon,
@@ -39,7 +39,11 @@ interface PaymentStatus {
   verifiedAt?: string;
 }
 
-export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplete }: CryptoPaymentProps) {
+export default function CryptoPayment({
+  invoiceId,
+  totalAmount,
+  onPaymentComplete,
+}: CryptoPaymentProps) {
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,14 +54,13 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
 
   // Fixed to Polygon network
   const selectedNetwork = 'polygon';
-  const networkInfo = { 
-    id: 'polygon', 
-    name: 'Polygon', 
-    icon: '🟣', 
-    confirmations: 20, 
-    fee: 'Low (~$0.01)', 
+  const networkInfo = {
+    id: 'polygon',
+    name: 'Polygon',
+    icon: '🟣',
+    confirmations: 20,
+    fee: 'Low (~$0.01)',
   };
-
 
   // Stop polling
   const stopPolling = useCallback(() => {
@@ -67,69 +70,76 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
     }
   }, [pollingInterval]);
 
+  // Check payment status
+  const checkPaymentStatus = useCallback(async () => {
+    if (!paymentDetails || !paymentReference) return;
 
-    // Check payment status
-    const checkPaymentStatus = useCallback(async () => {
-      if (!paymentDetails || !paymentReference) return;
-      
-      setChecking(true);
-      try {
-        const response = await fetch(`/api/v1/invoices/${invoiceId}/crypto-payment/status?reference=${encodeURIComponent(paymentReference)}`, {
+    setChecking(true);
+    try {
+      const response = await fetch(
+        `/api/v1/invoices/${invoiceId}/crypto-payment/status?reference=${encodeURIComponent(paymentReference)}`,
+        {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        });
-  
-        if (!response.ok) {
-          throw new Error('Failed to check payment status');
-        }
-  
-        const data = await response.json();
-        if (data.success && data.data) {
-          // Map the unified payment verification response to the old format
-          const statusData: PaymentStatus = {
-            status: (data.data.status === 'completed' ? 'confirmed' : 
-                    data.data.status === 'processing' ? 'confirming' :
-                    data.data.status === 'failed' ? 'failed' : 'pending') as 'pending' | 'confirming' | 'confirmed' | 'failed',
-            transactionHash: data.data.provider_data?.transaction_hash,
-            confirmations: data.data.provider_data?.confirmations || 0,
-            requiredConfirmations: 20, // Default for Polygon
-            amountReceived: data.data.amount ? (data.data.amount.amount / 100).toFixed(2) : undefined,
-            verifiedAt: data.data.processed_at,
-          };
-          
-          setPaymentStatus(statusData);
-          
-          // Check if payment is confirmed
-          if (statusData.status === 'confirmed') {
-            stopPolling();
-            toast.success('Payment confirmed successfully!');
-            if (onPaymentComplete) {
-              onPaymentComplete();
-            }
-          } else if (statusData.status === 'confirming') {
-            toast.loading(`Transaction confirming: ${statusData.confirmations}/${statusData.requiredConfirmations} confirmations`);
-          }
-        }
-      } catch (error) {
-        console.error('Status check error:', error);
-      } finally {
-        setChecking(false);
-      }
-    }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete, stopPolling]);
-  
+        },
+      );
 
-    // Start polling for payment status
+      if (!response.ok) {
+        throw new Error('Failed to check payment status');
+      }
+
+      const data = await response.json();
+      if (data.success && data.data) {
+        // Map the unified payment verification response to the old format
+        const statusData: PaymentStatus = {
+          status: (data.data.status === 'completed'
+            ? 'confirmed'
+            : data.data.status === 'processing'
+              ? 'confirming'
+              : data.data.status === 'failed'
+                ? 'failed'
+                : 'pending') as 'pending' | 'confirming' | 'confirmed' | 'failed',
+          transactionHash: data.data.provider_data?.transaction_hash,
+          confirmations: data.data.provider_data?.confirmations || 0,
+          requiredConfirmations: 20, // Default for Polygon
+          amountReceived: data.data.amount ? (data.data.amount.amount / 100).toFixed(2) : undefined,
+          verifiedAt: data.data.processed_at,
+        };
+
+        setPaymentStatus(statusData);
+
+        // Check if payment is confirmed
+        if (statusData.status === 'confirmed') {
+          stopPolling();
+          toast.success('Payment confirmed successfully!');
+          if (onPaymentComplete) {
+            onPaymentComplete();
+          }
+        } else if (statusData.status === 'confirming') {
+          toast.loading(
+            `Transaction confirming: ${statusData.confirmations}/${statusData.requiredConfirmations} confirmations`,
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Status check error:', error);
+    } finally {
+      setChecking(false);
+    }
+  }, [invoiceId, paymentDetails, paymentReference, onPaymentComplete, stopPolling]);
+
+  // Start polling for payment status
   const startPolling = () => {
-      // Initial check
+    // Initial check
     checkPaymentStatus();
-      
-      // Poll every 10 seconds
+
+    // Poll every 10 seconds
     const interval = setInterval(() => {
-        checkPaymentStatus();
+      checkPaymentStatus();
     }, 10000);
-      
-      setPollingInterval(interval);
+
+    setPollingInterval(interval);
   };
 
   // Initiate crypto payment
@@ -140,9 +150,9 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           network: selectedNetwork,
           amount: totalAmount.amount,
           email: 'user@example.com', // This would come from user context
@@ -162,9 +172,10 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
           amountUSDT: (data.data.amount.amount / 100).toFixed(2), // Convert cents to dollars
           amountInWei: data.data.amount.amount.toString(),
           qrCode: data.data.qr_code,
-          expiresAt: data.data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          expiresAt:
+            data.data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };
-        
+
         setPaymentDetails(paymentData);
         setPaymentReference(data.data.provider_reference);
         startPolling(); // Start polling for payment status
@@ -180,7 +191,7 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
   // Copy wallet address to clipboard
   const copyToClipboard = async () => {
     if (!paymentDetails) return;
-    
+
     try {
       await navigator.clipboard.writeText(paymentDetails.walletAddress);
       setCopied(true);
@@ -192,9 +203,12 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
   };
 
   // Cleanup on unmount
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       stopPolling();
-    }, [stopPolling]);
+    },
+    [stopPolling],
+  );
 
   // Auto-initiate payment on mount
   useEffect(() => {
@@ -242,30 +256,20 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
           {/* Amount */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <div className="text-sm text-gray-600 mb-1">Amount to Pay</div>
-            <div className="text-2xl font-bold text-gray-900">
-              {paymentDetails.amountUSDT} USDT
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              on {networkInfo.name} Network
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{paymentDetails.amountUSDT} USDT</div>
+            <div className="text-xs text-gray-500 mt-1">on {networkInfo.name} Network</div>
           </div>
 
           {/* QR Code */}
           <div className="flex justify-center mb-4">
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-              <QRCodeSVG 
-                value={paymentDetails.walletAddress}
-                size={200}
-                level="H"
-              />
+              <QRCodeSVG value={paymentDetails.walletAddress} size={200} level="H" />
             </div>
           </div>
 
           {/* Wallet Address */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Send to Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Send to Address</label>
             <div className="flex items-center bg-gray-50 rounded-lg p-3">
               <input
                 type="text"
@@ -288,12 +292,17 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
 
           {/* Payment Status */}
           {paymentStatus && (
-            <div className={`rounded-lg p-4 mb-4 ${
-              paymentStatus.status === 'confirmed' ? 'bg-green-50' :
-              paymentStatus.status === 'confirming' ? 'bg-yellow-50' :
-              paymentStatus.status === 'failed' ? 'bg-red-50' :
-              'bg-gray-50'
-            }`}>
+            <div
+              className={`rounded-lg p-4 mb-4 ${
+                paymentStatus.status === 'confirmed'
+                  ? 'bg-green-50'
+                  : paymentStatus.status === 'confirming'
+                    ? 'bg-yellow-50'
+                    : paymentStatus.status === 'failed'
+                      ? 'bg-red-50'
+                      : 'bg-gray-50'
+              }`}
+            >
               <div className="flex items-center">
                 {paymentStatus.status === 'confirmed' ? (
                   <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3" />
@@ -304,24 +313,29 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
                 ) : (
                   <ArrowPathIcon className="h-6 w-6 text-gray-500 mr-3 animate-spin" />
                 )}
-                
+
                 <div className="flex-1">
                   <div className="font-medium">
-                    {paymentStatus.status === 'confirmed' ? 'Payment Confirmed!' :
-                     paymentStatus.status === 'confirming' ? 'Transaction Confirming...' :
-                     paymentStatus.status === 'failed' ? 'Payment Failed' :
-                     'Waiting for Payment...'}
+                    {paymentStatus.status === 'confirmed'
+                      ? 'Payment Confirmed!'
+                      : paymentStatus.status === 'confirming'
+                        ? 'Transaction Confirming...'
+                        : paymentStatus.status === 'failed'
+                          ? 'Payment Failed'
+                          : 'Waiting for Payment...'}
                   </div>
-                  
+
                   {paymentStatus.status === 'confirming' && (
                     <div className="text-sm text-gray-600 mt-1">
-                      {paymentStatus.confirmations}/{paymentStatus.requiredConfirmations} confirmations
+                      {paymentStatus.confirmations}/{paymentStatus.requiredConfirmations}{' '}
+                      confirmations
                     </div>
                   )}
-                  
+
                   {paymentStatus.transactionHash && (
                     <div className="text-xs text-gray-500 mt-1 font-mono">
-                      TX: {paymentStatus.transactionHash.slice(0, 10)}...{paymentStatus.transactionHash.slice(-8)}
+                      TX: {paymentStatus.transactionHash.slice(0, 10)}...
+                      {paymentStatus.transactionHash.slice(-8)}
                     </div>
                   )}
                 </div>
@@ -352,7 +366,9 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
             <p className="font-medium mb-2">Instructions:</p>
             <ol className="list-decimal list-inside space-y-1">
               <li>Copy the wallet address or scan the QR code</li>
-              <li>Send exactly <strong>{paymentDetails.amountUSDT} USDT</strong> on Polygon</li>
+              <li>
+                Send exactly <strong>{paymentDetails.amountUSDT} USDT</strong> on Polygon
+              </li>
               <li>Wait for network confirmations ({networkInfo.confirmations} required)</li>
               <li>Payment will be automatically verified</li>
             </ol>
@@ -361,8 +377,8 @@ export default function CryptoPayment({ invoiceId, totalAmount, onPaymentComplet
           {/* Warning */}
           <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
             <p className="text-xs text-yellow-800">
-              <strong>Important:</strong> Only send USDT on POLYGON network to this address. 
-              Sending other tokens or using wrong network will result in loss of funds.
+              <strong>Important:</strong> Only send USDT on POLYGON network to this address. Sending
+              other tokens or using wrong network will result in loss of funds.
             </p>
           </div>
         </div>

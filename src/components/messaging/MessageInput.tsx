@@ -48,7 +48,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (selectedFile) {
       // Send file message
       onSendFile?.(selectedFile, message.trim() || undefined);
@@ -57,10 +57,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
       // Send text message
       onSendMessage?.(message.trim(), 'text');
     }
-    
+
     setMessage('');
     handleStopTyping();
-    
+
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -95,7 +95,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     const file = e.target.files?.[0];
     if (file && !disabled) {
       setSelectedFile(file);
-      
+
       // Create preview for images
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -143,12 +143,18 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <div className="flex items-center space-x-2">
               <div className="p-1 bg-blue-100 text-blue-600 rounded">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zM3 5a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V5zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M3 17a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zM3 5a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V5zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                <p className="text-xs text-gray-500">
+                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                </p>
               </div>
             </div>
             <button
@@ -157,23 +163,28 @@ const MessageInput: React.FC<MessageInputProps> = ({
               disabled={uploading}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
-          
+
           {/* Image preview */}
           {filePreview && (
             <div className="mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={filePreview} 
-                alt="Preview" 
+              <img
+                src={filePreview}
+                alt="Preview"
                 className="max-h-32 max-w-full object-contain rounded"
               />
             </div>
           )}
-          
+
           {/* Upload progress indicator */}
           {uploading && (
             <div className="mb-2">
@@ -196,11 +207,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
           title="Attach file"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
             />
           </svg>
         </button>
@@ -244,17 +255,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-white"></div>
           ) : (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
               />
             </svg>
           )}
         </button>
       </form>
-
     </div>
   );
 };

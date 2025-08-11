@@ -1,11 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Enable experimental features for performance
   experimental: {
     optimizePackageImports: ['@headlessui/react', '@heroicons/react'],
   },
-  
+
   // Image optimization for marketplace product images
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -47,22 +47,23 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ui-avatars.com',
         pathname: '/api/**',
-      }
+      },
     ],
   },
-  
+
   // API rewrites for backend integration
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: process.env.NODE_ENV === 'development' 
-          ? 'http://localhost:8080/api/v1/:path*' 
-          : '/api/:path*',
+        destination:
+          process.env.NODE_ENV === 'development'
+            ? 'http://localhost:8080/api/v1/:path*'
+            : '/api/:path*',
       },
     ];
   },
-  
+
   // Headers for SEO and security
   async headers() {
     return [
@@ -89,20 +90,21 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
   // Compiler options for performance
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Bundle analyzer in development
   ...(process.env.ANALYZE === 'true' && {
     webpack: (config: any) => {
-      config.plugins.push(
-        new (require('@next/bundle-analyzer'))({
+      const BundleAnalyzerPlugin = require('@next/bundle-analyzer');
+      config.plugins?.push(
+        new BundleAnalyzerPlugin({
           enabled: true,
           openAnalyzer: true,
-        })
+        }),
       );
       return config;
     },

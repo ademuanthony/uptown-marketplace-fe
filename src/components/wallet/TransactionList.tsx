@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
+import {
   ChevronDownIcon,
   ChevronUpIcon,
   ArrowTrendingUpIcon,
@@ -16,7 +16,11 @@ import {
   LinkIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
-import walletService, { Transaction, TransactionType, TransactionStatus } from '../../services/wallet';
+import walletService, {
+  Transaction,
+  TransactionType,
+  TransactionStatus,
+} from '../../services/wallet';
 
 interface TransactionListProps {
   userId?: string;
@@ -119,15 +123,17 @@ const getTransactionTypeConfig = (type: TransactionType) => {
       direction: 'incoming',
     },
   };
-  
-  return configs[type] || {
-    icon: BanknotesIcon,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-gray-200',
-    label: 'Transaction',
-    direction: 'neutral',
-  };
+
+  return (
+    configs[type] || {
+      icon: BanknotesIcon,
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      borderColor: 'border-gray-200',
+      label: 'Transaction',
+      direction: 'neutral',
+    }
+  );
 };
 
 // Transaction status configuration with colors
@@ -164,7 +170,7 @@ const getTransactionStatusConfig = (status: TransactionStatus) => {
       icon: ExclamationTriangleIcon,
     },
   };
-  
+
   return configs[status] || configs.pending;
 };
 
@@ -173,26 +179,26 @@ const formatTransactionAmount = (transaction: Transaction, userId?: string) => {
   const typeConfig = getTransactionTypeConfig(transaction.type as TransactionType);
   // Parse amount as float from string - backend sends amount as string
   const amount = parseFloat(transaction.amount) || 0;
-  const {currency} = transaction;
-  
+  const { currency } = transaction;
+
   // Determine if this is an incoming or outgoing transaction
   let isIncoming = typeConfig.direction === 'incoming';
-  
+
   // For transfers, check counterparty to determine direction
   if (transaction.type === 'transfer' && userId) {
     isIncoming = transaction.counterparty_user_id !== userId;
   }
-  
+
   const sign = isIncoming ? '+' : '-';
   const colorClass = isIncoming ? 'text-green-600' : 'text-red-600';
-  
+
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: currency === 'USD' ? 'currency' : 'decimal',
     currency: currency === 'USD' ? 'USD' : undefined,
     minimumFractionDigits: 2,
     maximumFractionDigits: currency === 'USD' ? 2 : 6,
   }).format(Math.abs(amount));
-  
+
   return {
     display: `${sign}${formattedAmount}${currency !== 'USD' ? ` ${currency}` : ''}`,
     colorClass,
@@ -205,12 +211,12 @@ const formatRelativeDate = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return 'Just now';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  
+
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -237,14 +243,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await walletService.getTransactions(
         currentPage,
         limit,
         filterType,
         filterStatus,
       );
-      
+
       setTransactions(response.transactions);
       setTotalPages(response.pagination.total_pages);
     } catch (err) {
@@ -257,7 +263,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   useEffect(() => {
     loadTransactions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filterType, filterStatus, limit]);
 
   const toggleExpanded = (txId: string) => {
@@ -314,10 +320,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
         <BanknotesIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-800 mb-2">No Transactions Found</h3>
         <p className="text-gray-600">
-          {filterType || filterStatus 
+          {filterType || filterStatus
             ? 'No transactions match your current filters.'
-            : 'You haven\'t made any transactions yet.'
-          }
+            : "You haven't made any transactions yet."}
         </p>
       </div>
     );
@@ -341,13 +346,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
             }`}
           >
             {/* Main Transaction Row */}
-            <div
-              className="p-4 cursor-pointer"
-              onClick={() => toggleExpanded(transaction.id)}
-            >
+            <div className="p-4 cursor-pointer" onClick={() => toggleExpanded(transaction.id)}>
               <div className="flex items-center space-x-4">
                 {/* Transaction Icon */}
-                <div className={`flex-shrink-0 w-10 h-10 rounded-full ${typeConfig.bgColor} ${typeConfig.borderColor} border flex items-center justify-center`}>
+                <div
+                  className={`flex-shrink-0 w-10 h-10 rounded-full ${typeConfig.bgColor} ${typeConfig.borderColor} border flex items-center justify-center`}
+                >
                   <IconComponent className={`h-5 w-5 ${typeConfig.color}`} />
                 </div>
 
@@ -357,22 +361,22 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     <h3 className="text-sm font-medium text-gray-900 truncate">
                       {typeConfig.label}
                     </h3>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}
+                    >
                       <StatusIconComponent className="h-3 w-3 mr-1" />
                       {statusConfig.label}
                     </span>
                   </div>
-                  
-                  <p className="text-sm text-gray-600 truncate mt-1">
-                    {transaction.description}
-                  </p>
-                  
+
+                  <p className="text-sm text-gray-600 truncate mt-1">{transaction.description}</p>
+
                   <div className="flex items-center space-x-4 mt-2">
                     <span className="text-xs text-gray-500 flex items-center">
                       <CalendarIcon className="h-3 w-3 mr-1" />
                       {formatRelativeDate(transaction.created_at)}
                     </span>
-                    
+
                     {transaction.reference && (
                       <span className="text-xs text-gray-500 font-mono">
                         {transaction.reference.substring(0, 12)}...
@@ -386,16 +390,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   <div className={`text-sm font-semibold ${amountInfo.colorClass}`}>
                     {amountInfo.display}
                   </div>
-                  
+
                   {transaction.metadata?.fee_amount && (
                     <div className="text-xs text-gray-500 mt-1">
-                      Fee: {walletService.formatCurrency(
+                      Fee:{' '}
+                      {walletService.formatCurrency(
                         transaction.metadata.fee_amount.amount || 0,
                         transaction.metadata.fee_amount.currency || 'USD',
                       )}
                     </div>
                   )}
-                  
+
                   <div className="flex items-center justify-end mt-2">
                     {isExpanded ? (
                       <ChevronUpIcon className="h-4 w-4 text-gray-400" />
@@ -418,70 +423,70 @@ const TransactionList: React.FC<TransactionListProps> = ({
                         <span className="w-1 h-4 bg-blue-500 rounded-full mr-2"></span>
                         Transaction Details
                       </h4>
-                      
+
                       <div className="space-y-2.5 text-xs">
-                      <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
-                        <span className="text-gray-500 font-medium">Amount:</span>
-                        <span className={`text-right col-span-2 font-semibold text-sm ${amountInfo.colorClass}`}>
-                          {amountInfo.display}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
-                        <span className="text-gray-500 font-medium">Status:</span>
-                        <span className="text-right col-span-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}>
-                            {statusConfig.label}
+                        <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
+                          <span className="text-gray-500 font-medium">Amount:</span>
+                          <span
+                            className={`text-right col-span-2 font-semibold text-sm ${amountInfo.colorClass}`}
+                          >
+                            {amountInfo.display}
                           </span>
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <span className="text-gray-500">ID:</span>
-                        <span className="font-mono text-right col-span-2 truncate text-gray-700" title={transaction.id}>
-                          {transaction.id.length > 12 ? `${transaction.id.substring(0, 8)}...${transaction.id.substring(transaction.id.length - 4)}` : transaction.id}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <span className="text-gray-500">Type:</span>
-                        <span className="text-right col-span-2 text-gray-700">
-                          {typeConfig.label}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <span className="text-gray-500">Description:</span>
-                        <span className="text-right col-span-2 text-gray-700">
-                          {transaction.description}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <span className="text-gray-500">Reference:</span>
-                        <span className="font-mono text-right col-span-2 truncate text-gray-700" title={transaction.reference}>
-                          {transaction.reference.length > 20 ? `${transaction.reference.substring(0, 16)}...` : transaction.reference}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <span className="text-gray-500">Created:</span>
-                        <span className="text-right col-span-2 text-gray-700">
-                          {new Date(transaction.created_at).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </div>
-                      
-                      {transaction.processed_at && (
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 pb-2 border-b border-gray-100">
+                          <span className="text-gray-500 font-medium">Status:</span>
+                          <span className="text-right col-span-2">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}
+                            >
+                              {statusConfig.label}
+                            </span>
+                          </span>
+                        </div>
+
                         <div className="grid grid-cols-3 gap-2">
-                          <span className="text-gray-500">Processed:</span>
+                          <span className="text-gray-500">ID:</span>
+                          <span
+                            className="font-mono text-right col-span-2 truncate text-gray-700"
+                            title={transaction.id}
+                          >
+                            {transaction.id.length > 12
+                              ? `${transaction.id.substring(0, 8)}...${transaction.id.substring(transaction.id.length - 4)}`
+                              : transaction.id}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <span className="text-gray-500">Type:</span>
                           <span className="text-right col-span-2 text-gray-700">
-                            {new Date(transaction.processed_at).toLocaleString('en-US', {
+                            {typeConfig.label}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <span className="text-gray-500">Description:</span>
+                          <span className="text-right col-span-2 text-gray-700">
+                            {transaction.description}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <span className="text-gray-500">Reference:</span>
+                          <span
+                            className="font-mono text-right col-span-2 truncate text-gray-700"
+                            title={transaction.reference}
+                          >
+                            {transaction.reference.length > 20
+                              ? `${transaction.reference.substring(0, 16)}...`
+                              : transaction.reference}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <span className="text-gray-500">Created:</span>
+                          <span className="text-right col-span-2 text-gray-700">
+                            {new Date(transaction.created_at).toLocaleString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',
@@ -490,90 +495,116 @@ const TransactionList: React.FC<TransactionListProps> = ({
                             })}
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Metadata */}
-                  {transaction.metadata && Object.keys(transaction.metadata).length > 0 && (
-                    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                        <span className="w-1 h-4 bg-green-500 rounded-full mr-2"></span>
-                        Additional Info
-                      </h4>
-                      
-                      <div className="space-y-2.5 text-xs">
-                        {transaction.metadata.blockchain_tx_hash && (
+                        {transaction.processed_at && (
                           <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500">Tx Hash:</span>
-                            <div className="col-span-2 text-right">
-                              <a
-                                href={`https://polygonscan.com/tx/${transaction.metadata.blockchain_tx_hash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 inline-flex items-center"
-                              >
-                                <span className="font-mono" title={transaction.metadata.blockchain_tx_hash}>
-                                  {transaction.metadata.blockchain_tx_hash.substring(0, 6)}...{transaction.metadata.blockchain_tx_hash.substring(transaction.metadata.blockchain_tx_hash.length - 4)}
-                                </span>
-                                <LinkIcon className="h-3 w-3 ml-1" />
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {transaction.metadata.confirmations !== undefined && (
-                          <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500">Confirmations:</span>
-                            <span className="text-right col-span-2">
-                              {transaction.metadata.confirmations} / 12
-                            </span>
-                          </div>
-                        )}
-                        
-                        {transaction.metadata.exchange_rate && (
-                          <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500">Exchange Rate:</span>
-                            <span className="text-right col-span-2">
-                              ${transaction.metadata.exchange_rate.toFixed(4)}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {transaction.metadata.payment_provider && (
-                          <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500">Provider:</span>
-                            <span className="text-right col-span-2 capitalize">
-                              {transaction.metadata.payment_provider}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {transaction.counterparty_user_id && (
-                          <div className="grid grid-cols-3 gap-2">
-                            <span className="text-gray-500">Counterparty:</span>
-                            <span className="font-mono text-right col-span-2" title={transaction.counterparty_user_id}>
-                              {transaction.counterparty_user_id.substring(0, 6)}...{transaction.counterparty_user_id.substring(transaction.counterparty_user_id.length - 4)}
+                            <span className="text-gray-500">Processed:</span>
+                            <span className="text-right col-span-2 text-gray-700">
+                              {new Date(transaction.processed_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
                             </span>
                           </div>
                         )}
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Notes */}
-                {transaction.metadata?.notes && (
-                  <div className="mt-4 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                      <span className="w-1 h-4 bg-yellow-500 rounded-full mr-2"></span>
-                      Notes
-                    </h4>
-                    <p className="text-xs text-gray-700 leading-relaxed">
-                      {transaction.metadata.notes}
-                    </p>
+                    {/* Metadata */}
+                    {transaction.metadata && Object.keys(transaction.metadata).length > 0 && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                          <span className="w-1 h-4 bg-green-500 rounded-full mr-2"></span>
+                          Additional Info
+                        </h4>
+
+                        <div className="space-y-2.5 text-xs">
+                          {transaction.metadata.blockchain_tx_hash && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <span className="text-gray-500">Tx Hash:</span>
+                              <div className="col-span-2 text-right">
+                                <a
+                                  href={`https://polygonscan.com/tx/${transaction.metadata.blockchain_tx_hash}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 inline-flex items-center"
+                                >
+                                  <span
+                                    className="font-mono"
+                                    title={transaction.metadata.blockchain_tx_hash}
+                                  >
+                                    {transaction.metadata.blockchain_tx_hash.substring(0, 6)}...
+                                    {transaction.metadata.blockchain_tx_hash.substring(
+                                      transaction.metadata.blockchain_tx_hash.length - 4,
+                                    )}
+                                  </span>
+                                  <LinkIcon className="h-3 w-3 ml-1" />
+                                </a>
+                              </div>
+                            </div>
+                          )}
+
+                          {transaction.metadata.confirmations !== undefined && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <span className="text-gray-500">Confirmations:</span>
+                              <span className="text-right col-span-2">
+                                {transaction.metadata.confirmations} / 12
+                              </span>
+                            </div>
+                          )}
+
+                          {transaction.metadata.exchange_rate && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <span className="text-gray-500">Exchange Rate:</span>
+                              <span className="text-right col-span-2">
+                                ${transaction.metadata.exchange_rate.toFixed(4)}
+                              </span>
+                            </div>
+                          )}
+
+                          {transaction.metadata.payment_provider && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <span className="text-gray-500">Provider:</span>
+                              <span className="text-right col-span-2 capitalize">
+                                {transaction.metadata.payment_provider}
+                              </span>
+                            </div>
+                          )}
+
+                          {transaction.counterparty_user_id && (
+                            <div className="grid grid-cols-3 gap-2">
+                              <span className="text-gray-500">Counterparty:</span>
+                              <span
+                                className="font-mono text-right col-span-2"
+                                title={transaction.counterparty_user_id}
+                              >
+                                {transaction.counterparty_user_id.substring(0, 6)}...
+                                {transaction.counterparty_user_id.substring(
+                                  transaction.counterparty_user_id.length - 4,
+                                )}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Notes */}
+                  {transaction.metadata?.notes && (
+                    <div className="mt-4 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                        <span className="w-1 h-4 bg-yellow-500 rounded-full mr-2"></span>
+                        Notes
+                      </h4>
+                      <p className="text-xs text-gray-700 leading-relaxed">
+                        {transaction.metadata.notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -600,17 +631,15 @@ const TransactionList: React.FC<TransactionListProps> = ({
               Next
             </button>
           </div>
-          
+
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Showing page{' '}
-                <span className="font-medium">{currentPage}</span>{' '}
-                of{' '}
+                Showing page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>
             </div>
-            
+
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                 <button
@@ -620,12 +649,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 >
                   Previous
                 </button>
-                
+
                 {/* Page numbers */}
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const page = Math.max(1, Math.min(currentPage - 2 + i, totalPages - 4 + i));
                   if (page > totalPages) return null;
-                  
+
                   return (
                     <button
                       key={page}
@@ -640,7 +669,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     </button>
                   );
                 })}
-                
+
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}

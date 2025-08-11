@@ -12,10 +12,10 @@ const firebaseConfig = {
 };
 
 // Check if all required Firebase configuration is present
-const hasValidConfig = 
-  firebaseConfig.apiKey && 
-  firebaseConfig.authDomain && 
-  firebaseConfig.projectId && 
+const hasValidConfig =
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
   firebaseConfig.appId;
 
 let app: FirebaseApp | null = null;
@@ -26,15 +26,18 @@ if (hasValidConfig) {
   try {
     // Initialize Firebase
     app = initializeApp(firebaseConfig);
-    
+
     // Initialize Firebase Authentication and get a reference to the service
     auth = getAuth(app);
-    
+
     // Initialize Cloud Firestore and get a reference to the service
     db = getFirestore(app);
-    
+
     // Connect to emulators in development if configured
-    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true'
+    ) {
       connectAuthEmulator(auth, 'http://localhost:9099');
       connectFirestoreEmulator(db, 'localhost', 8080);
     }
@@ -43,7 +46,9 @@ if (hasValidConfig) {
     throw new Error('Failed to initialize Firebase. Please check your configuration.');
   }
 } else {
-  console.error('Firebase configuration is incomplete. Please set the following environment variables:');
+  console.error(
+    'Firebase configuration is incomplete. Please set the following environment variables:',
+  );
   if (!firebaseConfig.apiKey) console.error('- NEXT_PUBLIC_FIREBASE_API_KEY');
   if (!firebaseConfig.authDomain) console.error('- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
   if (!firebaseConfig.projectId) console.error('- NEXT_PUBLIC_FIREBASE_PROJECT_ID');

@@ -32,7 +32,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Fetch user's products using the list products API with seller_id filter
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
         const queryParams = new URLSearchParams({
@@ -41,49 +41,49 @@ export function ProductsTab({ userId }: ProductsTabProps) {
           page: '1',
           page_size: '20',
         });
-        
+
         const response = await fetch(`${apiBaseUrl}/api/v1/products?${queryParams}`, {
           method: 'GET',
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
           },
         });
-        
+
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
-        
+
         // Transform the products to match our interface
-        const transformedProducts = data.products?.map((product: unknown) => {
-          // Type assertion for product object
-          const p = product as {
-            id: string;
-            name: string;
-            description: string;
-            price: number;
-            images?: Array<{ url: string }>;
-            image_url?: string;
-            category_name?: string;
-            view_count?: number;
-            created_at: string;
-          };
-          
-          return {
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            image_url: p.images?.[0]?.url || p.image_url,
-            category_name: p.category_name,
-            view_count: p.view_count || 0,
-            created_at: p.created_at,
-          };
-        }) || [];
-        
+        const transformedProducts =
+          data.products?.map((product: unknown) => {
+            // Type assertion for product object
+            const p = product as {
+              id: string;
+              name: string;
+              description: string;
+              price: number;
+              images?: Array<{ url: string }>;
+              image_url?: string;
+              category_name?: string;
+              view_count?: number;
+              created_at: string;
+            };
+
+            return {
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              price: p.price,
+              image_url: p.images?.[0]?.url || p.image_url,
+              category_name: p.category_name,
+              view_count: p.view_count || 0,
+              created_at: p.created_at,
+            };
+          }) || [];
+
         setProducts(transformedProducts);
-        
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load products';
         setError(errorMessage);
@@ -125,9 +125,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
       <div className="text-center py-12">
         <ShoppingBagIcon className="mx-auto h-12 w-12 text-gray-400" />
         <h3 className="mt-2 text-sm font-medium text-gray-900">No products yet</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          This user hasn&apos;t listed any products yet.
-        </p>
+        <p className="mt-1 text-sm text-gray-500">This user hasn&apos;t listed any products yet.</p>
       </div>
     );
   }
@@ -135,11 +133,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map(product => (
-        <Link
-          key={product.id}
-          href={`/products/${product.id}`}
-          className="group"
-        >
+        <Link key={product.id} href={`/products/${product.id}`} className="group">
           <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
             {/* Product Image */}
             <div className="relative w-full h-48 bg-gray-100">
@@ -162,22 +156,18 @@ export function ProductsTab({ userId }: ProductsTabProps) {
               <h3 className="font-medium text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
                 {product.name}
               </h3>
-              
+
               {product.category_name && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {product.category_name}
-                </p>
+                <p className="text-xs text-gray-500 mt-1">{product.category_name}</p>
               )}
-              
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                {product.description}
-              </p>
-              
+
+              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+
               <div className="flex items-center justify-between mt-3">
                 <span className="text-lg font-bold text-gray-900">
                   ₦{product.price.toLocaleString()}
                 </span>
-                
+
                 <div className="flex items-center text-xs text-gray-500">
                   <EyeIcon className="h-3 w-3 mr-1" />
                   <span>{product.view_count}</span>

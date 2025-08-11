@@ -5,6 +5,7 @@
 The application is currently running in **development mode** with mock authentication. You can test all authentication features without setting up Firebase.
 
 **Test Credentials (Development Mode):**
+
 - **Email**: Any valid email format (e.g., `test@example.com`)
 - **Password**: Any password (minimum 6 characters)
 
@@ -57,18 +58,21 @@ NEXT_PUBLIC_DEV_MODE=false
 ### 5. Configure Authentication Settings
 
 #### Email/Password Settings:
+
 1. In Firebase Console → Authentication → Settings
 2. Configure **Authorized domains** to include your domain(s):
    - `localhost` (for development)
    - `your-production-domain.com` (for production)
 
 #### Password Policy:
+
 1. Go to Authentication → Settings → Password policy
 2. Configure minimum requirements as needed
 
 ### 6. Set up Social Login (Optional)
 
 #### Google OAuth:
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Select your Firebase project
 3. Go to APIs & Services → Credentials
@@ -76,6 +80,7 @@ NEXT_PUBLIC_DEV_MODE=false
 5. Add authorized domains
 
 #### Facebook OAuth:
+
 1. Go to [Facebook Developers](https://developers.facebook.com/)
 2. Create a new app or use existing
 3. Add Facebook Login product
@@ -96,17 +101,17 @@ func verifyFirebaseToken(tokenString string) (*auth.Token, error) {
     if err != nil {
         return nil, err
     }
-    
+
     authClient, err := client.Auth(context.Background())
     if err != nil {
         return nil, err
     }
-    
+
     token, err := authClient.VerifyIDToken(context.Background(), tokenString)
     if err != nil {
         return nil, err
     }
-    
+
     return token, nil
 }
 ```
@@ -117,7 +122,7 @@ Implement these endpoints in your Go backend:
 
 ```
 POST /api/v1/auth/login
-POST /api/v1/auth/register  
+POST /api/v1/auth/register
 POST /api/v1/auth/social-login
 GET  /api/v1/auth/me
 ```
@@ -125,11 +130,13 @@ GET  /api/v1/auth/me
 ## 🔍 Testing Authentication
 
 ### Development Mode Testing:
+
 - Use any email/password combination
 - All authentication features work with mock data
 - No actual Firebase calls are made
 
 ### Production Mode Testing:
+
 1. Register a new account with email/password
 2. Verify email (if email verification is enabled)
 3. Test login with registered credentials

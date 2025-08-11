@@ -22,7 +22,7 @@ export function ProfileTabs({ tabs, activeTab, onTabChange }: ProfileTabsProps) 
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
-          
+
           return (
             <button
               key={tab.id}
@@ -36,7 +36,7 @@ export function ProfileTabs({ tabs, activeTab, onTabChange }: ProfileTabsProps) 
                 }
               `}
             >
-              <Icon 
+              <Icon
                 className={`
                   -ml-0.5 mr-2 h-5 w-5 transition-colors
                   ${isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'}
@@ -44,14 +44,10 @@ export function ProfileTabs({ tabs, activeTab, onTabChange }: ProfileTabsProps) 
               />
               <span>{tab.name}</span>
               {typeof tab.count === 'number' && (
-                <span 
+                <span
                   className={`
                     ml-2 py-0.5 px-2 rounded-full text-xs font-medium transition-colors
-                    ${
-                      isActive 
-                        ? 'bg-primary-100 text-primary-600' 
-                        : 'bg-gray-100 text-gray-900'
-                    }
+                    ${isActive ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-900'}
                   `}
                 >
                   {tab.count}

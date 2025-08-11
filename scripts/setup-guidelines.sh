@@ -42,12 +42,13 @@ else
   print_status "❌ .eslintrc.recommended.js not found" $RED
 fi
 
-# Set up .eslintignore if it doesn't exist
-if [ -f ".eslintignore" ]; then
-  print_status "✅ .eslintignore already exists" $GREEN
+# Check ESLint configuration
+if [ -f "eslint.config.mjs" ]; then
+  print_status "✅ Modern ESLint config found (eslint.config.mjs)" $GREEN
+  echo "   Using flat config with ignores patterns for better performance"
 else
-  print_status "⚠️  .eslintignore not found - template files may cause linting issues" $YELLOW
-  echo "   Consider creating .eslintignore to exclude templates/ directory"
+  print_status "⚠️  Modern ESLint config not found" $YELLOW
+  echo "   Consider updating to eslint.config.mjs for better configuration"
 fi
 
 print_step "Step 2: Setting up TypeScript strict configuration"

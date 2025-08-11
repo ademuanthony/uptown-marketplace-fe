@@ -15,15 +15,15 @@ export function TimelineTab({ timelinePosts }: TimelineTabProps) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 24) {
       return diffInHours === 0 ? 'Just now' : `${diffInHours}h ago`;
     } else if (diffInHours < 24 * 7) {
       const days = Math.floor(diffInHours / 24);
       return `${days}d ago`;
     } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
         day: 'numeric',
         year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
       });

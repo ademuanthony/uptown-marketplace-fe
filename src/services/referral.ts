@@ -196,7 +196,9 @@ export const getDownlines = async (params?: {
 };
 
 // Validate referral code
-export const validateReferralCode = async (code: string): Promise<{
+export const validateReferralCode = async (
+  code: string,
+): Promise<{
   is_valid: boolean;
   profile?: ReferralProfile;
   error_reason?: string;
@@ -228,7 +230,7 @@ export const formatCurrencyAmount = (amount: number, currency: string): string =
   if (currency === 'POINTS') {
     return `${amount.toLocaleString()} points`;
   }
-  
+
   // Format as currency (assuming NGN for now, but can be extended)
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -245,12 +247,15 @@ export const getLevelName = (level: number): string => {
 };
 
 // Get reward percentage for display
-export const getRewardPercentageDisplay = (level: number, actionType: 'cash' | 'points'): string => {
+export const getRewardPercentageDisplay = (
+  level: number,
+  actionType: 'cash' | 'points',
+): string => {
   const cashPercentages = [15.0, 10.0, 7.5, 7.5, 5.0, 5.0];
   const pointsPercentages = [50.0, 25.0, 15.0, 10.0, 7.0, 5.0];
-  
+
   const percentages = actionType === 'cash' ? cashPercentages : pointsPercentages;
   const percentage = percentages[level - 1] || 0;
-  
+
   return `${percentage}%`;
 };

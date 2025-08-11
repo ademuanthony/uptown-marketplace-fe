@@ -11,7 +11,12 @@ import {
   BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { DepositCurrency as Currency, NetworkType } from '../../services/deposits';
-import withdrawalService, { WithdrawalRequest, NetworkFee, WithdrawalLimits, AddressBookEntry } from '../../services/withdrawals';
+import withdrawalService, {
+  WithdrawalRequest,
+  NetworkFee,
+  WithdrawalLimits,
+  AddressBookEntry,
+} from '../../services/withdrawals';
 import walletService from '../../services/wallet';
 
 interface WithdrawalFormProps {
@@ -34,12 +39,12 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     network: 'polygon',
     description: '',
   });
-  
+
   const [availableBalance, setAvailableBalance] = useState<number>(0);
   const [networkFee, setNetworkFee] = useState<NetworkFee | null>(null);
   const [limits, setLimits] = useState<WithdrawalLimits | null>(null);
   const [addressBook, setAddressBook] = useState<AddressBookEntry[]>([]);
-  
+
   const [loading, setLoading] = useState(false);
   const [loadingFee, setLoadingFee] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +53,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     is_valid: boolean;
     warnings?: string[];
   } | null>(null);
-  
+
   const [showAddressBook, setShowAddressBook] = useState(false);
   const [saveToAddressBook, setSaveToAddressBook] = useState(false);
   const [addressBookName, setAddressBookName] = useState('');
@@ -62,11 +67,11 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
         walletService.getWalletSummary(),
         withdrawalService.getAddressBook(),
       ]);
-      
+
       // Find the wallet for the selected currency
       const wallet = balanceData.wallets.find(w => w.currency === formData.currency);
       setAvailableBalance(wallet ? wallet.available.display : 0);
-      
+
       setAddressBook(addressBookData);
     } catch (err) {
       console.error('Failed to load initial data:', err);
@@ -75,7 +80,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
   const loadWithdrawalLimits = async () => {
     if (!formData.currency) return;
-    
+
     try {
       const limitsData = await withdrawalService.getWithdrawalLimits(formData.currency);
       setLimits(limitsData);
@@ -86,7 +91,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
   const loadNetworkFee = async () => {
     if (!formData.currency || !formData.network || !formData.amount) return;
-    
+
     try {
       setLoadingFee(true);
       const fee = await withdrawalService.getNetworkFee(
@@ -104,7 +109,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
   const validateAddress = async () => {
     if (!formData.recipient_address || !formData.network || !formData.currency) return;
-    
+
     try {
       const validation = await withdrawalService.validateWithdrawalAddress(
         formData.recipient_address,
@@ -120,14 +125,14 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
   useEffect(() => {
     loadInitialData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (formData.currency) {
       loadWithdrawalLimits();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.currency]);
 
   useEffect(() => {
@@ -136,7 +141,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     } else {
       setNetworkFee(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.currency, formData.network, formData.amount]);
 
   useEffect(() => {
@@ -145,7 +150,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     } else {
       setAddressValidation(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.recipient_address, formData.network]);
 
   const validateForm = (): boolean => {
@@ -183,7 +188,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -227,9 +232,12 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof WithdrawalRequest, value: string | number | undefined) => {
+  const handleInputChange = (
+    field: keyof WithdrawalRequest,
+    value: string | number | undefined,
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors(prev => {
@@ -306,9 +314,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Currency Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Currency
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Currency</label>
           <div className="grid grid-cols-2 gap-3">
             {supportedCurrencies.map(currency => (
               <button
@@ -333,9 +339,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
         {/* Network Selection */}
         {formData.currency && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Network
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Network</label>
             <div className="space-y-2">
               {getAvailableNetworks().map(network => (
                 <label key={network.network} className="flex items-center">
@@ -367,9 +371,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
 
         {/* Amount Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Amount
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
           <div className="relative">
             <input
               type="number"
@@ -388,9 +390,13 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
             <p className="text-sm text-red-600 mt-1">{validationErrors.amount}</p>
           )}
           <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
-            <span>Available: {availableBalance.toFixed(6)} {formData.currency}</span>
+            <span>
+              Available: {availableBalance.toFixed(6)} {formData.currency}
+            </span>
             {limits && (
-              <span>Daily limit: {limits.remaining_today.toFixed(6)} {formData.currency}</span>
+              <span>
+                Daily limit: {limits.remaining_today.toFixed(6)} {formData.currency}
+              </span>
             )}
           </div>
         </div>
@@ -398,9 +404,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
         {/* Recipient Address */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Recipient Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Recipient Address</label>
             <button
               type="button"
               onClick={() => setShowAddressBook(!showAddressBook)}
@@ -410,7 +414,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               <span>Address Book</span>
             </button>
           </div>
-          
+
           {showAddressBook && addressBook.length > 0 && (
             <div className="mb-3 bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto">
               <div className="space-y-2">
@@ -430,9 +434,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
                             {entry.address.substring(0, 20)}...
                           </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {entry.network}
-                        </div>
+                        <div className="text-xs text-gray-500">{entry.network}</div>
                       </div>
                     </button>
                   ))}
@@ -447,15 +449,17 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
             placeholder="Enter recipient wallet address"
             className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
           />
-          
+
           {validationErrors.recipient_address && (
             <p className="text-sm text-red-600 mt-1">{validationErrors.recipient_address}</p>
           )}
-          
+
           {addressValidation && (
-            <div className={`mt-2 flex items-start space-x-2 text-sm ${
-              addressValidation.is_valid ? 'text-green-600' : 'text-red-600'
-            }`}>
+            <div
+              className={`mt-2 flex items-start space-x-2 text-sm ${
+                addressValidation.is_valid ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
               {addressValidation.is_valid ? (
                 <CheckIcon className="h-4 w-4 mt-0.5" />
               ) : (
@@ -463,9 +467,12 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               )}
               <div>
                 <span>{addressValidation.is_valid ? 'Valid address' : 'Invalid address'}</span>
-                {addressValidation.warnings && addressValidation.warnings.map((warning, index) => (
-                  <div key={index} className="text-yellow-600">{warning}</div>
-                ))}
+                {addressValidation.warnings &&
+                  addressValidation.warnings.map((warning, index) => (
+                    <div key={index} className="text-yellow-600">
+                      {warning}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -483,7 +490,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               />
               <span className="ml-2 text-sm text-gray-700">Save to address book</span>
             </label>
-            
+
             {saveToAddressBook && (
               <div className="mt-3">
                 <input
@@ -525,15 +532,21 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
                 <div className="space-y-1 text-blue-700">
                   <div className="flex justify-between">
                     <span>Withdrawal Amount:</span>
-                    <span>{formData.amount} {formData.currency}</span>
+                    <span>
+                      {formData.amount} {formData.currency}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Network Fee:</span>
-                    <span>{networkFee.fee_amount} {networkFee.fee_currency}</span>
+                    <span>
+                      {networkFee.fee_amount} {networkFee.fee_currency}
+                    </span>
                   </div>
                   <div className="flex justify-between font-medium border-t border-blue-200 pt-1">
                     <span>Total Deducted:</span>
-                    <span>{getTotalAmount().toFixed(6)} {formData.currency}</span>
+                    <span>
+                      {getTotalAmount().toFixed(6)} {formData.currency}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Estimated Time:</span>
@@ -568,7 +581,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({
               Cancel
             </button>
           )}
-          
+
           <button
             type="submit"
             disabled={loading || loadingFee || !formData.amount || !formData.recipient_address}

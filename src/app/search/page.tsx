@@ -25,7 +25,7 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const query = searchParams.get('q') || '';
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ function SearchContent() {
   });
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  
+
   const [filters, setFilters] = useState<SearchFilters>({
     category_id: searchParams.get('category_id') || '',
     min_price: searchParams.get('min_price') || '',
@@ -48,37 +48,42 @@ function SearchContent() {
 
   const pageSize = 12;
 
-  const updateURL = useCallback((newFilters: SearchFilters, page: number) => {
-    const params = new URLSearchParams();
-    params.set('q', query);
-    params.set('page', page.toString());
-    
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
-    
-    router.push(`/search?${params.toString()}`);
-  }, [query, router]);
+  const updateURL = useCallback(
+    (newFilters: SearchFilters, page: number) => {
+      const params = new URLSearchParams();
+      params.set('q', query);
+      params.set('page', page.toString());
+
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+      });
+
+      router.push(`/search?${params.toString()}`);
+    },
+    [query, router],
+  );
 
   const searchProducts = useCallback(async () => {
     if (!query) return;
-    
+
     setLoading(true);
     try {
       // Track the search query
       await searchAnalyticsService.trackSearch(query);
-      
+
       const searchFilters: Record<string, unknown> = { ...filters };
-      if (searchFilters.min_price) searchFilters.min_price = parseInt(searchFilters.min_price as string);
-      if (searchFilters.max_price) searchFilters.max_price = parseInt(searchFilters.max_price as string);
-      
+      if (searchFilters.min_price)
+        searchFilters.min_price = parseInt(searchFilters.min_price as string);
+      if (searchFilters.max_price)
+        searchFilters.max_price = parseInt(searchFilters.max_price as string);
+
       const results = await productService.searchProducts(
         query,
         currentPage,
         pageSize,
         searchFilters,
       );
-      
+
       setProducts(results.products || []);
       setTotalPages(Math.ceil((results.total || 0) / pageSize));
       setTotalResults(results.total || 0);
@@ -137,7 +142,8 @@ function SearchContent() {
     updateURL(clearedFilters, 1);
   };
 
-  const hasActiveFilters = filters.category_id || filters.min_price || filters.max_price || filters.condition;
+  const hasActiveFilters =
+    filters.category_id || filters.min_price || filters.max_price || filters.condition;
 
   return (
     <div className="min-h-screen bg-pink-50">
@@ -157,7 +163,7 @@ function SearchContent() {
                   </span>
                 )}
               </h1>
-              
+
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden flex items-center gap-2 px-4 py-2 border border-pink-300 rounded-lg hover:bg-pink-100 transition-colors"
@@ -169,7 +175,9 @@ function SearchContent() {
 
             <div className="flex gap-6">
               {/* Filters Sidebar */}
-              <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 space-y-6`}>
+              <aside
+                className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 space-y-6`}
+              >
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold">Filters</h2>
@@ -185,13 +193,12 @@ function SearchContent() {
 
                   {/* Sort Options */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sort by
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
                     <select
                       value={`${filters.sort_by}-${filters.sort_order}`}
                       onChange={e => {
-                        const [sortBy = 'created_at', sortOrder = 'desc'] = e.target.value.split('-');
+                        const [sortBy = 'created_at', sortOrder = 'desc'] =
+                          e.target.value.split('-');
                         handleSortChange(sortBy, sortOrder);
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -207,9 +214,7 @@ function SearchContent() {
 
                   {/* Category Filter */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                     <select
                       value={filters.category_id}
                       onChange={e => handleFilterChange('category_id', e.target.value)}
@@ -282,7 +287,11 @@ function SearchContent() {
                           onClick={() => {
                             const searchId = searchAnalyticsService.getLastSearchId();
                             if (searchId) {
-                              searchAnalyticsService.trackSearchClick(searchId, product.id, index + 1);
+                              searchAnalyticsService.trackSearchClick(
+                                searchId,
+                                product.id,
+                                index + 1,
+                              );
                             }
                           }}
                         >
@@ -294,14 +303,18 @@ function SearchContent() {
                             rating={0} // TODO: Add rating to backend response
                             reviewCount={0} // TODO: Add review count to backend response
                             sellerName={undefined}
-                            location={product.location ? `${product.location.city}, ${product.location.state}` : undefined}
+                            location={
+                              product.location
+                                ? `${product.location.city}, ${product.location.state}`
+                                : undefined
+                            }
                             permalink={product.permalink}
                             categoryId={product.category_id}
                           />
                         </div>
                       ))}
                     </div>
-                    
+
                     {totalPages > 1 && (
                       <div className="mt-8">
                         <Pagination
@@ -324,12 +337,10 @@ function SearchContent() {
             </div>
           </>
         )}
-        
+
         {!query && (
           <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">
-              Search for products
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Search for products</h1>
             <p className="text-gray-600">
               Use the search bar above to find products, categories, or sellers
             </p>

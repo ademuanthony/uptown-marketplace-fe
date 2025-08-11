@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
+import {
   WalletIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -15,7 +15,11 @@ import WalletCard from '../../components/wallet/WalletCard';
 import TransactionList from '../../components/wallet/TransactionList';
 import DepositModal from '../../components/wallet/DepositModal';
 import WithdrawalForm from '../../components/wallet/WithdrawalForm';
-import walletService, { WalletSummary, TransactionType, TransactionStatus } from '../../services/wallet';
+import walletService, {
+  WalletSummary,
+  TransactionType,
+  TransactionStatus,
+} from '../../services/wallet';
 import { useAuth } from '../../contexts/AuthContext';
 import { DepositCurrency } from '@/services/deposits';
 
@@ -27,11 +31,11 @@ const WalletPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
-  
+
   // Modals and forms
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawalSuccess, setShowWithdrawalSuccess] = useState<string | null>(null);
-  
+
   // Transaction filters
   const [transactionFilters, setTransactionFilters] = useState<{
     type?: TransactionType;
@@ -44,7 +48,7 @@ const WalletPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const summary = await walletService.getWalletSummary();
       setWalletSummary(summary);
     } catch (err) {
@@ -141,7 +145,8 @@ const WalletPage: React.FC = () => {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
                 <p className="text-sm text-gray-600">
-                  Total Balance: {walletSummary ? `$${walletSummary.summary.total_value.display}` : '--'}
+                  Total Balance:{' '}
+                  {walletSummary ? `$${walletSummary.summary.total_value.display}` : '--'}
                 </p>
               </div>
             </div>
@@ -155,7 +160,7 @@ const WalletPage: React.FC = () => {
                 <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                 Deposit
               </button>
-              
+
               <button
                 onClick={() => handleViewModeChange('withdraw')}
                 className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -163,7 +168,7 @@ const WalletPage: React.FC = () => {
                 <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
                 Withdraw
               </button>
-              
+
               <button
                 onClick={() => handleViewModeChange('transfer')}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -200,7 +205,7 @@ const WalletPage: React.FC = () => {
                 {(['USDT', 'POL', 'USD'] as const).map(currency => {
                   // Find existing wallet data for this currency
                   const existingWallet = walletSummary.wallets.find(w => w.currency === currency);
-                  
+
                   if (existingWallet) {
                     // Show actual wallet data
                     return (
@@ -244,7 +249,7 @@ const WalletPage: React.FC = () => {
                   <div className="font-medium">Deposit Crypto</div>
                   <div className="text-sm opacity-75">Add funds to wallet</div>
                 </button>
-                
+
                 <button
                   onClick={() => handleViewModeChange('withdraw')}
                   className="p-4 rounded-lg border-2 border-dashed border-red-300 text-red-700 hover:border-red-400 hover:bg-red-50 transition-all"
@@ -253,7 +258,7 @@ const WalletPage: React.FC = () => {
                   <div className="font-medium">Withdraw Crypto</div>
                   <div className="text-sm opacity-75">Send to external wallet</div>
                 </button>
-                
+
                 <button
                   onClick={() => handleViewModeChange('transfer')}
                   className="p-4 rounded-lg border-2 border-dashed border-blue-300 text-blue-700 hover:border-blue-400 hover:bg-blue-50 transition-all"
@@ -272,7 +277,7 @@ const WalletPage: React.FC = () => {
                   <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
                   {/* Search */}
                   <div className="relative">
@@ -281,17 +286,19 @@ const WalletPage: React.FC = () => {
                       type="text"
                       placeholder="Search transactions..."
                       value={transactionFilters.search || ''}
-                      onChange={e => setTransactionFilters(prev => ({ ...prev, search: e.target.value }))}
+                      onChange={e =>
+                        setTransactionFilters(prev => ({ ...prev, search: e.target.value }))
+                      }
                       className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-48"
                     />
                   </div>
-                  
+
                   {/* Filter Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
                     className={`inline-flex items-center px-3 py-2 border rounded-lg text-sm transition-colors ${
-                      showFilters 
-                        ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                      showFilters
+                        ? 'border-blue-500 text-blue-600 bg-blue-50'
                         : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -311,10 +318,12 @@ const WalletPage: React.FC = () => {
                       </label>
                       <select
                         value={transactionFilters.type || ''}
-                        onChange={e => setTransactionFilters(prev => ({ 
-                          ...prev, 
-                          type: e.target.value as TransactionType || undefined, 
-                        }))}
+                        onChange={e =>
+                          setTransactionFilters(prev => ({
+                            ...prev,
+                            type: (e.target.value as TransactionType) || undefined,
+                          }))
+                        }
                         className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">All Types</option>
@@ -325,17 +334,17 @@ const WalletPage: React.FC = () => {
                         <option value="refund">Refunds</option>
                       </select>
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Status
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                       <select
                         value={transactionFilters.status || ''}
-                        onChange={e => setTransactionFilters(prev => ({ 
-                          ...prev, 
-                          status: e.target.value as TransactionStatus || undefined, 
-                        }))}
+                        onChange={e =>
+                          setTransactionFilters(prev => ({
+                            ...prev,
+                            status: (e.target.value as TransactionStatus) || undefined,
+                          }))
+                        }
                         className="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">All Statuses</option>
@@ -347,7 +356,7 @@ const WalletPage: React.FC = () => {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 flex items-center space-x-3">
                     <button
                       onClick={() => setTransactionFilters({})}
@@ -389,7 +398,8 @@ const WalletPage: React.FC = () => {
               <ArrowsRightLeftIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Transfer Funds</h3>
               <p className="text-gray-600 mb-6">
-                Transfer functionality is coming soon. You&apos;ll be able to send funds to other Uptown Marketplace users.
+                Transfer functionality is coming soon. You&apos;ll be able to send funds to other
+                Uptown Marketplace users.
               </p>
               <button
                 onClick={() => setViewMode('overview')}
@@ -412,7 +422,8 @@ const WalletPage: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdrawal Submitted</h3>
               <p className="text-gray-600 mb-4">
-                Your withdrawal request has been submitted successfully. You&apos;ll receive updates on its progress.
+                Your withdrawal request has been submitted successfully. You&apos;ll receive updates
+                on its progress.
               </p>
               <div className="bg-gray-50 rounded-lg p-3 mb-4">
                 <p className="text-sm text-gray-600">Transaction ID:</p>

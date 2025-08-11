@@ -60,14 +60,17 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
 
     try {
       setPaymentLoading(true);
-      
+
       const paymentData = await invoiceService.initiatePayment(
         invoice.id,
         method,
         'user@example.com', // TODO: Get from user context
         {
           network: method === 'crypto' ? 'polygon' : undefined,
-          returnUrl: method !== 'crypto' ? `${window.location.origin}/invoices/${invoice.id}/payment-result` : undefined,
+          returnUrl:
+            method !== 'crypto'
+              ? `${window.location.origin}/invoices/${invoice.id}/payment-result`
+              : undefined,
         },
       );
 
@@ -95,7 +98,9 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
   const getStatusBadge = (status: string) => {
     const colors = invoiceService.getStatusColor(status);
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors}`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -189,7 +194,10 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Items</h3>
                 <div className="space-y-3">
                   {invoice.line_items.map(item => (
-                    <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
                       <div className="flex-1">
                         <p className="text-gray-900">{item.description}</p>
                         <p className="text-sm text-gray-600">
@@ -253,9 +261,11 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
                   <ExclamationCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-gray-900 mb-2">Cannot Pay Invoice</h4>
                   <p className="text-gray-600 text-sm">
-                    {invoice.status === 'paid' ? 'This invoice has already been paid.' :
-                     invoice.is_expired ? 'This invoice has expired.' :
-                     'This invoice is not available for payment.'}
+                    {invoice.status === 'paid'
+                      ? 'This invoice has already been paid.'
+                      : invoice.is_expired
+                        ? 'This invoice has expired.'
+                        : 'This invoice is not available for payment.'}
                   </p>
                 </div>
               ) : (
@@ -337,7 +347,10 @@ const InvoicePaymentPage: React.FC<InvoicePaymentPageProps> = ({ invoiceId }) =>
                   <div>
                     <h4 className="text-sm font-medium text-green-800">Payment Received</h4>
                     <p className="text-sm text-green-600 mt-1">
-                      Paid on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString() : 'Unknown date'}
+                      Paid on{' '}
+                      {invoice.paid_at
+                        ? new Date(invoice.paid_at).toLocaleDateString()
+                        : 'Unknown date'}
                     </p>
                   </div>
                 </div>

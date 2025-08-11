@@ -74,9 +74,9 @@ class ProductService {
       if (!userStr) {
         throw new Error('User not authenticated');
       }
-      
+
       const user: User = JSON.parse(userStr);
-      
+
       // Add seller_id to the request
       const requestData = {
         ...productData,
@@ -85,13 +85,15 @@ class ProductService {
       };
 
       const response = await api.post<ApiResponse<CreateProductResponse>>('/products', requestData);
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
-        throw new Error(response.data?.error || response.data?.message || 'Failed to create product');
+        throw new Error(
+          response.data?.error || response.data?.message || 'Failed to create product',
+        );
       }
 
       const createResponse = response.data.data;
-      
+
       if (!createResponse.product || !createResponse.product.product_id) {
         throw new Error('Product created but no valid product ID returned');
       }
@@ -118,11 +120,11 @@ class ProductService {
       return product;
     } catch (error) {
       console.error('Product creation error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to create product');
     }
   }
@@ -130,8 +132,10 @@ class ProductService {
   // Get trending products
   async getTrendingProducts(limit: number = 10): Promise<Product[]> {
     try {
-      const response = await api.get<ApiResponse<{ trending_products: Product[]; count: number }>>(`/recommendations/trending?limit=${limit}`);
-      
+      const response = await api.get<ApiResponse<{ trending_products: Product[]; count: number }>>(
+        `/recommendations/trending?limit=${limit}`,
+      );
+
       console.info('response', response);
       if (!response.data.success || !response.data.data) {
         throw new Error(response.data?.error || 'Failed to fetch trending products');
@@ -148,8 +152,10 @@ class ProductService {
   // Publish product
   async publishProduct(productId: string): Promise<void> {
     try {
-      const response = await api.post<ApiResponse<{ success: boolean }>>(`/products/${productId}/publish`);
-      
+      const response = await api.post<ApiResponse<{ success: boolean }>>(
+        `/products/${productId}/publish`,
+      );
+
       if (!response.data.success) {
         throw new Error(response.data?.error || 'Failed to publish product');
       }
@@ -162,8 +168,10 @@ class ProductService {
   // Unpublish product
   async unpublishProduct(productId: string): Promise<void> {
     try {
-      const response = await api.post<ApiResponse<{ success: boolean }>>(`/products/${productId}/unpublish`);
-      
+      const response = await api.post<ApiResponse<{ success: boolean }>>(
+        `/products/${productId}/unpublish`,
+      );
+
       if (!response.data.success) {
         throw new Error(response.data?.error || 'Failed to unpublish product');
       }
@@ -178,17 +186,21 @@ class ProductService {
     try {
       const formData = new FormData();
       formData.append('image', file);
-      
+
       if (productId) {
         formData.append('product_id', productId);
       }
 
-      const response = await api.post<ApiResponse<ProductImageUploadResponse>>('/products/images/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const response = await api.post<ApiResponse<ProductImageUploadResponse>>(
+        '/products/images/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         },
-      });
-      
+      );
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to upload image');
       }
@@ -196,11 +208,11 @@ class ProductService {
       return response.data.data.image_url;
     } catch (error) {
       console.error('Image upload error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to upload image');
     }
   }
@@ -209,7 +221,7 @@ class ProductService {
   async getProduct(productId: string): Promise<Product> {
     try {
       const response = await api.get<ApiResponse<Product>>(`/products/${productId}`);
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to fetch product');
       }
@@ -217,11 +229,11 @@ class ProductService {
       return response.data.data;
     } catch (error) {
       console.error('Product fetch error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch product');
     }
   }
@@ -230,7 +242,7 @@ class ProductService {
   async getProductByPermalink(permalink: string): Promise<Product> {
     try {
       const response = await api.get<ApiResponse<Product>>(`/products/permalink/${permalink}`);
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to fetch product');
       }
@@ -238,28 +250,34 @@ class ProductService {
       return response.data.data;
     } catch (error) {
       console.error('Product fetch by permalink error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch product');
     }
   }
 
   // Update product
-  async updateProduct(productId: string, productData: Partial<CreateProductRequest>): Promise<Product> {
+  async updateProduct(
+    productId: string,
+    productData: Partial<CreateProductRequest>,
+  ): Promise<Product> {
     try {
       // Transform the data to match backend expectations
       const transformedData: Record<string, unknown> = { ...productData };
-      
+
       // Convert price from dollars to cents if present
       if (transformedData.price !== undefined && typeof transformedData.price === 'number') {
         transformedData.price = Math.round(transformedData.price * 100);
       }
-      
-      const response = await api.put<ApiResponse<{ product: Product }>>(`/products/${productId}`, transformedData);
-      
+
+      const response = await api.put<ApiResponse<{ product: Product }>>(
+        `/products/${productId}`,
+        transformedData,
+      );
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to update product');
       }
@@ -267,11 +285,11 @@ class ProductService {
       return response.data.data.product;
     } catch (error) {
       console.error('Product update error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to update product');
     }
   }
@@ -280,36 +298,36 @@ class ProductService {
   async deleteProduct(productId: string): Promise<void> {
     try {
       const response = await api.delete(`/products/${productId}`);
-      
+
       // Backend returns 204 No Content on successful deletion
       if (response.status !== 204) {
         throw new Error('Failed to delete product');
       }
     } catch (error) {
       console.error('Product deletion error:', error);
-      
+
       if (isAxiosError(error)) {
         if (error.response?.data?.message) {
           throw new Error(error.response.data.message);
         }
-        
+
         if (error.response?.status === 404) {
           throw new Error('Product not found');
         }
-        
+
         if (error.response?.status === 403) {
           throw new Error('You are not authorized to delete this product');
         }
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to delete product');
     }
   }
 
   // List products with filters
-  async listProducts(filters?: { 
-    seller_id?: string; 
-    page?: number; 
+  async listProducts(filters?: {
+    seller_id?: string;
+    page?: number;
     page_size?: number;
     status?: string;
     category_id?: string;
@@ -339,8 +357,10 @@ class ProductService {
         });
       }
 
-      const response = await api.get<ApiResponse<{ products: Product[]; total: number; page: number; page_size: number }>>(`/products?${params.toString()}`);
-      
+      const response = await api.get<
+        ApiResponse<{ products: Product[]; total: number; page: number; page_size: number }>
+      >(`/products?${params.toString()}`);
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to list products');
       }
@@ -348,23 +368,28 @@ class ProductService {
       return response.data.data;
     } catch (error) {
       console.error('Product list error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to list products');
     }
   }
 
   // Search products
-  async searchProducts(query: string, page: number = 1, pageSize: number = 10, filters?: Record<string, unknown>): Promise<{ products: Product[], total: number }> {
+  async searchProducts(
+    query: string,
+    page: number = 1,
+    pageSize: number = 10,
+    filters?: Record<string, unknown>,
+  ): Promise<{ products: Product[]; total: number }> {
     try {
       const params = new URLSearchParams();
       if (query) params.append('q', query);
       params.append('page', page.toString());
       params.append('page_size', pageSize.toString());
-      
+
       if (filters) {
         // Convert price from dollars to cents if present
         const processedFilters = { ...filters };
@@ -400,7 +425,7 @@ class ProductService {
       }
 
       const response = await api.get<SearchResponse>(`/products/search?${params.toString()}`);
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to search products');
       }
@@ -411,11 +436,11 @@ class ProductService {
       };
     } catch (error) {
       console.error('Product search error:', error);
-      
+
       if (isAxiosError(error) && error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      
+
       throw new Error(error instanceof Error ? error.message : 'Failed to search products');
     }
   }

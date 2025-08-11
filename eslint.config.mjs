@@ -72,11 +72,28 @@ const eslintConfig = [
     },
   },
   {
-    // Special overrides for specific file patterns
-    files: ["**/*.config.{js,ts,mjs}", "**/*.setup.{js,ts}", "**/scripts/**/*"],
+    // Special overrides for TypeScript config files
+    files: ["**/*.config.ts", "**/*.config.mts", "**/*.setup.{js,ts}", "**/scripts/**/*.{js,ts}"],
     rules: {
       "no-console": "off", // Allow console in config and script files
       "@typescript-eslint/no-var-requires": "off", // Allow require in config files
+      "@typescript-eslint/no-require-imports": "off", // Allow require imports in config files
+      "@typescript-eslint/no-explicit-any": "off", // Allow any in config files
+    },
+  },
+  {
+    // Special overrides for JavaScript config files (CommonJS) - disable TypeScript-specific rules
+    files: ["**/*.config.js", "**/*.config.mjs", "**/postcss.config.js", "**/tailwind.config.js"],
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "script", // CommonJS
+      },
+    },
+    rules: {
+      "no-console": "off", // Allow console in config files
+      "@typescript-eslint/no-require-imports": "off", // Allow require in JS config files
+      "@typescript-eslint/no-var-requires": "off", // Allow require in JS config files
     },
   },
   {

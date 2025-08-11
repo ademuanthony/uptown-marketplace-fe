@@ -2,7 +2,15 @@ import api from './api';
 import { isAxiosError } from 'axios';
 
 // Message types
-export type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'offer' | 'order' | 'system';
+export type MessageType =
+  | 'text'
+  | 'image'
+  | 'file'
+  | 'audio'
+  | 'video'
+  | 'offer'
+  | 'order'
+  | 'system';
 export type MessageStatus = 'sent' | 'delivered' | 'read' | 'failed' | 'sending';
 export type MessagePriority = 'low' | 'normal' | 'high' | 'urgent';
 
@@ -122,7 +130,6 @@ export interface UserConversationsResponse {
 
 // Messaging Service Class
 export class MessagingService {
-  
   // Send a text message
   async sendMessage(conversationId: string, request: SendMessageRequest): Promise<Message> {
     try {
@@ -130,7 +137,7 @@ export class MessagingService {
         `/conversations/${conversationId}/messages`,
         request,
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data.message;
       } else {
@@ -163,7 +170,7 @@ export class MessagingService {
           },
         },
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data.message;
       } else {
@@ -180,8 +187,8 @@ export class MessagingService {
 
   // Get conversation history
   async getConversationHistory(
-    conversationId: string, 
-    page: number = 1, 
+    conversationId: string,
+    page: number = 1,
     pageSize: number = 20,
   ): Promise<ConversationHistoryResponse> {
     try {
@@ -191,7 +198,7 @@ export class MessagingService {
           params: { page, page_size: pageSize },
         },
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data;
       } else {
@@ -200,7 +207,9 @@ export class MessagingService {
     } catch (error: unknown) {
       console.error('Error getting conversation history:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error?.message || 'Failed to get conversation history');
+        throw new Error(
+          error.response?.data?.error?.message || 'Failed to get conversation history',
+        );
       }
       throw new Error('Failed to get conversation history');
     }
@@ -213,7 +222,7 @@ export class MessagingService {
         '/conversations',
         request,
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data.conversation;
       } else {
@@ -230,7 +239,7 @@ export class MessagingService {
 
   // Get user conversations
   async getUserConversations(
-    page: number = 1, 
+    page: number = 1,
     pageSize: number = 20,
     status?: ConversationStatus,
     type?: ConversationType,
@@ -244,7 +253,7 @@ export class MessagingService {
         '/users/conversations',
         { params },
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data;
       } else {
@@ -265,7 +274,7 @@ export class MessagingService {
       const response = await api.post<ApiResponse<{ message: Message }>>(
         `/messages/${messageId}/read`,
       );
-      
+
       if (response.data.success && response.data.data) {
         return response.data.data.message;
       } else {
@@ -293,8 +302,8 @@ export class MessagingService {
 
   // Create a group conversation
   async createGroupConversation(
-    title: string, 
-    participantIds: string[], 
+    title: string,
+    participantIds: string[],
     description?: string,
   ): Promise<Conversation> {
     const request: CreateConversationRequest = {

@@ -35,7 +35,7 @@ export default function HeroSection() {
           <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
             Discover amazing products from trusted sellers in your area
           </p>
-          
+
           <SearchBar className="max-w-2xl mx-auto mb-12" />
         </div>
 
@@ -47,9 +47,7 @@ export default function HeroSection() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full shadow-md mb-4 group-hover:from-primary-200 group-hover:to-secondary-200 transition-all duration-300">
                   <Icon className="h-8 w-8 text-primary-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </div>
             );

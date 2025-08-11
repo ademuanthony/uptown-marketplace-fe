@@ -87,7 +87,7 @@ class FuelService {
   async getFuelBalance(): Promise<FuelBalance> {
     try {
       const response = await api.get<ApiResponse<FuelBalance>>('/fuel/balance');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get fuel balance');
       }
@@ -96,7 +96,9 @@ class FuelService {
     } catch (error) {
       console.error('Get fuel balance error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get fuel balance');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get fuel balance',
+        );
       }
       throw error;
     }
@@ -106,7 +108,7 @@ class FuelService {
   async getFuelPackages(): Promise<FuelPackage[]> {
     try {
       const response = await api.get<ApiResponse<FuelPackage[]>>('/fuel/packages');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get fuel packages');
       }
@@ -115,7 +117,9 @@ class FuelService {
     } catch (error) {
       console.error('Get fuel packages error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get fuel packages');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get fuel packages',
+        );
       }
       throw error;
     }
@@ -124,11 +128,10 @@ class FuelService {
   // Purchase fuel package
   async purchaseFuel(packageId: string): Promise<PurchaseFuelResponse> {
     try {
-      const response = await api.post<ApiResponse<PurchaseFuelResponse>>(
-        '/fuel/purchase', 
-        { package_id: packageId },
-      );
-      
+      const response = await api.post<ApiResponse<PurchaseFuelResponse>>('/fuel/purchase', {
+        package_id: packageId,
+      });
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to purchase fuel');
       }
@@ -137,14 +140,19 @@ class FuelService {
     } catch (error) {
       console.error('Purchase fuel error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to purchase fuel');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to purchase fuel',
+        );
       }
       throw error;
     }
   }
 
   // Get transaction history
-  async getTransactionHistory(page: number = 1, perPage: number = 20): Promise<{
+  async getTransactionHistory(
+    page: number = 1,
+    perPage: number = 20,
+  ): Promise<{
     transactions: FuelTransaction[];
     pagination: {
       page: number;
@@ -154,16 +162,18 @@ class FuelService {
     };
   }> {
     try {
-      const response = await api.get<ApiResponse<{
-        transactions: FuelTransaction[];
-        pagination: {
-          page: number;
-          per_page: number;
-          total_count: number;
-          total_pages: number;
-        };
-      }>>(`/fuel/transactions?page=${page}&per_page=${perPage}`);
-      
+      const response = await api.get<
+        ApiResponse<{
+          transactions: FuelTransaction[];
+          pagination: {
+            page: number;
+            per_page: number;
+            total_count: number;
+            total_pages: number;
+          };
+        }>
+      >(`/fuel/transactions?page=${page}&per_page=${perPage}`);
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get transaction history');
       }
@@ -172,7 +182,9 @@ class FuelService {
     } catch (error) {
       console.error('Get transaction history error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get transaction history');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get transaction history',
+        );
       }
       throw error;
     }
@@ -182,7 +194,7 @@ class FuelService {
   async getTransactionSummary(): Promise<TransactionSummary> {
     try {
       const response = await api.get<ApiResponse<TransactionSummary>>('/fuel/summary');
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get transaction summary');
       }
@@ -191,7 +203,9 @@ class FuelService {
     } catch (error) {
       console.error('Get transaction summary error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get transaction summary');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get transaction summary',
+        );
       }
       throw error;
     }

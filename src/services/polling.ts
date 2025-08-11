@@ -55,11 +55,11 @@ export class PollingService {
   stop() {
     console.info('Stopping polling service');
     this.config.enabled = false;
-    
+
     // Clear all timers
     this.timers.forEach(timer => clearTimeout(timer));
     this.timers.clear();
-    
+
     // Clear tracked resources
     this.trackedConversations.clear();
     this.retryAttempts.clear();
@@ -83,7 +83,7 @@ export class PollingService {
 
   untrackConversation(conversationId: string) {
     this.trackedConversations.delete(conversationId);
-    
+
     const timer = this.timers.get(`conversation_${conversationId}`);
     if (timer) {
       clearTimeout(timer);
@@ -106,7 +106,7 @@ export class PollingService {
         // Check for conversation updates
         response.conversations.forEach(conversation => {
           const tracked = this.trackedConversations.get(conversation.id);
-          
+
           if (!tracked || conversation.updated_at > tracked.lastUpdated) {
             // Conversation was updated
             const event: ConversationUpdateEvent = {
@@ -134,7 +134,6 @@ export class PollingService {
           const timer = setTimeout(pollConversationList, this.config.interval);
           this.timers.set('conversation_list', timer);
         }
-
       } catch (error) {
         console.error('Error polling conversation list:', error);
         this.handleRetry('conversation_list', pollConversationList);
@@ -151,7 +150,7 @@ export class PollingService {
     }
 
     const timerId = `conversation_${conversationId}`;
-    
+
     // Clear existing timer
     const existingTimer = this.timers.get(timerId);
     if (existingTimer) {
@@ -206,7 +205,6 @@ export class PollingService {
           const timer = setTimeout(pollConversationMessages, this.config.interval);
           this.timers.set(timerId, timer);
         }
-
       } catch (error) {
         console.error(`Error polling conversation ${conversationId}:`, error);
         this.handleRetry(timerId, pollConversationMessages);
@@ -230,8 +228,10 @@ export class PollingService {
     this.retryAttempts.set(timerId, nextAttempt);
 
     const delay = this.config.interval * Math.pow(this.config.backoffMultiplier, nextAttempt);
-    
-    console.info(`Retrying ${timerId} in ${delay}ms (attempt ${nextAttempt}/${this.config.maxRetries})`);
+
+    console.info(
+      `Retrying ${timerId} in ${delay}ms (attempt ${nextAttempt}/${this.config.maxRetries})`,
+    );
 
     const timer = setTimeout(() => {
       if (this.config.enabled) {
@@ -264,16 +264,19 @@ export class PollingService {
     return this.addEventListener('conversation_update', callback as (event: RealtimeEvent) => void);
   }
 
-  private addEventListener(eventType: string, callback: (event: RealtimeEvent) => void): () => void {
+  private addEventListener(
+    eventType: string,
+    callback: (event: RealtimeEvent) => void,
+  ): () => void {
     const listeners = this.listeners.get(eventType);
     if (listeners) {
       listeners.add(callback);
-      
+
       return () => {
         listeners.delete(callback);
       };
     }
-    
+
     return () => {};
   }
 

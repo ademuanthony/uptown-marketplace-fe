@@ -37,7 +37,7 @@ class PublicProfileService {
     const response = await fetch(`${this.baseUrl}/u/${permalink}`, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
     });
 
@@ -59,9 +59,9 @@ class PublicProfileService {
   // Helper method to format join date
   formatJoinDate(joinedAt: string): string {
     const date = new Date(joinedAt);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
     });
   }
 }

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import QRCodeSVG from 'react-qr-code';
-import { 
-  ClipboardDocumentIcon, 
+import {
+  ClipboardDocumentIcon,
   CheckCircleIcon,
   ArrowPathIcon,
   ClockIcon,
@@ -122,11 +122,11 @@ interface PaymentStatus {
   walletCredited: boolean;
 }
 
-export default function UnifiedPayment({ 
-  invoiceId, 
-  totalAmount, 
-  userEmail, 
-  onPaymentComplete, 
+export default function UnifiedPayment({
+  invoiceId,
+  totalAmount,
+  userEmail,
+  onPaymentComplete,
 }: UnifiedPaymentProps) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('wallet');
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
@@ -139,11 +139,12 @@ export default function UnifiedPayment({
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
   // Determine return URL for traditional payments
-  const returnUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/invoice/${invoiceId}/payment-callback`
-    : undefined;
+  const returnUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/invoice/${invoiceId}/payment-callback`
+      : undefined;
 
-    // Stop polling
+  // Stop polling
   const stopPolling = useCallback(() => {
     if (pollingInterval) {
       clearInterval(pollingInterval);
@@ -152,61 +153,64 @@ export default function UnifiedPayment({
   }, [pollingInterval]);
 
   // Check payment status
-  const checkPaymentStatus = useCallback(async (reference?: string) => {
-    if (!paymentDetails && !reference) return;
-    
-    const paymentRef = reference || paymentDetails?.providerReference;
-    if (!paymentRef) return;
+  const checkPaymentStatus = useCallback(
+    async (reference?: string) => {
+      if (!paymentDetails && !reference) return;
 
-    setChecking(true);
-    try {
-      const data = await invoiceService.checkPaymentStatus(invoiceId, paymentRef);
-      if (data) {
-        // Cast to backend response type
-        const statusData = data as BackendPaymentStatus;
-        
-        // Map backend response to frontend interface
-        const mappedStatus: PaymentStatus = {
-          transactionId: statusData.transaction_id,
-          status: statusData.status,
-          amount: statusData.amount,
-          fee: statusData.fee,
-          walletCredited: false, // Default value, update based on actual backend response if available
-        };
-        
-        setPaymentStatus(mappedStatus);
-        
-        // Check if payment is completed
-        if (statusData.status === 'completed') {
-          stopPolling();
-          toast.success('Payment completed successfully!');
-          if (onPaymentComplete) {
-            onPaymentComplete();
+      const paymentRef = reference || paymentDetails?.providerReference;
+      if (!paymentRef) return;
+
+      setChecking(true);
+      try {
+        const data = await invoiceService.checkPaymentStatus(invoiceId, paymentRef);
+        if (data) {
+          // Cast to backend response type
+          const statusData = data as BackendPaymentStatus;
+
+          // Map backend response to frontend interface
+          const mappedStatus: PaymentStatus = {
+            transactionId: statusData.transaction_id,
+            status: statusData.status,
+            amount: statusData.amount,
+            fee: statusData.fee,
+            walletCredited: false, // Default value, update based on actual backend response if available
+          };
+
+          setPaymentStatus(mappedStatus);
+
+          // Check if payment is completed
+          if (statusData.status === 'completed') {
+            stopPolling();
+            toast.success('Payment completed successfully!');
+            if (onPaymentComplete) {
+              onPaymentComplete();
+            }
+          } else if (statusData.status === 'processing') {
+            toast.loading('Payment is being processed...');
           }
-        } else if (statusData.status === 'processing') {
-          toast.loading('Payment is being processed...');
         }
+      } catch (error) {
+        console.error('Status check error:', error);
+      } finally {
+        setChecking(false);
       }
-    } catch (error) {
-      console.error('Status check error:', error);
-    } finally {
-      setChecking(false);
-    }
-  }, [invoiceId, paymentDetails, onPaymentComplete, stopPolling]);
+    },
+    [invoiceId, paymentDetails, onPaymentComplete, stopPolling],
+  );
 
   // Start polling for payment status (crypto payments)
   const startPolling = (reference: string) => {
     // Initial check
     checkPaymentStatus(reference);
-    
+
     // Poll every 10 seconds
     const interval = setInterval(() => {
       checkPaymentStatus(reference);
     }, 10000);
-    
+
     setPollingInterval(interval);
   };
-    
+
   // Load invoice data on component mount
   useEffect(() => {
     const loadInvoice = async () => {
@@ -233,21 +237,16 @@ export default function UnifiedPayment({
     setLoading(true);
     try {
       // Call the invoice service for non-wallet payments
-      const data = await invoiceService.initiatePayment(
-        invoiceId,
-        selectedMethod,
-        userEmail,
-        {
-          network: selectedMethod === 'crypto' ? 'polygon' : undefined,
-          returnUrl: selectedMethod !== 'crypto' ? returnUrl : undefined,
-        },
-      );
+      const data = await invoiceService.initiatePayment(invoiceId, selectedMethod, userEmail, {
+        network: selectedMethod === 'crypto' ? 'polygon' : undefined,
+        returnUrl: selectedMethod !== 'crypto' ? returnUrl : undefined,
+      });
       if (data) {
         console.info('Payment response from backend:', data); // Debug log
-        
+
         // Cast to backend response type
         const backendData = data as BackendPaymentResponse;
-        
+
         // Map snake_case backend response to camelCase frontend interface
         const mappedData: PaymentDetails = {
           transactionId: backendData.transaction_id,
@@ -265,10 +264,10 @@ export default function UnifiedPayment({
           qrCode: backendData.qr_code,
           requiredConfirms: backendData.required_confirmations,
         };
-        
+
         console.info('Mapped payment data:', mappedData); // Debug log
         setPaymentDetails(mappedData);
-        
+
         // Handle different payment methods
         if (selectedMethod === 'crypto') {
           startPolling(mappedData.providerReference);
@@ -291,7 +290,7 @@ export default function UnifiedPayment({
   // Copy wallet address to clipboard (crypto payments)
   const copyToClipboard = async () => {
     if (!paymentDetails?.walletAddress) return;
-    
+
     try {
       await navigator.clipboard.writeText(paymentDetails.walletAddress);
       setCopied(true);
@@ -331,16 +330,19 @@ export default function UnifiedPayment({
   };
 
   // Cleanup on unmount
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       stopPolling();
-    }, [stopPolling]);
+    },
+    [stopPolling],
+  );
 
   // Handle payment callback (for traditional payments)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const reference = urlParams.get('reference');
     const status = urlParams.get('status');
-    
+
     if (reference && status) {
       // Payment callback received, check status
       checkPaymentStatus(reference);
@@ -353,15 +355,11 @@ export default function UnifiedPayment({
         // Payment method selection
         <>
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Complete Payment
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Complete Payment</h3>
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Amount to Pay</span>
-                <span className="text-2xl font-bold text-gray-900">
-                  {totalAmount.display}
-                </span>
+                <span className="text-2xl font-bold text-gray-900">{totalAmount.display}</span>
               </div>
             </div>
           </div>
@@ -383,9 +381,15 @@ export default function UnifiedPayment({
                 Initiating Payment...
               </span>
             ) : (
-              `Pay with ${selectedMethod === 'wallet' ? 'Wallet Balance' :
-                        selectedMethod === 'crypto' ? 'Cryptocurrency' : 
-                        selectedMethod === 'bank_transfer' ? 'Bank Transfer' : 'Card'}`
+              `Pay with ${
+                selectedMethod === 'wallet'
+                  ? 'Wallet Balance'
+                  : selectedMethod === 'crypto'
+                    ? 'Cryptocurrency'
+                    : selectedMethod === 'bank_transfer'
+                      ? 'Bank Transfer'
+                      : 'Card'
+              }`
             )}
           </button>
         </>
@@ -394,8 +398,11 @@ export default function UnifiedPayment({
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">
-              {selectedMethod === 'crypto' ? 'Crypto Payment' :
-               selectedMethod === 'bank_transfer' ? 'Bank Transfer' : 'Card Payment'}
+              {selectedMethod === 'crypto'
+                ? 'Crypto Payment'
+                : selectedMethod === 'bank_transfer'
+                  ? 'Bank Transfer'
+                  : 'Card Payment'}
             </h3>
             <button
               onClick={goBackToSelection}
@@ -416,7 +423,10 @@ export default function UnifiedPayment({
                   {(paymentDetails.amount.amount / 1000000).toFixed(2)} USDT
                 </div>
                 <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                  <span>on {paymentDetails.network?.charAt(0).toUpperCase()}{paymentDetails.network?.slice(1)} Network</span>
+                  <span>
+                    on {paymentDetails.network?.charAt(0).toUpperCase()}
+                    {paymentDetails.network?.slice(1)} Network
+                  </span>
                   {paymentDetails.requiredConfirms && (
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                       {paymentDetails.requiredConfirms} confirmations required
@@ -429,7 +439,7 @@ export default function UnifiedPayment({
               <div className="flex flex-col items-center mb-4">
                 <div className="text-sm text-gray-600 mb-2">Scan with your wallet app</div>
                 <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                  <QRCodeSVG 
+                  <QRCodeSVG
                     value={paymentDetails.qrCode || paymentDetails.walletAddress}
                     size={200}
                     level="H"
@@ -475,7 +485,9 @@ export default function UnifiedPayment({
                 <div className="text-sm text-blue-800 space-y-1 ml-4">
                   <div className="flex justify-between">
                     <span>Amount:</span>
-                    <span className="font-mono">{(paymentDetails.amount.amount / 1000000).toFixed(2)} USDT</span>
+                    <span className="font-mono">
+                      {(paymentDetails.amount.amount / 1000000).toFixed(2)} USDT
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Network:</span>
@@ -534,12 +546,17 @@ export default function UnifiedPayment({
 
           {/* Payment Status */}
           {paymentStatus && (
-            <div className={`rounded-lg p-4 mb-4 ${
-              paymentStatus.status === 'completed' ? 'bg-green-50' :
-              paymentStatus.status === 'processing' ? 'bg-yellow-50' :
-              paymentStatus.status === 'failed' ? 'bg-red-50' :
-              'bg-gray-50'
-            }`}>
+            <div
+              className={`rounded-lg p-4 mb-4 ${
+                paymentStatus.status === 'completed'
+                  ? 'bg-green-50'
+                  : paymentStatus.status === 'processing'
+                    ? 'bg-yellow-50'
+                    : paymentStatus.status === 'failed'
+                      ? 'bg-red-50'
+                      : 'bg-gray-50'
+              }`}
+            >
               <div className="flex items-center">
                 {paymentStatus.status === 'completed' ? (
                   <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3" />
@@ -550,15 +567,18 @@ export default function UnifiedPayment({
                 ) : (
                   <ArrowPathIcon className="h-6 w-6 text-gray-500 mr-3 animate-spin" />
                 )}
-                
+
                 <div className="flex-1">
                   <div className="font-medium">
-                    {paymentStatus.status === 'completed' ? 'Payment Completed!' :
-                     paymentStatus.status === 'processing' ? 'Payment Processing...' :
-                     paymentStatus.status === 'failed' ? 'Payment Failed' :
-                     'Waiting for Payment...'}
+                    {paymentStatus.status === 'completed'
+                      ? 'Payment Completed!'
+                      : paymentStatus.status === 'processing'
+                        ? 'Payment Processing...'
+                        : paymentStatus.status === 'failed'
+                          ? 'Payment Failed'
+                          : 'Waiting for Payment...'}
                   </div>
-                  
+
                   {paymentStatus.processedAt && (
                     <div className="text-sm text-gray-600 mt-1">
                       Processed: {new Date(paymentStatus.processedAt).toLocaleString()}
@@ -593,11 +613,24 @@ export default function UnifiedPayment({
             {selectedMethod === 'crypto' ? (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <ol className="list-decimal list-inside space-y-2 text-yellow-800">
-                  <li><strong>Send exactly {(paymentDetails.amount.amount / 1000000).toFixed(2)} USDT</strong> to the address above</li>
-                  <li>Use the <strong>{paymentDetails.network?.toUpperCase()} network</strong> - other networks will result in lost funds</li>
+                  <li>
+                    <strong>
+                      Send exactly {(paymentDetails.amount.amount / 1000000).toFixed(2)} USDT
+                    </strong>{' '}
+                    to the address above
+                  </li>
+                  <li>
+                    Use the <strong>{paymentDetails.network?.toUpperCase()} network</strong> - other
+                    networks will result in lost funds
+                  </li>
                   <li>Scan the QR code with your wallet app for automatic setup</li>
-                  <li>Payment will be confirmed after <strong>{paymentDetails.requiredConfirms} confirmations</strong></li>
-                  <li><strong>Do not send from exchanges</strong> - use a personal wallet only</li>
+                  <li>
+                    Payment will be confirmed after{' '}
+                    <strong>{paymentDetails.requiredConfirms} confirmations</strong>
+                  </li>
+                  <li>
+                    <strong>Do not send from exchanges</strong> - use a personal wallet only
+                  </li>
                   <li>Payment must be received within the time limit to avoid expiration</li>
                 </ol>
               </div>

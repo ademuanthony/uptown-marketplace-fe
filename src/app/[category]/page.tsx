@@ -24,10 +24,10 @@ function CategoryContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const categorySlug = params.category as string;
   const query = searchParams.get('q') || '';
-  
+
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ function CategoryContent() {
   });
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  
+
   const [filters, setFilters] = useState<CategoryFilters>({
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
@@ -71,51 +71,51 @@ function CategoryContent() {
     }
   }, [categorySlug, router]);
 
-  const updateURL = useCallback((newFilters: CategoryFilters, page: number, searchQuery?: string) => {
-    const params = new URLSearchParams();
-    
-    if (searchQuery) {
-      params.set('q', searchQuery);
-    }
-    if (page > 1) {
-      params.set('page', page.toString());
-    }
-    
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
-    
-    const queryString = params.toString();
-    const url = `/${categorySlug}${queryString ? `?${queryString}` : ''}`;
-    router.push(url);
-  }, [categorySlug, router]);
+  const updateURL = useCallback(
+    (newFilters: CategoryFilters, page: number, searchQuery?: string) => {
+      const params = new URLSearchParams();
+
+      if (searchQuery) {
+        params.set('q', searchQuery);
+      }
+      if (page > 1) {
+        params.set('page', page.toString());
+      }
+
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+      });
+
+      const queryString = params.toString();
+      const url = `/${categorySlug}${queryString ? `?${queryString}` : ''}`;
+      router.push(url);
+    },
+    [categorySlug, router],
+  );
 
   const searchProducts = useCallback(async () => {
     if (!category) return;
-    
+
     setLoading(true);
     try {
       let results;
-      
+
       if (query) {
         // Track the search query if there's a query
         await searchAnalyticsService.trackSearch(`${query} in ${category.name}`);
-        
+
         // Use search API when there's a search query
-        const searchFilters: Record<string, unknown> = { 
+        const searchFilters: Record<string, unknown> = {
           category_id: category.id,
-          ...filters, 
+          ...filters,
         };
-        
-        if (searchFilters.min_price) searchFilters.min_price = parseFloat(searchFilters.min_price as string);
-        if (searchFilters.max_price) searchFilters.max_price = parseFloat(searchFilters.max_price as string);
-        
-        results = await productService.searchProducts(
-          query,
-          currentPage,
-          pageSize,
-          searchFilters,
-        );
+
+        if (searchFilters.min_price)
+          searchFilters.min_price = parseFloat(searchFilters.min_price as string);
+        if (searchFilters.max_price)
+          searchFilters.max_price = parseFloat(searchFilters.max_price as string);
+
+        results = await productService.searchProducts(query, currentPage, pageSize, searchFilters);
       } else {
         // Use listProducts API to get all products in category when no search query
         const listFilters = {
@@ -129,10 +129,10 @@ function CategoryContent() {
           sort_by: filters.sort_by || 'created_at',
           sort_order: filters.sort_order || 'desc',
         };
-        
+
         results = await productService.listProducts(listFilters);
       }
-      
+
       setProducts(results.products || []);
       setTotalPages(Math.ceil((results.total || 0) / pageSize));
       setTotalResults(results.total || 0);
@@ -221,13 +221,11 @@ function CategoryContent() {
         {/* Category Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{category.name}</h1>
-          {category.description && (
-            <p className="text-gray-600 mb-6">{category.description}</p>
-          )}
-          
+          {category.description && <p className="text-gray-600 mb-6">{category.description}</p>}
+
           {/* Category Search */}
           <div className="max-w-2xl">
-            <SearchBar 
+            <SearchBar
               placeholder={`Search in ${category.name}...`}
               onSearch={handleSearch}
               initialValue={query}
@@ -253,7 +251,7 @@ function CategoryContent() {
               </h2>
             )}
           </div>
-          
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="lg:hidden flex items-center gap-2 px-4 py-2 border border-pink-300 rounded-lg hover:bg-pink-100 transition-colors"
@@ -265,7 +263,9 @@ function CategoryContent() {
 
         <div className="flex gap-6">
           {/* Filters Sidebar */}
-          <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 space-y-6`}>
+          <aside
+            className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 space-y-6`}
+          >
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Filters</h3>
@@ -281,9 +281,7 @@ function CategoryContent() {
 
               {/* Sort Options */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sort by
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sort by</label>
                 <select
                   value={`${filters.sort_by}-${filters.sort_order}`}
                   onChange={e => {
@@ -302,9 +300,7 @@ function CategoryContent() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price Range
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -325,9 +321,7 @@ function CategoryContent() {
 
               {/* Condition Filter */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Condition
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
                 <select
                   value={filters.condition}
                   onChange={e => handleFilterChange('condition', e.target.value)}
@@ -370,14 +364,18 @@ function CategoryContent() {
                         rating={0}
                         reviewCount={0}
                         sellerName={undefined}
-                        location={product.location ? `${product.location.city}, ${product.location.state}` : undefined}
+                        location={
+                          product.location
+                            ? `${product.location.city}, ${product.location.state}`
+                            : undefined
+                        }
                         permalink={product.permalink}
                         categorySlug={categorySlug}
                       />
                     </div>
                   ))}
                 </div>
-                
+
                 {totalPages > 1 && (
                   <div className="mt-8">
                     <Pagination
@@ -391,14 +389,11 @@ function CategoryContent() {
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">
-                  {query 
+                  {query
                     ? `No products found for &quot;${query}&quot; in ${category.name}`
-                    : `No products found in ${category.name}`
-                  }
+                    : `No products found in ${category.name}`}
                 </p>
-                <p className="text-sm text-gray-500">
-                  Try adjusting your filters or search terms
-                </p>
+                <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
               </div>
             )}
           </div>

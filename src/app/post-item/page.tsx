@@ -5,15 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
-import { 
-  PhotoIcon, 
-  XMarkIcon, 
+import {
+  PhotoIcon,
+  XMarkIcon,
   MapPinIcon,
   CurrencyDollarIcon,
   TagIcon,
   InformationCircleIcon,
 } from '@heroicons/react/24/outline';
-import { createProductSchema, type CreateProductFormData, productConditions } from '@/schemas/product';
+import {
+  createProductSchema,
+  type CreateProductFormData,
+  productConditions,
+} from '@/schemas/product';
 import { useAuth } from '@/hooks/useAuth';
 import { productService } from '@/services/product';
 import categoryService, { type Category } from '@/services/category';
@@ -27,7 +31,7 @@ export default function PostItemPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -86,7 +90,7 @@ export default function PostItemPage() {
   }
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {files} = event.target;
+    const { files } = event.target;
     if (!files) return;
 
     const newFiles = Array.from(files);
@@ -134,12 +138,12 @@ export default function PostItemPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
       // Upload images first
       setUploadingImages(true);
       const uploadedImageUrls: string[] = [];
-      
+
       for (const file of imageFiles) {
         try {
           const imageUrl = await productService.uploadProductImage(file);
@@ -149,7 +153,7 @@ export default function PostItemPage() {
           toast.error(`Failed to upload ${file.name}`);
         }
       }
-      
+
       setUploadingImages(false);
 
       if (uploadedImageUrls.length === 0) {
@@ -165,7 +169,7 @@ export default function PostItemPage() {
       };
 
       const product = await productService.createProduct(productData);
-      
+
       toast.success('Product posted successfully!');
       router.push(`/products/${product.id}`);
     } catch (error) {
@@ -191,9 +195,7 @@ export default function PostItemPage() {
           <>
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
               <input
                 {...register('title')}
                 type="text"
@@ -202,16 +204,12 @@ export default function PostItemPage() {
                 } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 placeholder="What are you selling?"
               />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-              )}
+              {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 {...register('description')}
                 rows={6}
@@ -227,9 +225,7 @@ export default function PostItemPage() {
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               {categoriesLoading ? (
                 <div className="animate-pulse bg-gray-200 h-10 rounded-md"></div>
               ) : (
@@ -259,9 +255,7 @@ export default function PostItemPage() {
           <>
             {/* Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
@@ -275,16 +269,12 @@ export default function PostItemPage() {
                   placeholder="0.00"
                 />
               </div>
-              {errors.price && (
-                <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-              )}
+              {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
             </div>
 
             {/* Condition */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Condition
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
               <div className="grid grid-cols-3 gap-3">
                 {productConditions.map(condition => (
                   <label
@@ -316,7 +306,7 @@ export default function PostItemPage() {
                 <MapPinIcon className="h-5 w-5 mr-2" />
                 Location
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <input
@@ -378,10 +368,8 @@ export default function PostItemPage() {
           <>
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Photos
-              </label>
-              
+              <label className="block text-sm font-medium text-gray-700 mb-2">Photos</label>
+
               {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -423,9 +411,7 @@ export default function PostItemPage() {
                   />
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors cursor-pointer">
                     <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                      Click to upload or drag and drop
-                    </p>
+                    <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
                     <p className="text-xs text-gray-500 mt-1">
                       PNG, JPG, GIF up to 5MB (max 5 photos)
                     </p>
@@ -501,8 +487,8 @@ export default function PostItemPage() {
                       step.id < currentStep
                         ? 'bg-primary-600 text-white'
                         : step.id === currentStep
-                        ? 'border-2 border-primary-600 bg-white text-primary-600'
-                        : 'border-2 border-gray-300 bg-white text-gray-500'
+                          ? 'border-2 border-primary-600 bg-white text-primary-600'
+                          : 'border-2 border-gray-300 bg-white text-gray-500'
                     }`}
                   >
                     {step.id < currentStep ? (
@@ -527,9 +513,7 @@ export default function PostItemPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-sm p-6">
-          <div className="space-y-6">
-            {renderStep()}
-          </div>
+          <div className="space-y-6">{renderStep()}</div>
 
           {/* Navigation Buttons */}
           <div className="mt-8 flex justify-between">
@@ -562,18 +546,25 @@ export default function PostItemPage() {
                   // Check for form validation errors and show them via toast
                   if (Object.keys(errors).length > 0) {
                     e.preventDefault();
-                    
+
                     // Get the first error and show it
                     const firstErrorKey = Object.keys(errors)[0];
                     const firstError = errors[firstErrorKey as keyof typeof errors];
-                    
+
                     if (firstError && 'message' in firstError) {
                       toast.error(`Please fix: ${firstError.message}`);
-                      
+
                       // Navigate to the step containing the error
-                      if (firstErrorKey && ['title', 'description', 'category_id'].includes(firstErrorKey)) {
+                      if (
+                        firstErrorKey &&
+                        ['title', 'description', 'category_id'].includes(firstErrorKey)
+                      ) {
                         setCurrentStep(1);
-                      } else if (firstErrorKey && (['price', 'condition', 'location'].includes(firstErrorKey) || firstErrorKey.startsWith('location.'))) {
+                      } else if (
+                        firstErrorKey &&
+                        (['price', 'condition', 'location'].includes(firstErrorKey) ||
+                          firstErrorKey.startsWith('location.'))
+                      ) {
                         setCurrentStep(2);
                       } else {
                         setCurrentStep(3);
@@ -585,9 +576,7 @@ export default function PostItemPage() {
                 className="px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               >
                 {isLoading ? (
-                  <>
-                    {uploadingImages ? 'Uploading images...' : 'Posting...'}
-                  </>
+                  <>{uploadingImages ? 'Uploading images...' : 'Posting...'}</>
                 ) : (
                   'Post Item'
                 )}

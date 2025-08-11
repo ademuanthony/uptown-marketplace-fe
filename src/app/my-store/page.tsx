@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { 
-  PlusIcon, 
-  EyeIcon, 
-  PencilIcon, 
+import {
+  PlusIcon,
+  EyeIcon,
+  PencilIcon,
   TrashIcon,
   EllipsisVerticalIcon,
   MagnifyingGlassIcon,
@@ -69,7 +69,7 @@ export default function MyStorePage() {
 
   const fetchItems = useCallback(async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       console.info('My-items: fetching products for user.id:', user.id);
@@ -78,7 +78,7 @@ export default function MyStorePage() {
         page: 1,
         page_size: 50,
       });
-      
+
       // Transform the products to match our Item interface
       const transformedItems: Item[] = response.products.map(product => ({
         id: product.id,
@@ -96,7 +96,7 @@ export default function MyStorePage() {
         updated_at: product.updated_at,
         seller_id: product.seller_id,
       }));
-      
+
       setItems(transformedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -172,9 +172,10 @@ export default function MyStorePage() {
   };
 
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -300,7 +301,7 @@ export default function MyStorePage() {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
-              
+
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
@@ -313,7 +314,7 @@ export default function MyStorePage() {
                 <option value="draft">Draft</option>
               </select>
             </div>
-            
+
             <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
               More Filters
@@ -335,8 +336,8 @@ export default function MyStorePage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No items found</h3>
               <p className="text-gray-500 mb-4">
-                {searchQuery || statusFilter !== 'all' 
-                  ? 'Try adjusting your search or filters' 
+                {searchQuery || statusFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
                   : 'Start by posting your first item'}
               </p>
               <Link
@@ -392,15 +393,19 @@ export default function MyStorePage() {
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{item.title}</div>
                             <div className="text-sm text-gray-500">{item.condition}</div>
-                            <div className="text-xs text-gray-400">{item.location.city}, {item.location.state}</div>
+                            <div className="text-xs text-gray-400">
+                              {item.location.city}, {item.location.state}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={classNames(
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          getStatusColor(item.status),
-                        )}>
+                        <span
+                          className={classNames(
+                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                            getStatusColor(item.status),
+                          )}
+                        >
                           {getStatusIcon(item.status)}
                           <span className="ml-1 capitalize">{item.status}</span>
                         </span>
@@ -435,7 +440,11 @@ export default function MyStorePage() {
                                 <Menu.Item>
                                   {({ active }) => (
                                     <Link
-                                      href={item.permalink ? `/products/${item.permalink}` : `/products/${item.id}`}
+                                      href={
+                                        item.permalink
+                                          ? `/products/${item.permalink}`
+                                          : `/products/${item.id}`
+                                      }
                                       className={classNames(
                                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                                         'flex items-center px-4 py-2 text-sm',

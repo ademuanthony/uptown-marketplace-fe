@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  HeartIcon, 
-  ShareIcon, 
+import {
+  HeartIcon,
+  ShareIcon,
   MapPinIcon,
   ClockIcon,
   StarIcon,
@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
-  
+
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -42,11 +42,13 @@ export default function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         let fetchedProduct: Product;
-        
+
         // First try to fetch by permalink (if it looks like a permalink)
         // UUID format: 8-4-4-4-12 characters, permalinks have hyphens and are longer
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productIdOrPermalink);
-        
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          productIdOrPermalink,
+        );
+
         if (isUUID) {
           // It's a UUID, fetch by ID
           fetchedProduct = await productService.getProduct(productIdOrPermalink);
@@ -59,7 +61,7 @@ export default function ProductDetailPage() {
             fetchedProduct = await productService.getProduct(productIdOrPermalink);
           }
         }
-        
+
         setProduct(fetchedProduct);
 
         // Check if product is favorited by current user (only if authenticated)
@@ -99,9 +101,9 @@ export default function ProductDetailPage() {
       toast.error('Product not loaded');
       return;
     }
-    
+
     setIsTogglingFavorite(true);
-    
+
     try {
       const newFavoriteStatus = await favoritesService.toggleFavorite(product.id);
       setIsFavorited(newFavoriteStatus);
@@ -116,10 +118,10 @@ export default function ProductDetailPage() {
 
   const handleShare = async () => {
     // Use permalink for sharing if available, otherwise fall back to current URL
-    const shareUrl = product?.permalink 
+    const shareUrl = product?.permalink
       ? `${window.location.origin}/products/${product.permalink}`
       : window.location.href;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -141,14 +143,13 @@ export default function ProductDetailPage() {
     }
   };
 
-  const formatPrice = (price: number, currency: string) => 
-     new Intl.NumberFormat('en-US', {
+  const formatPrice = (price: number, currency: string) =>
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,
-    }).format(price / 100) // Convert from cents
-  ;
-
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
+    }).format(price / 100); // Convert from cents
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -158,23 +159,19 @@ export default function ProductDetailPage() {
 
   const nextImage = () => {
     if (product && product.images.length > 0) {
-      setCurrentImageIndex(prev => 
-        prev === product.images.length - 1 ? 0 : prev + 1,
-      );
+      setCurrentImageIndex(prev => (prev === product.images.length - 1 ? 0 : prev + 1));
     }
   };
 
   const prevImage = () => {
     if (product && product.images.length > 0) {
-      setCurrentImageIndex(prev => 
-        prev === 0 ? product.images.length - 1 : prev - 1,
-      );
+      setCurrentImageIndex(prev => (prev === 0 ? product.images.length - 1 : prev - 1));
     }
   };
 
   const handlePublish = async () => {
     if (!product || !user) return;
-    
+
     setIsPublishing(true);
     try {
       await productService.publishProduct(product.id);
@@ -190,7 +187,7 @@ export default function ProductDetailPage() {
 
   const handleUnpublish = async () => {
     if (!product || !user) return;
-    
+
     setIsUnpublishing(true);
     try {
       await productService.unpublishProduct(product.id);
@@ -224,7 +221,7 @@ export default function ProductDetailPage() {
         subject: product.title, // Set subject to product name
         product_id: product.id,
       });
-      
+
       // Send initial message with product link
       const productUrl = `${window.location.origin}/products/${product.permalink || product.id}`;
       const initialMessage = `Hi! I'm interested in your product "${product.title}". 
@@ -237,9 +234,9 @@ Could you provide more details?`;
         type: 'text',
         content: initialMessage,
       });
-      
+
       toast.success('Conversation started!');
-      
+
       // Redirect to the messages page with the new conversation
       router.push(`/messages?conversation=${conversation.id}`);
     } catch (error) {
@@ -271,7 +268,7 @@ Could you provide more details?`;
         subject: product.title, // Set subject to product name
         product_id: product.id,
       });
-      
+
       // Send initial message with product link
       const productUrl = `${window.location.origin}/products/${product.permalink || product.id}`;
       const initialMessage = `Hi! I'm interested in making an offer on your product "${product.title}". 
@@ -286,9 +283,9 @@ Let me know if you're open to offers!`;
         type: 'text',
         content: initialMessage,
       });
-      
+
       toast.success('Conversation created with initial message!');
-      
+
       // Redirect to the messages page with the new conversation
       router.push(`/messages?conversation=${conversation.id}`);
     } catch (error) {
@@ -312,7 +309,9 @@ Let me know if you're open to offers!`;
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-          <p className="text-gray-600 mb-8">The product you&apos;re looking for doesn&apos;t exist.</p>
+          <p className="text-gray-600 mb-8">
+            The product you&apos;re looking for doesn&apos;t exist.
+          </p>
           <button
             onClick={() => router.push('/')}
             className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700"
@@ -341,7 +340,7 @@ Let me know if you're open to offers!`;
                     className="object-cover"
                     priority
                   />
-                  
+
                   {/* Navigation Arrows */}
                   {product.images.length > 1 && (
                     <>
@@ -359,7 +358,7 @@ Let me know if you're open to offers!`;
                       </button>
                     </>
                   )}
-                  
+
                   {/* Image Counter */}
                   {product.images.length > 1 && (
                     <div className="absolute bottom-4 right-4 px-3 py-1 bg-black bg-opacity-50 text-white text-sm rounded-full">
@@ -376,7 +375,7 @@ Let me know if you're open to offers!`;
                 </div>
               )}
             </div>
-            
+
             {/* Image Thumbnails */}
             {product.images && product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
@@ -385,7 +384,9 @@ Let me know if you're open to offers!`;
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`relative aspect-square bg-white rounded-lg overflow-hidden border-2 transition-colors ${
-                      index === currentImageIndex ? 'border-primary-600' : 'border-gray-200 hover:border-gray-300'
+                      index === currentImageIndex
+                        ? 'border-primary-600'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <Image
@@ -409,18 +410,26 @@ Let me know if you're open to offers!`;
                 <span className="text-3xl font-bold text-primary-600">
                   {formatPrice(product.price, product.currency)}
                 </span>
-                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  product.condition === 'new' ? 'bg-green-100 text-green-800' :
-                  product.condition === 'used' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
+                <span
+                  className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    product.condition === 'new'
+                      ? 'bg-green-100 text-green-800'
+                      : product.condition === 'used'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                  }`}
+                >
                   {product.condition}
                 </span>
-                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  product.status === 'published' ? 'bg-green-100 text-green-800' :
-                  product.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    product.status === 'published'
+                      ? 'bg-green-100 text-green-800'
+                      : product.status === 'draft'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-red-100 text-red-800'
+                  }`}
+                >
                   {product.status}
                 </span>
               </div>
@@ -448,8 +457,18 @@ Let me know if you're open to offers!`;
                         </>
                       ) : (
                         <>
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                           <span>Publish Product</span>
                         </>
@@ -472,26 +491,41 @@ Let me know if you're open to offers!`;
                         </>
                       ) : (
                         <>
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                           <span>Unpublish Product</span>
                         </>
                       )}
                     </button>
                   )}
-                  
+
                   <button
                     onClick={() => router.push(`/edit-item/${product.id}`)}
                     className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
                     </svg>
                     <span>Edit Product</span>
                   </button>
                 </div>
-                
+
                 {product.status === 'draft' && product.images.length === 0 && (
                   <p className="text-sm text-red-600 mt-2">
                     * Add at least one image before publishing
@@ -506,8 +540,8 @@ Let me know if you're open to offers!`;
                 onClick={handleFavoriteToggle}
                 disabled={isTogglingFavorite}
                 className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isFavorited 
-                    ? 'bg-red-50 border-2 border-red-200 text-red-700 hover:bg-red-100' 
+                  isFavorited
+                    ? 'bg-red-50 border-2 border-red-200 text-red-700 hover:bg-red-100'
                     : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-red-300 hover:bg-red-50'
                 }`}
               >
@@ -519,10 +553,14 @@ Let me know if you're open to offers!`;
                   <HeartIcon className="h-5 w-5 text-gray-600" />
                 )}
                 <span className="font-medium">
-                  {isTogglingFavorite ? 'Updating...' : isFavorited ? 'Favorited' : 'Add to Favorites'}
+                  {isTogglingFavorite
+                    ? 'Updating...'
+                    : isFavorited
+                      ? 'Favorited'
+                      : 'Add to Favorites'}
                 </span>
               </button>
-              
+
               <button
                 onClick={handleShare}
                 className="flex items-center space-x-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
@@ -540,7 +578,9 @@ Let me know if you're open to offers!`;
                   <p className="whitespace-pre-wrap">{product.description}</p>
                 ) : (
                   <>
-                    <p className="whitespace-pre-wrap">{product.description.substring(0, 300)}...</p>
+                    <p className="whitespace-pre-wrap">
+                      {product.description.substring(0, 300)}...
+                    </p>
                     <button
                       onClick={() => setShowFullDescription(true)}
                       className="text-primary-600 hover:text-primary-700 font-medium mt-2"
@@ -577,11 +617,11 @@ Let me know if you're open to offers!`;
                 <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                 <div className="text-gray-600">
                   <p>{product.location.street}</p>
-                  <p>{product.location.city}, {product.location.state}</p>
+                  <p>
+                    {product.location.city}, {product.location.state}
+                  </p>
                   <p>{product.location.country}</p>
-                  {product.location.postal_code && (
-                    <p>{product.location.postal_code}</p>
-                  )}
+                  {product.location.postal_code && <p>{product.location.postal_code}</p>}
                 </div>
               </div>
             </div>
@@ -612,7 +652,7 @@ Let me know if you're open to offers!`;
             {/* Contact/Action Buttons - Only show for non-owners */}
             {!isOwner && (
               <div className="border-t pt-6 space-y-3">
-                <button 
+                <button
                   onClick={handleContactSeller}
                   disabled={isCreatingConversation}
                   className="w-full bg-primary-600 text-white py-3 px-6 rounded-md hover:bg-primary-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
@@ -626,7 +666,7 @@ Let me know if you're open to offers!`;
                     'Contact Seller'
                   )}
                 </button>
-                <button 
+                <button
                   onClick={handleMakeOffer}
                   disabled={isCreatingConversation}
                   className="w-full bg-white border border-primary-600 text-primary-600 py-3 px-6 rounded-md hover:bg-primary-50 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"

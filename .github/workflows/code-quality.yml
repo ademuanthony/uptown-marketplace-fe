@@ -40,7 +40,7 @@ jobs:
     - name: ESLint
       run: |
         echo "🔍 Running ESLint..."
-        npx eslint src --ext .ts,.tsx --format=compact --ignore-path .eslintignore
+        npx eslint . --ext .ts,.tsx --format=compact --max-warnings 0
         
     - name: Check for useSearchParams without Suspense
       run: |

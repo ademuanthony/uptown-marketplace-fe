@@ -29,13 +29,8 @@ const MessagesContent: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Initialize real-time messaging
-  const {
-    connectionStatus,
-    onNewMessage,
-    onConversationUpdate,
-    startTracking,
-    stopTracking,
-  } = useRealTimeMessaging();
+  const { connectionStatus, onNewMessage, onConversationUpdate, startTracking, stopTracking } =
+    useRealTimeMessaging();
 
   const loadConversations = async () => {
     try {
@@ -68,17 +63,17 @@ const MessagesContent: React.FC = () => {
           updated[existingIndex] = {
             ...updated[existingIndex],
             ...Object.fromEntries(
-              Object.entries(event.conversation).filter(([_, value]) => value !== undefined)
-            )
+              Object.entries(event.conversation).filter(([_, value]) => value !== undefined),
+            ),
           } as Conversation;
-          
+
           // Sort by last_message_at to keep most recent first
           updated.sort((a, b) => {
             const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
             const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
             return bTime - aTime;
           });
-          
+
           return updated;
         } else if (event.conversation) {
           // Add new conversation
@@ -167,8 +162,8 @@ const MessagesContent: React.FC = () => {
   };
 
   const handleCreateConversationSubmit = async (
-    type: ConversationType, 
-    title?: string, 
+    type: ConversationType,
+    title?: string,
     participantIds?: string[],
   ) => {
     try {
@@ -177,10 +172,7 @@ const MessagesContent: React.FC = () => {
       if (type === 'direct' && participantIds && participantIds.length > 0 && participantIds[0]) {
         conversation = await messagingService.createDirectConversation(participantIds[0]);
       } else if (type === 'group' && title) {
-        conversation = await messagingService.createGroupConversation(
-          title,
-          participantIds || [],
-        );
+        conversation = await messagingService.createGroupConversation(title, participantIds || []);
       } else if (type === 'support') {
         // For support conversations, we might need a different approach
         conversation = await messagingService.createConversation({
@@ -193,11 +185,11 @@ const MessagesContent: React.FC = () => {
 
       // Add to conversations list
       setConversations(prev => [conversation, ...prev]);
-      
+
       // Select the new conversation
       setSelectedConversation(conversation);
       setShowMobileChat(true);
-      
+
       toast.success('Conversation created successfully!');
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -240,19 +232,17 @@ const MessagesContent: React.FC = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-900">Messages</h1>
           <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${
-              connectionStatus.websocket 
-                ? 'bg-green-500' 
-                : connectionStatus.polling 
-                  ? 'bg-yellow-500' 
-                  : 'bg-red-500'
-            }`} />
+            <div
+              className={`w-2 h-2 rounded-full ${
+                connectionStatus.websocket
+                  ? 'bg-green-500'
+                  : connectionStatus.polling
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
+              }`}
+            />
             <span className="text-xs text-gray-500">
-              {connectionStatus.websocket 
-                ? 'Live' 
-                : connectionStatus.polling 
-                  ? 'Sync' 
-                  : 'Offline'}
+              {connectionStatus.websocket ? 'Live' : connectionStatus.polling ? 'Sync' : 'Offline'}
             </span>
           </div>
         </div>
@@ -261,10 +251,12 @@ const MessagesContent: React.FC = () => {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Conversation list - sidebar on desktop, full screen on mobile */}
-        <div className={`
+        <div
+          className={`
           w-full md:w-80 bg-white border-r flex-shrink-0
           ${showMobileChat ? 'hidden md:block' : 'block'}
-        `}>
+        `}
+        >
           <ConversationList
             conversations={conversations}
             selectedConversationId={selectedConversation?.id}
@@ -275,10 +267,12 @@ const MessagesContent: React.FC = () => {
         </div>
 
         {/* Chat interface - main area */}
-        <div className={`
+        <div
+          className={`
           flex-1 flex flex-col
           ${showMobileChat ? 'block' : 'hidden md:flex'}
-        `}>
+        `}
+        >
           {selectedConversation ? (
             <>
               {/* Mobile back button */}
@@ -288,34 +282,45 @@ const MessagesContent: React.FC = () => {
                   className="mr-3 p-2 text-gray-600 hover:bg-gray-100 rounded-full"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 <h2 className="text-lg font-medium text-gray-900">
                   {selectedConversation.title || 'Conversation'}
                 </h2>
               </div>
-              
+
               <div className="flex-1 min-h-0 overflow-hidden">
-                <ChatInterface
-                  conversation={selectedConversation}
-                  onClose={handleBackToList}
-                />
+                <ChatInterface conversation={selectedConversation} onClose={handleBackToList} />
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center bg-gray-50">
               <div className="text-center px-6">
                 <div className="text-gray-400 mb-6">
-                  <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <svg
+                    className="w-20 h-20 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium text-gray-900 mb-3">
-                  Welcome to Messages
-                </h3>
+                <h3 className="text-xl font-medium text-gray-900 mb-3">Welcome to Messages</h3>
                 <p className="text-gray-600 mb-6 max-w-sm">
-                  Select a conversation from the sidebar to start chatting, or create a new conversation.
+                  Select a conversation from the sidebar to start chatting, or create a new
+                  conversation.
                 </p>
                 <button
                   onClick={handleCreateConversation}
@@ -341,9 +346,9 @@ const MessagesContent: React.FC = () => {
 
 // Main page component with Suspense boundary
 const MessagesPage: React.FC = () => (
-    <Suspense fallback={<MessagesLoading />}>
-      <MessagesContent />
-    </Suspense>
-  );
+  <Suspense fallback={<MessagesLoading />}>
+    <MessagesContent />
+  </Suspense>
+);
 
 export default MessagesPage;

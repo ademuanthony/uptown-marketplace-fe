@@ -9,11 +9,7 @@ interface MessageBubbleProps {
   onMarkAsRead?: (messageId: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ 
-  message, 
-  onReply, 
-  onMarkAsRead, 
-}) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkAsRead }) => {
   const { user } = useAuth();
   const isOwnMessage = message.sender_id === user?.id;
   const isRead = message.status === 'read';
@@ -50,15 +46,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`flex mb-4 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
       onClick={handleMarkAsRead}
     >
-      <div 
+      <div
         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-          isOwnMessage 
-            ? 'bg-blue-500 text-white' 
-            : 'bg-gray-200 text-gray-900'
+          isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'
         }`}
       >
         {/* Reply indicator */}
@@ -70,18 +64,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Message content */}
         <div className="break-words">
-          {message.type === 'text' && (
-            <p>{message.content}</p>
-          )}
-          
+          {message.type === 'text' && <p>{message.content}</p>}
+
           {message.type === 'image' && (
             <div>
               {message.attachment_url ? (
                 <div className="relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={message.attachment_url} 
-                    alt="Shared image" 
+                  <img
+                    src={message.attachment_url}
+                    alt="Shared image"
                     className="rounded max-w-full h-auto mb-2"
                     loading="lazy"
                   />
@@ -101,25 +93,31 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               {message.content && <p className="text-sm">{message.content}</p>}
             </div>
           )}
-          
+
           {message.type === 'file' && message.attachment_url && (
             <div>
               <div className="flex items-center space-x-2 mb-2">
                 <div className="p-2 bg-gray-100 rounded">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">File attachment</p>
                   <p className="text-xs text-gray-500">
-                    {message.attachment_type} 
-                    {message.attachment_size && ` • ${(message.attachment_size / 1024).toFixed(1)} KB`}
+                    {message.attachment_type}
+                    {message.attachment_size &&
+                      ` • ${(message.attachment_size / 1024).toFixed(1)} KB`}
                   </p>
                 </div>
-                <a 
-                  href={message.attachment_url} 
-                  target="_blank" 
+                <a
+                  href={message.attachment_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
@@ -132,14 +130,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
 
         {/* Message metadata */}
-        <div className={`flex justify-between items-center mt-2 text-xs ${
-          isOwnMessage ? 'text-blue-100' : 'text-gray-500'
-        }`}>
+        <div
+          className={`flex justify-between items-center mt-2 text-xs ${
+            isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+          }`}
+        >
           <span>{formatTime(message.created_at)}</span>
           <div className="flex items-center space-x-1">
-            {message.edited_at && (
-              <span className="italic">edited</span>
-            )}
+            {message.edited_at && <span className="italic">edited</span>}
             {isOwnMessage && getStatusIcon(message.status)}
           </div>
         </div>
@@ -151,9 +149,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               e.stopPropagation();
               onReply(message);
             }}
-            className={`mt-2 text-xs underline ${
-              isOwnMessage ? 'text-blue-100' : 'text-blue-600'
-            }`}
+            className={`mt-2 text-xs underline ${isOwnMessage ? 'text-blue-100' : 'text-blue-600'}`}
           >
             Reply
           </button>

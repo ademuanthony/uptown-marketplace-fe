@@ -42,16 +42,15 @@ const DepositModal: React.FC<DepositModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [networks] = useState<NetworkOption[]>(depositService.getSupportedNetworks());
 
-
   const generateDepositAddress = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       setDepositAddress('');
       setQrCodeDataUrl('');
-      
+
       console.info('Generating deposit address for:', selectedCurrency, selectedNetwork);
-      
+
       const network = networks.find(n => n.type === selectedNetwork);
       if (!network) {
         throw new Error(`Unsupported network: ${selectedNetwork}`);
@@ -60,11 +59,11 @@ const DepositModal: React.FC<DepositModalProps> = ({
       console.info('Using network:', network);
       const address = await depositService.getOrCreateDepositAddress(selectedCurrency, network.id);
       console.info('Received deposit address:', address);
-      
+
       if (!address || !address.address) {
         throw new Error('No address returned from server');
       }
-      
+
       setDepositAddress(address.address);
 
       // Generate QR code
@@ -78,13 +77,14 @@ const DepositModal: React.FC<DepositModalProps> = ({
       setQrCodeDataUrl(qrCode.qr_code_data_url);
     } catch (err) {
       console.error('Failed to generate deposit address:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate deposit address';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to generate deposit address';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [selectedCurrency, selectedNetwork, networks]);
-  
+
   useEffect(() => {
     if (isOpen) {
       generateDepositAddress();
@@ -96,7 +96,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
     return () => {
       document.body.style.overflow = 'unset';
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, selectedCurrency, selectedNetwork]);
 
   const handleCopyAddress = async () => {
@@ -111,7 +111,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const handleCurrencyChange = (currency: DepositCurrency) => {
     setSelectedCurrency(currency);
-    
+
     // Find a compatible network for this currency
     const compatibleNetwork = networks.find(n => n.currencies.includes(currency));
     if (compatibleNetwork && compatibleNetwork.type !== selectedNetwork) {
@@ -119,7 +119,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
     }
   };
 
-  const getAvailableNetworks = () => networks.filter(network => network.currencies.includes(selectedCurrency));
+  const getAvailableNetworks = () =>
+    networks.filter(network => network.currencies.includes(selectedCurrency));
 
   const getCurrentNetwork = () => networks.find(n => n.type === selectedNetwork);
 
@@ -128,7 +129,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
     return depositService.getExplorerUrl(selectedNetwork, depositAddress);
   };
 
-  const getDepositInstructions = () => depositService.getDepositInstructions(selectedCurrency, selectedNetwork);
+  const getDepositInstructions = () =>
+    depositService.getDepositInstructions(selectedCurrency, selectedNetwork);
 
   const getMinimumDeposit = () => depositService.getMinimumDepositAmount(selectedCurrency);
 
@@ -157,17 +159,15 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
   const modalContent = (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
         onClick={handleBackdropClick}
       />
-      
+
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">
-              Deposit Cryptocurrency
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900">Deposit Cryptocurrency</h3>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -178,9 +178,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
           {/* Currency Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select Currency
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Select Currency</label>
             <div className="grid grid-cols-3 sm:grid-cols-2 gap-3">
               {['USDT', 'POL'].map(currency => (
                 <button
@@ -203,9 +201,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
           {/* Network Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select Network
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Select Network</label>
             <div className="space-y-2">
               {getAvailableNetworks().map(network => (
                 <button
@@ -222,7 +218,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
                       <div className="font-medium text-gray-900">{network.name}</div>
                       <div className="text-sm text-gray-500">Chain ID: {network.id}</div>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getNetworkColor(network.type)}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getNetworkColor(network.type)}`}
+                    >
                       {network.name}
                     </span>
                   </div>
@@ -310,7 +308,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
                       </button>
                     </div>
                     {copied && (
-                      <p className="text-sm text-green-600 mt-2 font-medium">✓ Address copied to clipboard!</p>
+                      <p className="text-sm text-green-600 mt-2 font-medium">
+                        ✓ Address copied to clipboard!
+                      </p>
                     )}
                   </div>
 
@@ -336,10 +336,18 @@ const DepositModal: React.FC<DepositModalProps> = ({
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-blue-800">Deposit Information</h4>
                     <div className="space-y-1 text-sm text-blue-700">
-                      <p><strong>Network:</strong> {getCurrentNetwork()?.name}</p>
-                      <p><strong>Currency:</strong> {selectedCurrency}</p>
-                      <p><strong>Minimum Deposit:</strong> {getMinimumDeposit()} {selectedCurrency}</p>
-                      <p><strong>Processing Time:</strong> 5-30 minutes</p>
+                      <p>
+                        <strong>Network:</strong> {getCurrentNetwork()?.name}
+                      </p>
+                      <p>
+                        <strong>Currency:</strong> {selectedCurrency}
+                      </p>
+                      <p>
+                        <strong>Minimum Deposit:</strong> {getMinimumDeposit()} {selectedCurrency}
+                      </p>
+                      <p>
+                        <strong>Processing Time:</strong> 5-30 minutes
+                      </p>
                     </div>
                   </div>
                 </div>

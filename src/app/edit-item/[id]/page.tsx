@@ -5,16 +5,20 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
-import { 
-  PhotoIcon, 
-  XMarkIcon, 
+import {
+  PhotoIcon,
+  XMarkIcon,
   MapPinIcon,
   CurrencyDollarIcon,
   TagIcon,
   InformationCircleIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import { createProductSchema, type CreateProductFormData, productConditions } from '@/schemas/product';
+import {
+  createProductSchema,
+  type CreateProductFormData,
+  productConditions,
+} from '@/schemas/product';
 import { useAuth } from '@/hooks/useAuth';
 import { productService } from '@/services/product';
 import categoryService, { type Category } from '@/services/category';
@@ -30,7 +34,7 @@ export default function EditItemPage() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -83,11 +87,11 @@ export default function EditItemPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) return;
-      
+
       try {
         setProductLoading(true);
         const product = await productService.getProduct(productId);
-        
+
         // Debug: Log user and product info
         console.info('Debug ownership check:', {
           product_seller_id: product.seller_id,
@@ -95,7 +99,7 @@ export default function EditItemPage() {
           user_firebase_uid: user?.firebase_uid,
           user_email: user?.email,
         });
-        
+
         // Note: Removing frontend ownership check for now
         // The backend will handle authorization during update
         // This allows us to debug the real issue
@@ -131,7 +135,16 @@ export default function EditItemPage() {
     if (!authLoading && isAuthenticated && user?.id) {
       fetchProduct();
     }
-  }, [productId, authLoading, isAuthenticated, user?.id, user?.email, user?.firebase_uid, reset, router]);
+  }, [
+    productId,
+    authLoading,
+    isAuthenticated,
+    user?.id,
+    user?.email,
+    user?.firebase_uid,
+    reset,
+    router,
+  ]);
 
   if (authLoading || productLoading) {
     return (
@@ -146,7 +159,7 @@ export default function EditItemPage() {
   }
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {files} = event.target;
+    const { files } = event.target;
     if (!files) return;
 
     const newFiles = Array.from(files);
@@ -198,14 +211,14 @@ export default function EditItemPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
       const allImageUrls = [...existingImages];
 
       // Upload new images if any
       if (imageFiles.length > 0) {
         setUploadingImages(true);
-        
+
         for (const file of imageFiles) {
           try {
             const imageUrl = await productService.uploadProductImage(file);
@@ -215,7 +228,7 @@ export default function EditItemPage() {
             toast.error(`Failed to upload ${file.name}`);
           }
         }
-        
+
         setUploadingImages(false);
       }
 
@@ -243,7 +256,7 @@ export default function EditItemPage() {
       console.info('Product data being sent:', productData);
 
       await productService.updateProduct(productId, productData);
-      
+
       toast.success('Product updated successfully!');
       router.push(`/products/${productId}`);
     } catch (error) {
@@ -269,9 +282,7 @@ export default function EditItemPage() {
           <>
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
               <input
                 {...register('title')}
                 type="text"
@@ -280,16 +291,12 @@ export default function EditItemPage() {
                 } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 placeholder="What are you selling?"
               />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-              )}
+              {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 {...register('description')}
                 rows={6}
@@ -305,9 +312,7 @@ export default function EditItemPage() {
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               {categoriesLoading ? (
                 <div className="animate-pulse bg-gray-200 h-10 rounded-md"></div>
               ) : (
@@ -337,9 +342,7 @@ export default function EditItemPage() {
           <>
             {/* Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
@@ -353,16 +356,12 @@ export default function EditItemPage() {
                   placeholder="0.00"
                 />
               </div>
-              {errors.price && (
-                <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-              )}
+              {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
             </div>
 
             {/* Condition */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Condition
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
               <div className="grid grid-cols-3 gap-3">
                 {productConditions.map(condition => (
                   <label
@@ -394,7 +393,7 @@ export default function EditItemPage() {
                 <MapPinIcon className="h-5 w-5 mr-2" />
                 Location
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <input
@@ -491,9 +490,7 @@ export default function EditItemPage() {
             {/* New Images */}
             {imagePreviews.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Photos
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Photos</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   {imagePreviews.map((preview, index) => (
                     <div key={`new-${index}`} className="relative group">
@@ -518,7 +515,7 @@ export default function EditItemPage() {
             )}
 
             {/* Upload Button */}
-            {(existingImages.length + imagePreviews.length) < 5 && (
+            {existingImages.length + imagePreviews.length < 5 && (
               <label className="block">
                 <input
                   type="file"
@@ -529,9 +526,7 @@ export default function EditItemPage() {
                 />
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors cursor-pointer">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">
-                    Click to upload or drag and drop
-                  </p>
+                  <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
                   <p className="text-xs text-gray-500 mt-1">
                     PNG, JPG, GIF up to 5MB (max 5 photos total)
                   </p>
@@ -616,8 +611,8 @@ export default function EditItemPage() {
                       step.id < currentStep
                         ? 'bg-primary-600 text-white'
                         : step.id === currentStep
-                        ? 'border-2 border-primary-600 bg-white text-primary-600'
-                        : 'border-2 border-gray-300 bg-white text-gray-500'
+                          ? 'border-2 border-primary-600 bg-white text-primary-600'
+                          : 'border-2 border-gray-300 bg-white text-gray-500'
                     }`}
                   >
                     {step.id < currentStep ? (
@@ -641,7 +636,7 @@ export default function EditItemPage() {
         </nav>
 
         {/* Form */}
-        <form 
+        <form
           onSubmit={e => {
             // Prevent submission if not on final step
             if (currentStep !== 3) {
@@ -658,9 +653,7 @@ export default function EditItemPage() {
           }}
           className="bg-white rounded-lg shadow-sm p-6"
         >
-          <div className="space-y-6">
-            {renderStep()}
-          </div>
+          <div className="space-y-6">{renderStep()}</div>
 
           {/* Navigation Buttons */}
           <div className="mt-8 flex justify-between">
@@ -701,9 +694,7 @@ export default function EditItemPage() {
                 className="px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               >
                 {isLoading ? (
-                  <>
-                    {uploadingImages ? 'Uploading images...' : 'Updating...'}
-                  </>
+                  <>{uploadingImages ? 'Uploading images...' : 'Updating...'}</>
                 ) : (
                   'Update Item'
                 )}

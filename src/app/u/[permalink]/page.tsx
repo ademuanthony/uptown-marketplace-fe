@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  UserIcon, 
-  CalendarIcon, 
-  ShoppingBagIcon, 
+import {
+  UserIcon,
+  CalendarIcon,
+  ShoppingBagIcon,
   DocumentTextIcon,
-  StarIcon, 
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import { publicProfileService, PublicProfileResponse } from '@/services/publicProfile';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
@@ -22,7 +22,7 @@ type TabType = 'products' | 'timeline' | 'reviews';
 export default function PublicProfilePage() {
   const params = useParams();
   const permalink = params.permalink as string;
-  
+
   const [profileData, setProfileData] = useState<PublicProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!permalink) return;
-      
+
       try {
         setLoading(true);
         setError(null);
@@ -117,7 +117,8 @@ export default function PublicProfilePage() {
                   ) : (
                     <div className="w-full h-full rounded-full bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center">
                       <span className="text-white text-2xl sm:text-3xl font-bold">
-                        {user.first_name[0]}{user.last_name[0]}
+                        {user.first_name[0]}
+                        {user.last_name[0]}
                       </span>
                     </div>
                   )}
@@ -128,14 +129,8 @@ export default function PublicProfilePage() {
               <div className="mt-4 sm:mt-0 flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                      {fullName}
-                    </h1>
-                    {user.bio && (
-                      <p className="mt-2 text-gray-600 max-w-2xl">
-                        {user.bio}
-                      </p>
-                    )}
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{fullName}</h1>
+                    {user.bio && <p className="mt-2 text-gray-600 max-w-2xl">{user.bio}</p>}
                     <div className="mt-3 flex items-center text-sm text-gray-500">
                       <CalendarIcon className="h-4 w-4 mr-1" />
                       <span>Joined {joinDate}</span>
@@ -149,9 +144,7 @@ export default function PublicProfilePage() {
                         <div className="text-2xl font-bold text-gray-900">
                           {store.active_products}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Active Products
-                        </div>
+                        <div className="text-sm text-gray-500">Active Products</div>
                       </div>
                     </div>
                   </div>
@@ -178,17 +171,9 @@ export default function PublicProfilePage() {
 
         {/* Tab Content */}
         <div className="py-6">
-          {activeTab === 'products' && (
-            <ProductsTab userId={user.id} />
-          )}
-          {activeTab === 'timeline' && (
-            <TimelineTab 
-              timelinePosts={profileData.timeline || []} 
-            />
-          )}
-          {activeTab === 'reviews' && (
-            <ReviewsTab userId={user.id} />
-          )}
+          {activeTab === 'products' && <ProductsTab userId={user.id} />}
+          {activeTab === 'timeline' && <TimelineTab timelinePosts={profileData.timeline || []} />}
+          {activeTab === 'reviews' && <ReviewsTab userId={user.id} />}
         </div>
       </div>
     </div>

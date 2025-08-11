@@ -106,7 +106,7 @@ class InvoiceService {
   async getInvoice(invoiceId: string): Promise<Invoice> {
     try {
       const response = await api.get<ApiResponse<GetInvoiceResponse>>(`/invoices/${invoiceId}`);
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get invoice');
       }
@@ -124,7 +124,7 @@ class InvoiceService {
   // Get user's invoices
   async getUserInvoices(
     status?: string,
-    page: number = 1, 
+    page: number = 1,
     perPage: number = 20,
   ): Promise<{
     invoices: Invoice[];
@@ -146,7 +146,7 @@ class InvoiceService {
       }
 
       const response = await api.get(`/invoices?${params}`);
-      
+
       // Handle paginated response structure
       if (response.data && response.data.success) {
         // The backend returns data as an array directly in the data field for paginated responses
@@ -157,13 +157,13 @@ class InvoiceService {
           total_count: 0,
           total_pages: 0,
         };
-        
+
         return {
           invoices,
           pagination,
         };
       }
-      
+
       // Return empty if no success or data
       return {
         invoices: [],
@@ -189,7 +189,9 @@ class InvoiceService {
             },
           };
         }
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get user invoices');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get user invoices',
+        );
       }
       throw error;
     }
@@ -202,7 +204,7 @@ class InvoiceService {
         `/invoices/${invoiceId}/cancel`,
         { reason },
       );
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to cancel invoice');
       }
@@ -211,7 +213,9 @@ class InvoiceService {
     } catch (error) {
       console.error('Cancel invoice error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to cancel invoice');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to cancel invoice',
+        );
       }
       throw error;
     }
@@ -227,9 +231,7 @@ class InvoiceService {
 
   // Helper method to check if invoice can be paid
   canPayInvoice(invoice: Invoice): boolean {
-    return invoice.can_be_paid && 
-           invoice.status === 'pending' && 
-           !invoice.is_expired;
+    return invoice.can_be_paid && invoice.status === 'pending' && !invoice.is_expired;
   }
 
   // Helper method to get invoice status color
@@ -283,7 +285,7 @@ class InvoiceService {
         `/invoices/${invoiceId}/payment`,
         requestBody,
       );
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to initiate payment');
       }
@@ -292,7 +294,9 @@ class InvoiceService {
     } catch (error) {
       console.error('Initiate payment error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to initiate payment');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to initiate payment',
+        );
       }
       throw error;
     }
@@ -316,7 +320,7 @@ class InvoiceService {
       const response = await api.get<ApiResponse<unknown>>(
         `/invoices/${invoiceId}/payment/status?${params}`,
       );
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to check payment status');
       }
@@ -325,7 +329,9 @@ class InvoiceService {
     } catch (error) {
       console.error('Check payment status error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to check payment status');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to check payment status',
+        );
       }
       throw error;
     }
@@ -337,7 +343,7 @@ class InvoiceService {
       // Import wallet service dynamically to avoid circular dependency
       const { default: walletService } = await import('./wallet');
       const summary = await walletService.getWalletSummary();
-      
+
       // Convert WalletBalance[] to AvailableBalance[]
       return summary.wallets.map(wallet => ({
         currency: wallet.currency,
@@ -347,23 +353,22 @@ class InvoiceService {
     } catch (error) {
       console.error('Get available balances error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to get available balances');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to get available balances',
+        );
       }
       throw error;
     }
   }
 
   // Pay invoice with wallet balance
-  async payWithWallet(
-    invoiceId: string,
-    currency: string,
-  ): Promise<WalletPaymentResponse> {
+  async payWithWallet(invoiceId: string, currency: string): Promise<WalletPaymentResponse> {
     try {
       const response = await api.post<ApiResponse<WalletPaymentResponse>>(
         `/invoices/${invoiceId}/pay-with-wallet`,
         { currency },
       );
-      
+
       if (!response.data || !response.data.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to pay invoice with wallet');
       }
@@ -372,7 +377,9 @@ class InvoiceService {
     } catch (error) {
       console.error('Pay with wallet error:', error);
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || error.message || 'Failed to pay invoice with wallet');
+        throw new Error(
+          error.response?.data?.message || error.message || 'Failed to pay invoice with wallet',
+        );
       }
       throw error;
     }

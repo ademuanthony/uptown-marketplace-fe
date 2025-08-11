@@ -8,12 +8,12 @@ const getApiBaseUrl = (): string => {
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL.replace('/api/v1', '');
   }
-  
+
   // Fallback to production or development URLs
   if (process.env.NODE_ENV === 'production') {
     return 'https://api.uptown.ng';
   }
-  
+
   return 'http://localhost:8080';
 };
 
@@ -60,7 +60,7 @@ export const getFallbackAvatarUrl = (initial?: string, name?: string): string =>
     // Use PNG format instead of SVG for better Next.js compatibility
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=128&background=3b82f6&color=ffffff&format=png`;
   }
-  
+
   // Default avatar
   return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face';
 };
@@ -70,14 +70,14 @@ export const getFallbackAvatarUrl = (initial?: string, name?: string): string =>
  * @param user - User object with profile_image_url
  * @returns Profile image URL or fallback
  */
-export const getProfileImageUrl = (user: { 
-  profile_image_url?: string | null; 
-  first_name?: string; 
-  last_name?: string; 
+export const getProfileImageUrl = (user: {
+  profile_image_url?: string | null;
+  first_name?: string;
+  last_name?: string;
 }): string => {
   // Try to get the absolute URL from the profile image
   const profileImageUrl = getAbsoluteImageUrl(user.profile_image_url);
-  
+
   if (profileImageUrl) {
     return profileImageUrl;
   }
@@ -85,9 +85,9 @@ export const getProfileImageUrl = (user: {
   // Generate fallback with user initials
   const firstName = user.first_name || '';
   const lastName = user.last_name || '';
-  const initials = (firstName.charAt(0) + lastName.charAt(0)) || '?';
+  const initials = firstName.charAt(0) + lastName.charAt(0) || '?';
   const name = `${firstName} ${lastName}`.trim() || 'User';
-  
+
   return getFallbackAvatarUrl(initials, name);
 };
 
@@ -98,7 +98,7 @@ export const getProfileImageUrl = (user: {
  */
 export const getProductImageUrl = (imagePath: string | undefined | null): string => {
   const absoluteUrl = getAbsoluteImageUrl(imagePath);
-  
+
   if (absoluteUrl) {
     return absoluteUrl;
   }
@@ -116,13 +116,13 @@ export const getProductImageUrl = (imagePath: string | undefined | null): string
  */
 export const getOptimizedImageUrl = (
   imagePath: string | undefined | null,
-   
+
   _width: number = 400,
-   
+
   _quality: number = 75,
 ): string => {
   const absoluteUrl = getAbsoluteImageUrl(imagePath);
-  
+
   if (!absoluteUrl) {
     return getProductImageUrl(imagePath);
   }
@@ -153,9 +153,8 @@ export const isAllowedImageDomain = (imageUrl: string): boolean => {
       'res.cloudinary.com',
     ];
 
-    return allowedDomains.some(domain => 
-      url.hostname === domain || 
-      url.hostname.endsWith(`.${domain}`),
+    return allowedDomains.some(
+      domain => url.hostname === domain || url.hostname.endsWith(`.${domain}`),
     );
   } catch {
     return false;

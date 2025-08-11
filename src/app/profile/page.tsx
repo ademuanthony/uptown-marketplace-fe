@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { 
-  CameraIcon, 
-  PencilIcon, 
-  EnvelopeIcon, 
-  PhoneIcon, 
+import {
+  CameraIcon,
+  PencilIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   StarIcon,
   CalendarIcon,
   ShoppingBagIcon,
@@ -82,10 +82,10 @@ export default function ProfilePage() {
       };
 
       const updatedUser = await userService.updateProfile(profileData);
-      
+
       // Update the auth context with the new user data
       updateUser(updatedUser);
-      
+
       // Update the form with the latest data
       reset({
         firstName: updatedUser.first_name || '',
@@ -93,7 +93,7 @@ export default function ProfilePage() {
         email: updatedUser.email || '',
         phone_number: updatedUser.phone_number || '',
       });
-      
+
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
@@ -128,7 +128,7 @@ export default function ProfilePage() {
     }
 
     setIsUploadingAvatar(true);
-    
+
     try {
       // Create preview
       const reader = new FileReader();
@@ -139,16 +139,17 @@ export default function ProfilePage() {
 
       // Upload to API
       const updatedUser = await userService.uploadAvatar(file);
-      
+
       // Update the auth context with the new user data
       updateUser(updatedUser);
-      
+
       // Clear preview since we now have the real avatar
       setAvatarPreview(null);
-      
+
       toast.success('Profile picture updated successfully!');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload profile picture';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload profile picture';
       toast.error(errorMessage);
       console.error('Avatar upload error:', error);
       setAvatarPreview(null);
@@ -159,18 +160,19 @@ export default function ProfilePage() {
 
   const handleRemoveAvatar = async () => {
     setIsUploadingAvatar(true);
-    
+
     try {
       // Remove from API
       const updatedUser = await userService.removeAvatar();
-      
+
       // Update the auth context with the new user data
       updateUser(updatedUser);
-      
+
       setAvatarPreview(null);
       toast.success('Profile picture removed successfully!');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove profile picture';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to remove profile picture';
       toast.error(errorMessage);
       console.error('Avatar removal error:', error);
     } finally {
@@ -206,20 +208,22 @@ export default function ProfilePage() {
                 <div className="relative">
                   {/* Avatar Display */}
                   <div className="relative">
-                    {user&&<Avatar
-                      key={`${user.first_name}-${user.last_name}-${user.profile_image_url}`}
-                      src={avatarPreview || getProfileImageUrl(user)}
-                      alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
-                      size={120}
-                      className="w-30 h-30 border-4 border-gray-200"
-                    />}
+                    {user && (
+                      <Avatar
+                        key={`${user.first_name}-${user.last_name}-${user.profile_image_url}`}
+                        src={avatarPreview || getProfileImageUrl(user)}
+                        alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                        size={120}
+                        className="w-30 h-30 border-4 border-gray-200"
+                      />
+                    )}
                     {isUploadingAvatar && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Upload Button */}
                   {isEditing && (
                     <div className="absolute bottom-0 right-0">
@@ -240,7 +244,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Avatar Actions */}
                 {isEditing && (avatarPreview || user?.profile_image_url) && (
                   <div className="mt-2 text-center">
@@ -253,7 +257,7 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 )}
-                
+
                 {/* Stats */}
                 <div className="mt-4 text-center">
                   <div className="flex items-center justify-center space-x-1 mb-2">

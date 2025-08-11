@@ -21,55 +21,57 @@ export function useAuth() {
 
   useEffect(() => {
     // Listen to Firebase auth state changes
-    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        try {
-          // Get user data from backend
-          const user = await authService.getCurrentUser();
-          if (user) {
-            setAuthState({
-              user,
-              isLoading: false,
-              isAuthenticated: true,
-            });
-          } else {
-            // If no user data from backend, sign out
-            await authService.signOut();
-            setAuthState({
-              user: null,
-              isLoading: false,
-              isAuthenticated: false,
-            });
+    const unsubscribe = authService.onAuthStateChanged(
+      async (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          try {
+            // Get user data from backend
+            const user = await authService.getCurrentUser();
+            if (user) {
+              setAuthState({
+                user,
+                isLoading: false,
+                isAuthenticated: true,
+              });
+            } else {
+              // If no user data from backend, sign out
+              await authService.signOut();
+              setAuthState({
+                user: null,
+                isLoading: false,
+                isAuthenticated: false,
+              });
+            }
+          } catch (error) {
+            console.error('Error getting user data:', error);
+            // In case of backend errors, try to maintain auth state with cached data
+            const cachedUser = localStorage.getItem('user');
+            const cachedToken = localStorage.getItem('auth_token');
+
+            if (cachedUser && cachedToken) {
+              console.warn('Using cached user data due to backend error');
+              setAuthState({
+                user: JSON.parse(cachedUser),
+                isLoading: false,
+                isAuthenticated: true,
+              });
+            } else {
+              setAuthState({
+                user: null,
+                isLoading: false,
+                isAuthenticated: false,
+              });
+            }
           }
-        } catch (error) {
-          console.error('Error getting user data:', error);
-          // In case of backend errors, try to maintain auth state with cached data
-          const cachedUser = localStorage.getItem('user');
-          const cachedToken = localStorage.getItem('auth_token');
-          
-          if (cachedUser && cachedToken) {
-            console.warn('Using cached user data due to backend error');
-            setAuthState({
-              user: JSON.parse(cachedUser),
-              isLoading: false,
-              isAuthenticated: true,
-            });
-          } else {
-            setAuthState({
-              user: null,
-              isLoading: false,
-              isAuthenticated: false,
-            });
-          }
+        } else {
+          setAuthState({
+            user: null,
+            isLoading: false,
+            isAuthenticated: false,
+          });
         }
-      } else {
-        setAuthState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false,
-        });
-      }
-    });
+      },
+    );
 
     return () => unsubscribe();
   }, []);

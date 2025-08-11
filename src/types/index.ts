@@ -7,21 +7,21 @@ export type {
   ProductStatus,
   CreateProductRequest,
   ProductSearchRequest,
-  
+
   // Category types
   Category,
-  
+
   // User types
   User,
   UserRegistrationRequest,
   UserLoginRequest,
   AuthResponse,
-  
+
   // Common types
   APIResponse,
   APIError,
   PaginatedResponse,
-  
+
   // Social types
   SocialProfile,
   SocialConnection,
@@ -30,29 +30,29 @@ export type {
   SocialStats,
   ConnectionType,
   ConnectionStatus,
-  
+
   // Message types
   Conversation,
   Message,
   ConversationType,
   MessageType,
   MessageAttachment,
-  
+
   // Review types
   ProductReview,
   ReviewStatus,
-  
+
   // Premium types
   PremiumListing,
   PremiumTier,
   PaymentMethod,
   PremiumStatus,
-  
+
   // Shipping types
   Shipment,
   CourierService,
   ShipmentStatus,
-  
+
   // Form types
   LoginFormData,
   RegisterFormData,

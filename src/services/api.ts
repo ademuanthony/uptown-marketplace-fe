@@ -17,8 +17,8 @@ api.interceptors.request.use(
   async config => {
     try {
       // Get current Firebase user
-      const {currentUser} = auth;
-      
+      const { currentUser } = auth;
+
       if (currentUser) {
         // Get fresh Firebase token
         const token = await currentUser.getIdToken();
@@ -42,7 +42,7 @@ api.interceptors.request.use(
       }
     } catch (error) {
       console.error('Error getting Firebase token:', error);
-      
+
       // Fallback to stored token
       const token = localStorage.getItem('auth_token');
       if (token) {
@@ -53,7 +53,7 @@ api.interceptors.request.use(
         console.info('Added development fallback test token');
       }
     }
-    
+
     return config;
   },
   error => Promise.reject(error),
@@ -66,24 +66,24 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       console.warn('401 error, attempting token refresh');
-      
+
       try {
-        const {currentUser} = auth;
+        const { currentUser } = auth;
         if (currentUser) {
           // Try to refresh the token
           const newToken = await currentUser.getIdToken(true);
           localStorage.setItem('auth_token', newToken);
-          
+
           // Retry the original request with new token
           const originalRequest = error.config;
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          
+
           return api(originalRequest);
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
       }
-      
+
       // If refresh fails, redirect to login
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');

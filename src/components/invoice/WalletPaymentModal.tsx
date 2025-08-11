@@ -28,24 +28,27 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canPayWithCurrency = useCallback((balance: AvailableBalance) => {
-    // Convert invoice amount to USD for comparison
-    const invoiceAmountUSD = invoice.total_amount.amount / 10000; // Convert cents to dollars
-    
-    if (balance.currency === invoice.currency) {
-      // Same currency - direct comparison
-      const availableAmount = parseFloat(balance.balance);
-      const invoiceAmount = invoice.total_amount.display;
-      return availableAmount >= invoiceAmount;
-    } else if (invoice.currency === 'USD' || invoice.currency === 'usd') {
-      // Invoice is in USD, compare with wallet's USD value
-      return balance.usd_value >= invoiceAmountUSD;
-    } else {
-      // Different currencies - use USD value for cross-currency comparison
-      // This allows payment with any currency that has sufficient USD equivalent value
-      return balance.usd_value >= invoiceAmountUSD;
-    }
-  }, [invoice.currency, invoice.total_amount.amount, invoice.total_amount.display]);
+  const canPayWithCurrency = useCallback(
+    (balance: AvailableBalance) => {
+      // Convert invoice amount to USD for comparison
+      const invoiceAmountUSD = invoice.total_amount.amount / 10000; // Convert cents to dollars
+
+      if (balance.currency === invoice.currency) {
+        // Same currency - direct comparison
+        const availableAmount = parseFloat(balance.balance);
+        const invoiceAmount = invoice.total_amount.display;
+        return availableAmount >= invoiceAmount;
+      } else if (invoice.currency === 'USD' || invoice.currency === 'usd') {
+        // Invoice is in USD, compare with wallet's USD value
+        return balance.usd_value >= invoiceAmountUSD;
+      } else {
+        // Different currencies - use USD value for cross-currency comparison
+        // This allows payment with any currency that has sufficient USD equivalent value
+        return balance.usd_value >= invoiceAmountUSD;
+      }
+    },
+    [invoice.currency, invoice.total_amount.amount, invoice.total_amount.display],
+  );
 
   const loadAvailableBalances = useCallback(async () => {
     try {
@@ -53,13 +56,13 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
       setError(null);
       const balances = await invoiceService.getAvailableBalances();
       setAvailableBalances(balances);
-      
+
       // Auto-select the best currency for payment
-      const matchingCurrency = balances.find(b => 
-        b.currency === invoice.currency && canPayWithCurrency(b),
+      const matchingCurrency = balances.find(
+        b => b.currency === invoice.currency && canPayWithCurrency(b),
       );
       const sufficientUSDBalance = balances.find(b => canPayWithCurrency(b));
-      
+
       if (matchingCurrency) {
         // Prefer exact currency match with sufficient balance
         setSelectedCurrency(matchingCurrency.currency);
@@ -93,9 +96,9 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
     try {
       setProcessing(true);
       setError(null);
-      
+
       const result = await invoiceService.payWithWallet(invoice.id, selectedCurrency);
-      
+
       if (result.success) {
         onPaymentSuccess(result.invoice);
         onClose();
@@ -189,8 +192,8 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
               <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Balance</h3>
               <p className="text-gray-600">
-                You don&apos;t have any available wallet balance to pay this invoice.
-                Please deposit funds to your wallet first.
+                You don&apos;t have any available wallet balance to pay this invoice. Please deposit
+                funds to your wallet first.
               </p>
             </div>
           )}
@@ -205,7 +208,7 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
                   </p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 {availableBalances.map(balance => {
                   const canPay = canPayWithCurrency(balance);
@@ -216,8 +219,8 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
                         selectedCurrency === balance.currency
                           ? 'border-blue-500 bg-blue-50'
                           : canPay
-                          ? 'border-gray-200 hover:border-gray-300'
-                          : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                            ? 'border-gray-200 hover:border-gray-300'
+                            : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
                       }`}
                       onClick={() => canPay && setSelectedCurrency(balance.currency)}
                     >
@@ -225,7 +228,9 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
                         <div className="flex items-center space-x-3">
                           <span className="text-2xl">{getCurrencyIcon(balance.currency)}</span>
                           <div>
-                            <div className="font-medium text-gray-900">{balance.currency} Wallet</div>
+                            <div className="font-medium text-gray-900">
+                              {balance.currency} Wallet
+                            </div>
                             <div className="text-sm text-gray-600">
                               Balance: {formatCurrency(balance.balance, balance.currency)}
                             </div>
@@ -236,14 +241,14 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           {canPay ? (
                             <CheckCircleIcon className="h-5 w-5 text-green-500" />
                           ) : (
                             <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
                           )}
-                          
+
                           {selectedCurrency === balance.currency && (
                             <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
                               <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -251,13 +256,12 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
                           )}
                         </div>
                       </div>
-                      
+
                       {!canPay && (
                         <div className="mt-2 text-xs text-yellow-700">
-                          {balance.currency === invoice.currency 
+                          {balance.currency === invoice.currency
                             ? 'Insufficient balance for this invoice'
-                            : `Insufficient USD value: $${balance.usd_value.toFixed(2)} available, $${(invoice.total_amount.amount / 100).toFixed(2)} required`
-                          }
+                            : `Insufficient USD value: $${balance.usd_value.toFixed(2)} available, $${(invoice.total_amount.amount / 100).toFixed(2)} required`}
                         </div>
                       )}
                     </div>
@@ -277,7 +281,7 @@ const WalletPaymentModal: React.FC<WalletPaymentModalProps> = ({
               >
                 Cancel
               </button>
-              
+
               <button
                 onClick={handlePayment}
                 disabled={!selectedCurrency || processing}

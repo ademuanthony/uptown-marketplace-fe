@@ -40,7 +40,9 @@ export class StoreService {
    * Check if a permalink is available
    */
   static async checkPermalinkAvailability(permalink: string): Promise<boolean> {
-    const response = await api.get(`/users/store-config/check-permalink/${encodeURIComponent(permalink)}`);
+    const response = await api.get(
+      `/users/store-config/check-permalink/${encodeURIComponent(permalink)}`,
+    );
     return response.data.available;
   }
 }

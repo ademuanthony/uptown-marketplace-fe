@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { Menu, Transition } from '@headlessui/react';
 import { getProfileImageUrl } from '@/utils/imageUtils';
 import Avatar from './Avatar';
-import { 
-  Bars3Icon, 
+import {
+  Bars3Icon,
   XMarkIcon,
   PlusIcon,
   UserIcon,
@@ -64,28 +64,40 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <defs>
                     <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{stopColor:'#3b82f6',stopOpacity:1}} />
-                      <stop offset="100%" style={{stopColor:'#ec4899',stopOpacity:1}} />
+                      <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: '#ec4899', stopOpacity: 1 }} />
                     </linearGradient>
                   </defs>
-                  <circle cx="16" cy="16" r="16" fill="url(#logoGradient)"/>
-                  <path d="M8 10V18C8 20.2091 9.79086 22 12 22H20C22.2091 22 24 20.2091 24 18V10" 
-                        stroke="white" 
-                        strokeWidth="2.5" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                        fill="none"/>
-                  <path d="M11 10V9C11 7.34315 12.3431 6 14 6H18C19.6569 6 21 7.34315 21 9V10" 
-                        stroke="white" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                        fill="none"/>
-                  <path d="M16 14L17.09 16.26L19.5 16.5L17.75 18.14L18.18 20.5L16 19.27L13.82 20.5L14.25 18.14L12.5 16.5L14.91 16.26L16 14Z" 
-                        fill="white"/>
+                  <circle cx="16" cy="16" r="16" fill="url(#logoGradient)" />
+                  <path
+                    d="M8 10V18C8 20.2091 9.79086 22 12 22H20C22.2091 22 24 20.2091 24 18V10"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M11 10V9C11 7.34315 12.3431 6 14 6H18C19.6569 6 21 7.34315 21 9V10"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M16 14L17.09 16.26L19.5 16.5L17.75 18.14L18.18 20.5L16 19.27L13.82 20.5L14.25 18.14L12.5 16.5L14.91 16.26L16 14Z"
+                    fill="white"
+                  />
                 </svg>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
@@ -132,12 +144,14 @@ export default function Navbar() {
                   <div>
                     <Menu.Button className="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
-                      {user&&<Avatar
-                        src={getProfileImageUrl(user)}
-                        alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
-                        size={32}
-                        className="h-8 w-8"
-                      />}
+                      {user && (
+                        <Avatar
+                          src={getProfileImageUrl(user)}
+                          alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                          size={32}
+                          className="h-8 w-8"
+                        />
+                      )}
                       <span className="hidden lg:block text-gray-700 font-medium">
                         {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.email}
                       </span>
@@ -172,7 +186,7 @@ export default function Navbar() {
                           </Menu.Item>
                         );
                       })}
-                      
+
                       {/* Admin Menu Section */}
                       {user?.role === 'admin' && (
                         <>
@@ -204,7 +218,7 @@ export default function Navbar() {
                           })}
                         </>
                       )}
-                      
+
                       <div className="border-t border-gray-100 my-1" />
                       <Menu.Item>
                         {({ active }) => (
@@ -285,17 +299,19 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
-            
+
             {isAuthenticated ? (
               <>
                 <div className="border-t border-gray-200 pt-4 pb-3">
                   <div className="flex items-center px-4">
-                    {user&&<Avatar
-                      src={getProfileImageUrl(user)}
-                      alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
-                      size={40}
-                      className="h-10 w-10"
-                    />}
+                    {user && (
+                      <Avatar
+                        src={getProfileImageUrl(user)}
+                        alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                        size={40}
+                        className="h-10 w-10"
+                      />
+                    )}
                     <div className="ml-3">
                       <div className="text-base font-medium text-gray-800">
                         {user?.first_name ? `${user.first_name} ${user.last_name}` : user?.email}
@@ -326,7 +342,7 @@ export default function Navbar() {
                         </Link>
                       );
                     })}
-                    
+
                     {/* Admin Menu Section for Mobile */}
                     {user?.role === 'admin' && (
                       <>
@@ -353,7 +369,7 @@ export default function Navbar() {
                         })}
                       </>
                     )}
-                    
+
                     <div className="border-t border-gray-200 my-2" />
                     <button
                       onClick={() => {

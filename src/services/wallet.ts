@@ -30,25 +30,25 @@ interface PaginatedApiResponse<T> {
 }
 
 // Transaction types matching backend
-export type TransactionType = 
-  | 'deposit' 
-  | 'withdrawal' 
-  | 'transfer' 
-  | 'purchase' 
-  | 'refund' 
-  | 'escrow_lock' 
-  | 'escrow_release' 
-  | 'fee' 
-  | 'commission' 
-  | 'crypto_deposit' 
+export type TransactionType =
+  | 'deposit'
+  | 'withdrawal'
+  | 'transfer'
+  | 'purchase'
+  | 'refund'
+  | 'escrow_lock'
+  | 'escrow_release'
+  | 'fee'
+  | 'commission'
+  | 'crypto_deposit'
   | 'crypto_withdraw';
 
-export type TransactionStatus = 
-  | 'pending' 
-  | 'processing' 
-  | 'completed' 
-  | 'failed' 
-  | 'cancelled' 
+export type TransactionStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
   | 'expired';
 
 export type PaymentProvider = 'paystack' | 'stripe' | 'crypto' | 'internal';
@@ -125,11 +125,11 @@ class WalletService {
   async getWalletSummary(): Promise<WalletSummary> {
     try {
       const response = await api.get<ApiResponse<WalletSummary>>('/wallet/summary');
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get wallet summary');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get wallet summary error:', error);
@@ -144,11 +144,11 @@ class WalletService {
   async getWalletBalance(): Promise<WalletBalance> {
     try {
       const response = await api.get<ApiResponse<WalletBalance>>('/wallet/balance');
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get wallet balance');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get wallet balance error:', error);
@@ -160,7 +160,12 @@ class WalletService {
   }
 
   // Get transaction history with pagination
-  async getTransactions(page: number = 1, limit: number = 20, type?: TransactionType, status?: TransactionStatus): Promise<TransactionListResponse> {
+  async getTransactions(
+    page: number = 1,
+    limit: number = 20,
+    type?: TransactionType,
+    status?: TransactionStatus,
+  ): Promise<TransactionListResponse> {
     try {
       const params: Record<string, string> = {
         page: page.toString(),
@@ -170,12 +175,14 @@ class WalletService {
       if (type) params.type = type;
       if (status) params.status = status;
 
-      const response = await api.get<PaginatedApiResponse<Transaction>>('/wallet/transactions', { params });
-      
+      const response = await api.get<PaginatedApiResponse<Transaction>>('/wallet/transactions', {
+        params,
+      });
+
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to get transactions');
       }
-      
+
       return {
         transactions: response.data.data || [],
         pagination: response.data.pagination,
@@ -192,12 +199,14 @@ class WalletService {
   // Get single transaction details
   async getTransaction(transactionId: string): Promise<Transaction> {
     try {
-      const response = await api.get<ApiResponse<Transaction>>(`/wallet/transactions/${transactionId}`);
-      
+      const response = await api.get<ApiResponse<Transaction>>(
+        `/wallet/transactions/${transactionId}`,
+      );
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get transaction details');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get transaction error:', error);
@@ -211,12 +220,13 @@ class WalletService {
   // Get exchange rates for currency conversion
   async getExchangeRates(): Promise<{ usdt_usd: number; pol_usd: number }> {
     try {
-      const response = await api.get<ApiResponse<{ usdt_usd: number; pol_usd: number }>>('/wallet/exchange-rates');
-      
+      const response =
+        await api.get<ApiResponse<{ usdt_usd: number; pol_usd: number }>>('/wallet/exchange-rates');
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to get exchange rates');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Get exchange rates error:', error);
@@ -228,7 +238,12 @@ class WalletService {
   }
 
   // Create internal transfer between users
-  async createTransfer(recipientUserId: string, amount: number, currency: Currency, description?: string): Promise<Transaction> {
+  async createTransfer(
+    recipientUserId: string,
+    amount: number,
+    currency: Currency,
+    description?: string,
+  ): Promise<Transaction> {
     try {
       const response = await api.post<ApiResponse<Transaction>>('/wallet/transfer', {
         recipient_user_id: recipientUserId,
@@ -236,11 +251,11 @@ class WalletService {
         currency,
         description: description || `Transfer to user ${recipientUserId}`,
       });
-      
+
       if (!response.data?.success || !response.data.data) {
         throw new Error(response.data?.message || 'Failed to create transfer');
       }
-      
+
       return response.data.data;
     } catch (error) {
       console.error('Create transfer error:', error);
@@ -254,14 +269,14 @@ class WalletService {
   // Format currency amount for display
   formatCurrency(amount: number | string, currency: string): string {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
-    
+
     if (currency === 'USD') {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
       }).format(numAmount);
     }
-    
+
     // Format crypto currencies with appropriate decimal places
     const decimals = currency === 'USDT' ? 6 : 18;
     return `${new Intl.NumberFormat('en-US', {
@@ -285,7 +300,7 @@ class WalletService {
       crypto_deposit: 'Crypto Deposit',
       crypto_withdraw: 'Crypto Withdrawal',
     };
-    
+
     return typeNames[type] || type;
   }
 
@@ -299,25 +314,25 @@ class WalletService {
       cancelled: 'Cancelled',
       expired: 'Expired',
     };
-    
+
     return statusNames[status] || status;
   }
 
   // Check if transaction is incoming (credit) or outgoing (debit)
   isIncomingTransaction(transaction: Transaction, userId: string): boolean {
     const incomingTypes: TransactionType[] = [
-      'deposit', 
-      'crypto_deposit', 
-      'refund', 
-      'escrow_release', 
+      'deposit',
+      'crypto_deposit',
+      'refund',
+      'escrow_release',
       'commission',
     ];
-    
+
     // For transfers, check if current user is recipient
     if (transaction.type === 'transfer') {
       return transaction.counterparty_user_id === userId;
     }
-    
+
     return incomingTypes.includes(transaction.type as TransactionType);
   }
 }

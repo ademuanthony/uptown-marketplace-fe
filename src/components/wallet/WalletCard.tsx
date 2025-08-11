@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  EyeIcon, 
+import {
+  EyeIcon,
   EyeSlashIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
@@ -48,7 +48,7 @@ const getCurrencyStyle = (currency: string) => {
       color: '#3B82F6',
     },
   };
-  
+
   return styles[currency as keyof typeof styles] || styles.USD;
 };
 
@@ -62,10 +62,10 @@ const formatNumber = (num: number, currency: string): string => {
       maximumFractionDigits: 2,
     }).format(num);
   }
-  
+
   // For crypto currencies, show more decimals for small amounts
   const decimals = num < 1 ? 6 : num < 100 ? 4 : 2;
-  
+
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: decimals,
@@ -84,11 +84,11 @@ const WalletCard: React.FC<WalletCardProps> = ({
 }) => {
   const [showBalance, setShowBalance] = useState(true);
   const style = getCurrencyStyle(currency);
-  
+
   const toggleBalanceVisibility = () => {
     setShowBalance(!showBalance);
   };
-  
+
   // Calculate total pending amount
   const totalPending = pendingDeposits + pendingWithdrawals;
   const hasPending = totalPending > 0;
@@ -112,7 +112,9 @@ const WalletCard: React.FC<WalletCardProps> = ({
   }
 
   return (
-    <div className={`${style.background} ${style.border} border rounded-xl p-6 hover:shadow-lg transition-all duration-200`}>
+    <div
+      className={`${style.background} ${style.border} border rounded-xl p-6 hover:shadow-lg transition-all duration-200`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -128,17 +130,13 @@ const WalletCard: React.FC<WalletCardProps> = ({
             )}
           </div>
         </div>
-        
+
         <button
           onClick={toggleBalanceVisibility}
           className={`p-2 rounded-lg hover:bg-white/50 transition-colors ${style.text}`}
           aria-label={showBalance ? 'Hide balance' : 'Show balance'}
         >
-          {showBalance ? (
-            <EyeSlashIcon className="h-5 w-5" />
-          ) : (
-            <EyeIcon className="h-5 w-5" />
-          )}
+          {showBalance ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
         </button>
       </div>
 
@@ -146,17 +144,15 @@ const WalletCard: React.FC<WalletCardProps> = ({
       <div className="mb-4">
         <div className="flex items-baseline space-x-2">
           <span className={`text-2xl font-bold ${style.text}`}>
-            {showBalance ? (
-              currency === 'USD' ? formatNumber(balance, currency) : formatNumber(balance, currency)
-            ) : (
-              '••••••'
-            )}
+            {showBalance
+              ? currency === 'USD'
+                ? formatNumber(balance, currency)
+                : formatNumber(balance, currency)
+              : '••••••'}
           </span>
-          {currency !== 'USD' && (
-            <span className={`text-sm ${style.accent}`}>{currency}</span>
-          )}
+          {currency !== 'USD' && <span className={`text-sm ${style.accent}`}>{currency}</span>}
         </div>
-        
+
         {/* USD Equivalent */}
         {showUSDEquivalent && currency !== 'USD' && usdEquivalent !== undefined && (
           <p className="text-sm text-gray-600 mt-1">
@@ -173,8 +169,11 @@ const WalletCard: React.FC<WalletCardProps> = ({
           ) : (
             <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
           )}
-          <span className={`text-sm font-medium ${priceChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {priceChange24h >= 0 ? '+' : ''}{priceChange24h.toFixed(2)}%
+          <span
+            className={`text-sm font-medium ${priceChange24h >= 0 ? 'text-green-600' : 'text-red-600'}`}
+          >
+            {priceChange24h >= 0 ? '+' : ''}
+            {priceChange24h.toFixed(2)}%
           </span>
           <span className="text-xs text-gray-500">24h</span>
         </div>
@@ -187,7 +186,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
             <ClockIcon className="h-4 w-4 text-orange-500" />
             <span className="text-sm font-medium text-gray-700">Pending</span>
           </div>
-          
+
           <div className="space-y-1">
             {pendingDeposits > 0 && (
               <div className="flex justify-between items-center">
@@ -197,7 +196,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
                 </span>
               </div>
             )}
-            
+
             {pendingWithdrawals > 0 && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-600">Withdrawals</span>

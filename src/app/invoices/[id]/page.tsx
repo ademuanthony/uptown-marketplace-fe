@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import invoiceService, { type Invoice } from '@/services/invoice';
 import UnifiedPayment from '@/components/invoice/UnifiedPayment';
-import { 
+import {
   DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -119,7 +119,7 @@ export default function InvoicePage() {
         <div className="text-center">
           <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto" />
           <p className="mt-2 text-gray-600">Please log in to view this invoice</p>
-          <Link 
+          <Link
             href="/auth/login"
             className="mt-4 inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
           >
@@ -136,7 +136,7 @@ export default function InvoicePage() {
         <div className="text-center">
           <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto" />
           <p className="mt-2 text-gray-600">Invoice not found</p>
-          <Link 
+          <Link
             href="/fuel"
             className="mt-4 inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
           >
@@ -163,8 +163,10 @@ export default function InvoicePage() {
               </h1>
               <p className="mt-2 text-gray-600">{invoice.title}</p>
             </div>
-            
-            <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(invoice.status)}`}>
+
+            <div
+              className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(invoice.status)}`}
+            >
               <div className="flex items-center">
                 {getStatusIcon(invoice.status)}
                 <span className="ml-1 capitalize">{invoice.status}</span>
@@ -246,19 +248,33 @@ export default function InvoicePage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Description
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                        Qty
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                        Price
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                        Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {invoice.line_items.map((item, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 text-sm text-gray-900">{item.description}</td>
-                        <td className="px-4 py-2 text-sm text-gray-900 text-right">{item.quantity}</td>
-                        <td className="px-4 py-2 text-sm text-gray-900 text-right">{item.unit_price.display}</td>
-                        <td className="px-4 py-2 text-sm font-medium text-gray-900 text-right">{item.total_price.display}</td>
+                        <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                          {item.quantity}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-900 text-right">
+                          {item.unit_price.display}
+                        </td>
+                        <td className="px-4 py-2 text-sm font-medium text-gray-900 text-right">
+                          {item.total_price.display}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -287,7 +303,9 @@ export default function InvoicePage() {
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <dt className="text-base font-medium text-gray-900">Total</dt>
-                  <dd className="text-base font-bold text-gray-900">{invoice.total_amount.display}</dd>
+                  <dd className="text-base font-bold text-gray-900">
+                    {invoice.total_amount.display}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -300,7 +318,7 @@ export default function InvoicePage() {
               >
                 Back to Fuel
               </Link>
-              
+
               {canCancel && (
                 <button
                   onClick={() => setShowCancelModal(true)}
@@ -315,7 +333,7 @@ export default function InvoicePage() {
           {/* Payment Section */}
           <div>
             {canPay ? (
-              <UnifiedPayment 
+              <UnifiedPayment
                 invoiceId={invoice.id}
                 totalAmount={invoice.total_amount}
                 userEmail={user.email || invoice.buyer_email}
@@ -324,14 +342,15 @@ export default function InvoicePage() {
             ) : (
               <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Status</h3>
-                
+
                 {invoice.status === 'paid' && (
                   <div className="text-center py-6">
                     <CheckCircleIcon className="h-12 w-12 text-green-500 mx-auto mb-4" />
                     <p className="text-lg font-medium text-green-600">Payment Completed</p>
                     {invoice.paid_at && (
                       <p className="text-sm text-gray-500 mt-2">
-                        Paid on {new Date(invoice.paid_at).toLocaleDateString('en-US', {
+                        Paid on{' '}
+                        {new Date(invoice.paid_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
