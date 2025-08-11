@@ -1,13 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  StarIcon,
-  TrophyIcon,
-  GiftIcon,
-} from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon, StarIcon, TrophyIcon, GiftIcon } from '@heroicons/react/24/outline';
 
 interface PointsCardProps {
   balance: number;
@@ -89,9 +83,7 @@ const PointsCard: React.FC<PointsCardProps> = ({
           <span className="text-sm text-yellow-600">PNT</span>
         </div>
 
-        <p className="text-sm text-gray-600 mt-1">
-          Loyalty Points Balance
-        </p>
+        <p className="text-sm text-gray-600 mt-1">Loyalty Points Balance</p>
       </div>
 
       {/* Lifetime Stats */}
