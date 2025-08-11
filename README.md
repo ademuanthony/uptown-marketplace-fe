@@ -2,7 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies and set up git hooks:
+
+```bash
+npm install
+npm run setup:hooks  # Set up pre-commit hooks for code quality
+```
+
+Then run the development server:
 
 ```bash
 npm run dev
@@ -34,3 +41,29 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Development Workflow
+
+This project uses pre-commit hooks to maintain code quality. The hooks automatically run:
+
+- TypeScript compilation checks
+- ESLint with zero warnings tolerance
+- Code formatting validation
+- Custom code pattern checks
+- Test suite
+
+### Quick Commands
+
+```bash
+# Check code before committing (fast)
+npm run pre-commit:quick
+
+# Full pre-commit check suite
+npm run pre-commit:full
+
+# Fix common issues automatically
+npm run lint:fix
+npm run format
+```
+
+See [GIT_HOOKS_GUIDE.md](./GIT_HOOKS_GUIDE.md) for detailed information about the git hooks setup.

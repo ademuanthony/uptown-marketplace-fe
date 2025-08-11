@@ -28,13 +28,14 @@ else
   exit 1
 fi
 
-# Check 2: ESLint
-echo "🔍 Running ESLint..."
-if npx eslint src --ext .ts,.tsx --ignore-path .eslintignore; then
+# Check 2: ESLint (comprehensive check with zero warnings tolerance)
+echo "🔍 Running ESLint with zero warnings tolerance..."
+if npx eslint . --ext .ts,.tsx --max-warnings 0; then
   print_status "✅ ESLint checks passed" $GREEN
 else
-  print_status "❌ ESLint checks failed" $RED
-  echo "Please fix ESLint errors before committing."
+  print_status "❌ ESLint checks failed (warnings treated as errors)" $RED
+  echo "Please fix all ESLint warnings and errors before committing."
+  echo "Run 'npm run lint:fix' to automatically fix some issues."
   exit 1
 fi
 
@@ -96,7 +97,17 @@ if [ ! -z "$ANY_USAGE" ]; then
   echo "Consider using specific types instead of 'any' for better type safety."
 fi
 
-# Check 7: Run tests if they exist
+# Check 7: Format Check
+echo "💅 Checking code formatting..."
+if npm run format:check; then
+  print_status "✅ Code formatting check passed" $GREEN
+else
+  print_status "❌ Code formatting check failed" $RED
+  echo "Please run 'npm run format' to fix formatting issues before committing."
+  exit 1
+fi
+
+# Check 8: Run tests if they exist
 if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
   echo "🧪 Running tests..."
   if npm test -- --passWithNoTests --watchAll=false; then

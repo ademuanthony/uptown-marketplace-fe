@@ -15,14 +15,11 @@ import toast from 'react-hot-toast';
 import PaymentMethodSelector, { PaymentMethod } from './PaymentMethodSelector';
 import WalletPaymentModal from './WalletPaymentModal';
 import invoiceService, { Invoice } from '@/services/invoice';
+import { Money } from '@/types/api';
 
 interface UnifiedPaymentProps {
   invoiceId: string;
-  totalAmount: {
-    amount: number;
-    currency: string;
-    display: string;
-  };
+  totalAmount: Money;
   userEmail: string;
   onPaymentComplete?: () => void;
 }
