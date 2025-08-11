@@ -112,11 +112,11 @@ const CreateConversationModal: React.FC<CreateConversationModalProps> = ({
           )}
 
           {/* Note about implementation */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+          {/* <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
             <p className="text-xs text-yellow-800">
               <strong>Note:</strong> This is a basic implementation. In production, you would select users from a directory rather than entering emails.
             </p>
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex justify-end space-x-3 pt-4">
