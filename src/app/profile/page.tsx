@@ -18,7 +18,13 @@ import {
 import { profileSchema, type ProfileFormData } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/user';
-import { getProfileImageUrl } from '@/utils/imageUtils';
+import {
+  getProfileImageUrl,
+  optimizeProfileImage,
+  validateImageFile,
+  getOptimizationRecommendations,
+  type OptimizationProgress,
+} from '@/utils/imageUtils';
 import Avatar from '@/components/common/Avatar';
 import toast from 'react-hot-toast';
 
@@ -26,6 +32,10 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isOptimizingAvatar, setIsOptimizingAvatar] = useState(false);
+  const [optimizationProgress, setOptimizationProgress] = useState<OptimizationProgress | null>(
+    null,
+  );
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const { user, isAuthenticated, isLoading: authLoading, updateUser } = useAuth();
   const router = useRouter();
@@ -115,30 +125,56 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+    // Validate file
+    const validation = validateImageFile(file, 'profile');
+    if (!validation.isValid) {
+      toast.error(validation.error || 'Invalid image file');
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
-      return;
+    // Show warnings if any
+    if (validation.warnings && validation.warnings.length > 0) {
+      validation.warnings.forEach(warning => {
+        console.warn('Profile image warning:', warning);
+      });
     }
 
-    setIsUploadingAvatar(true);
+    setIsOptimizingAvatar(true);
 
     try {
-      // Create preview
+      // Show optimization recommendations
+      const recommendations = await getOptimizationRecommendations(file, 'profile');
+      if (recommendations.willOptimize) {
+        toast.success('Optimizing profile picture...', { duration: 2000 });
+      }
+
+      // Optimize the image
+      const { optimizedFile, result } = await optimizeProfileImage(file, progress =>
+        setOptimizationProgress(progress),
+      );
+
+      // Show optimization results
+      if (result.compressionRatio > 5) {
+        toast.success(
+          `Profile picture optimized! ${result.compressionRatio.toFixed(1)}% smaller and cropped to square.`,
+          { duration: 3000 },
+        );
+      } else {
+        toast.success('Profile picture optimized and cropped to square.');
+      }
+
+      setIsOptimizingAvatar(false);
+      setIsUploadingAvatar(true);
+
+      // Create preview from optimized file
       const reader = new FileReader();
       reader.onload = e => {
         setAvatarPreview(e.target?.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(optimizedFile);
 
-      // Upload to API
-      const updatedUser = await userService.uploadAvatar(file);
+      // Upload optimized file to API
+      const updatedUser = await userService.uploadAvatar(optimizedFile);
 
       // Update the auth context with the new user data
       updateUser(updatedUser);
@@ -154,7 +190,9 @@ export default function ProfilePage() {
       console.error('Avatar upload error:', error);
       setAvatarPreview(null);
     } finally {
+      setIsOptimizingAvatar(false);
       setIsUploadingAvatar(false);
+      setOptimizationProgress(null);
     }
   };
 
@@ -217,9 +255,24 @@ export default function ProfilePage() {
                         className="w-30 h-30 border-4 border-gray-200"
                       />
                     )}
-                    {isUploadingAvatar && (
+                    {(isOptimizingAvatar || isUploadingAvatar) && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                        <div className="flex flex-col items-center space-y-2">
+                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+                          {optimizationProgress && isOptimizingAvatar && (
+                            <div className="text-xs text-white text-center px-2">
+                              <p className="font-medium">{optimizationProgress.message}</p>
+                              {optimizationProgress.progress > 0 && (
+                                <div className="w-16 bg-white/20 rounded-full h-1 mt-1">
+                                  <div
+                                    className="bg-white h-1 rounded-full transition-all duration-300"
+                                    style={{ width: `${optimizationProgress.progress}%` }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -233,7 +286,7 @@ export default function ProfilePage() {
                         onChange={handleAvatarUpload}
                         className="hidden"
                         id="avatar-upload"
-                        disabled={isUploadingAvatar}
+                        disabled={isOptimizingAvatar || isUploadingAvatar}
                       />
                       <label
                         htmlFor="avatar-upload"
@@ -250,7 +303,7 @@ export default function ProfilePage() {
                   <div className="mt-2 text-center">
                     <button
                       onClick={handleRemoveAvatar}
-                      disabled={isUploadingAvatar}
+                      disabled={isOptimizingAvatar || isUploadingAvatar}
                       className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Remove Photo

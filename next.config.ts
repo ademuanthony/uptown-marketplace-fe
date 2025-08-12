@@ -19,6 +19,19 @@ const nextConfig: NextConfig = {
         port: '8080',
         pathname: '/uploads/**',
       },
+      // Development frontend (in case backend returns wrong URLs)
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/uploads/**',
+      },
+      // Development localhost without port
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/uploads/**',
+      },
       // Production API
       {
         protocol: 'http',
@@ -28,6 +41,17 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'api.uptown.ng',
+        pathname: '/uploads/**',
+      },
+      // Main production domain
+      {
+        protocol: 'http',
+        hostname: 'uptown.ng',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'uptown.ng',
         pathname: '/uploads/**',
       },
       // AWS S3 images

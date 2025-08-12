@@ -1,6 +1,8 @@
 import api from './api';
 import { User } from './auth';
 import { isAxiosError } from 'axios';
+import { optimizeProductImage, type OptimizationProgress } from '@/utils/imageUtils';
+import type { OptimizationResult } from '@/utils/imageOptimizer';
 
 // Product types
 export interface Product {
@@ -181,7 +183,7 @@ class ProductService {
     }
   }
 
-  // Upload product image
+  // Upload product image (original method for backward compatibility)
   async uploadProductImage(file: File, productId?: string): Promise<string> {
     try {
       const formData = new FormData();
@@ -215,6 +217,87 @@ class ProductService {
 
       throw new Error(error instanceof Error ? error.message : 'Failed to upload image');
     }
+  }
+
+  // Upload optimized product image with progress tracking
+  async uploadOptimizedProductImage(
+    file: File,
+    productId?: string,
+    onProgress?: (progress: OptimizationProgress) => void,
+  ): Promise<{ imageUrl: string; optimizationResult: OptimizationResult | null }> {
+    try {
+      // Optimize the image first
+      const { optimizedFile, result } = await optimizeProductImage(file, onProgress);
+
+      // Upload the optimized file using the standard method
+      const imageUrl = await this.uploadProductImage(optimizedFile, productId);
+
+      return {
+        imageUrl,
+        optimizationResult: result,
+      };
+    } catch (error) {
+      console.error('Optimized image upload error:', error);
+
+      // If optimization fails, try with original file
+      if (error instanceof Error && error.message.includes('optimization')) {
+        console.warn('Image optimization failed, uploading original file');
+        const imageUrl = await this.uploadProductImage(file, productId);
+        return {
+          imageUrl,
+          optimizationResult: null,
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  // Batch upload multiple optimized product images
+  async uploadOptimizedProductImages(
+    files: File[],
+    productId?: string,
+    onProgress?: (
+      fileIndex: number,
+      fileProgress: OptimizationProgress,
+      overallProgress: number,
+    ) => void,
+  ): Promise<
+    Array<{ imageUrl: string; originalFile: File; optimizationResult: OptimizationResult | null }>
+  > {
+    const results: Array<{
+      imageUrl: string;
+      originalFile: File;
+      optimizationResult: OptimizationResult | null;
+    }> = [];
+    const total = files.length;
+
+    for (let i = 0; i < total; i++) {
+      const file = files[i];
+      if (!file) continue; // Skip undefined files
+
+      try {
+        const { imageUrl, optimizationResult } = await this.uploadOptimizedProductImage(
+          file,
+          productId,
+          progress => {
+            const overallProgress = ((i + progress.progress / 100) / total) * 100;
+            onProgress?.(i, progress, overallProgress);
+          },
+        );
+
+        results.push({
+          imageUrl,
+          originalFile: file,
+          optimizationResult,
+        });
+      } catch (error) {
+        console.error(`Failed to upload optimized image ${file.name}:`, error);
+        throw error; // Re-throw to handle in calling code
+      }
+    }
+
+    return results;
   }
 
   // Get product by ID

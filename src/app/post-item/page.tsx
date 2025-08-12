@@ -21,6 +21,12 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { productService } from '@/services/product';
 import categoryService, { type Category } from '@/services/category';
+import {
+  optimizeProductImages,
+  validateImageFile,
+  getOptimizationRecommendations,
+  type OptimizationProgress,
+} from '@/utils/imageUtils';
 import toast from 'react-hot-toast';
 
 export default function PostItemPage() {
@@ -30,6 +36,12 @@ export default function PostItemPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [optimizingImages, setOptimizingImages] = useState(false);
+  const [optimizationProgress, setOptimizationProgress] = useState<{
+    fileIndex: number;
+    progress: OptimizationProgress;
+    overallProgress: number;
+  } | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -89,7 +101,7 @@ export default function PostItemPage() {
     return null;
   }
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
     if (!files) return;
 
@@ -101,29 +113,98 @@ export default function PostItemPage() {
       return;
     }
 
-    // Validate file types
-    const validFiles = newFiles.filter(file => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file`);
-        return false;
+    // Validate files first
+    const validFiles: File[] = [];
+    for (const file of newFiles) {
+      const validation = validateImageFile(file, 'product');
+      if (!validation.isValid) {
+        toast.error(`${file.name}: ${validation.error}`);
+        continue;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is too large (max 5MB)`);
-        return false;
+
+      // Show warnings if any
+      if (validation.warnings && validation.warnings.length > 0) {
+        validation.warnings.forEach(warning => {
+          console.warn(`${file.name}: ${warning}`);
+        });
       }
-      return true;
-    });
 
-    // Create previews
-    validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+      validFiles.push(file);
+    }
 
-    setImageFiles(prev => [...prev, ...validFiles]);
+    if (validFiles.length === 0) return;
+
+    setOptimizingImages(true);
+
+    try {
+      // Show optimization recommendations for the first file
+      if (validFiles.length > 0 && validFiles[0]) {
+        const recommendations = await getOptimizationRecommendations(validFiles[0], 'product');
+        if (recommendations.willOptimize) {
+          toast.success(
+            `Optimizing ${validFiles.length} image${validFiles.length > 1 ? 's' : ''}...`,
+            {
+              duration: 2000,
+            },
+          );
+        }
+      }
+
+      // Optimize images
+      const optimizationResults = await optimizeProductImages(
+        validFiles,
+        (fileIndex, fileProgress, overallProgress) => {
+          setOptimizationProgress({
+            fileIndex,
+            progress: fileProgress,
+            overallProgress,
+          });
+        },
+      );
+
+      // Use optimized files
+      const optimizedFiles = optimizationResults.map(result => result.optimizedFile);
+
+      // Create previews for optimized files
+      const newPreviews: string[] = [];
+      for (const file of optimizedFiles) {
+        const reader = new FileReader();
+        const preview = await new Promise<string>(resolve => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        newPreviews.push(preview);
+      }
+
+      setImageFiles(prev => [...prev, ...optimizedFiles]);
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+
+      // Show optimization summary
+      const totalSavings = optimizationResults.reduce((sum, result) => {
+        return sum + (result.result.originalSize - result.result.optimizedSize);
+      }, 0);
+
+      if (totalSavings > 1024) {
+        const savedMB = (totalSavings / 1024 / 1024).toFixed(1);
+        toast.success(`Images optimized! Saved ${savedMB}MB of storage space.`);
+      }
+    } catch (error) {
+      console.error('Image optimization error:', error);
+      toast.error('Failed to optimize images. Using original files.');
+
+      // Fallback to original files
+      validFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreviews(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+      setImageFiles(prev => [...prev, ...validFiles]);
+    } finally {
+      setOptimizingImages(false);
+      setOptimizationProgress(null);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -408,13 +489,50 @@ export default function PostItemPage() {
                     multiple
                     onChange={handleImageSelect}
                     className="hidden"
+                    disabled={optimizingImages}
                   />
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors cursor-pointer">
-                    <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, GIF up to 5MB (max 5 photos)
-                    </p>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      optimizingImages
+                        ? 'border-blue-300 bg-blue-50 cursor-wait'
+                        : 'border-gray-300 hover:border-primary-400 cursor-pointer'
+                    }`}
+                  >
+                    {optimizingImages ? (
+                      <>
+                        <div className="mx-auto h-12 w-12 mb-2">
+                          <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-600 border-t-transparent"></div>
+                        </div>
+                        {optimizationProgress && (
+                          <div className="space-y-2">
+                            <p className="text-sm text-blue-600 font-medium">
+                              {optimizationProgress.progress.message || 'Processing images...'}
+                            </p>
+                            <div className="w-full bg-blue-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${optimizationProgress.overallProgress}%` }}
+                              />
+                            </div>
+                            <p className="text-xs text-blue-500">
+                              Image {optimizationProgress.fileIndex + 1} of {imageFiles.length + 1}{' '}
+                              - {Math.round(optimizationProgress.overallProgress)}%
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          PNG, JPG, GIF up to 20MB (max 5 photos) • Images will be optimized
+                          automatically
+                        </p>
+                      </>
+                    )}
                   </div>
                 </label>
               )}
@@ -422,7 +540,8 @@ export default function PostItemPage() {
               <div className="mt-2 flex items-start">
                 <InformationCircleIcon className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-600">
-                  Add up to 5 photos. The first photo will be your main listing image.
+                  Add up to 5 photos. The first photo will be your main listing image. Images are
+                  automatically optimized for faster uploads and better performance.
                 </p>
               </div>
             </div>
@@ -541,7 +660,7 @@ export default function PostItemPage() {
             ) : (
               <button
                 type="submit"
-                disabled={isLoading || uploadingImages}
+                disabled={isLoading || uploadingImages || optimizingImages}
                 onClick={e => {
                   // Check for form validation errors and show them via toast
                   if (Object.keys(errors).length > 0) {
@@ -575,7 +694,9 @@ export default function PostItemPage() {
                 }}
                 className="px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               >
-                {isLoading ? (
+                {optimizingImages ? (
+                  'Optimizing images...'
+                ) : isLoading ? (
                   <>{uploadingImages ? 'Uploading images...' : 'Posting...'}</>
                 ) : (
                   'Post Item'

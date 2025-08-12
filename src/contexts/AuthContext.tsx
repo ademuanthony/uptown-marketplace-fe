@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -105,6 +106,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (updates: Partial<User>): void => {
+    if (user) {
+      setUser({ ...user, ...updates });
+    }
+  };
+
   const value = {
     user,
     firebaseUser,
@@ -113,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     refreshToken,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

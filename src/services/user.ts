@@ -1,6 +1,8 @@
 import api from './api';
 import { User } from './auth';
 import { isAxiosError } from 'axios';
+import { optimizeProfileImage, type OptimizationProgress } from '@/utils/imageUtils';
+import type { OptimizationResult } from '@/utils/imageOptimizer';
 
 // API response wrapper
 interface ApiResponse<T> {
@@ -71,7 +73,7 @@ class UserService {
     }
   }
 
-  // Upload avatar
+  // Upload avatar (original method for backward compatibility)
   async uploadAvatar(file: File): Promise<User> {
     try {
       const formData = new FormData();
@@ -102,6 +104,39 @@ class UserService {
       }
 
       throw new Error(error instanceof Error ? error.message : 'Failed to upload avatar');
+    }
+  }
+
+  // Upload optimized avatar with progress tracking
+  async uploadOptimizedAvatar(
+    file: File,
+    onProgress?: (progress: OptimizationProgress) => void,
+  ): Promise<{ user: User; optimizationResult: OptimizationResult | null }> {
+    try {
+      // Optimize the image first
+      const { optimizedFile, result } = await optimizeProfileImage(file, onProgress);
+
+      // Upload the optimized file using the standard method
+      const user = await this.uploadAvatar(optimizedFile);
+
+      return {
+        user,
+        optimizationResult: result,
+      };
+    } catch (error) {
+      console.error('Optimized avatar upload error:', error);
+
+      // If optimization fails, try with original file
+      if (error instanceof Error && error.message.includes('optimization')) {
+        console.warn('Avatar optimization failed, uploading original file');
+        const user = await this.uploadAvatar(file);
+        return {
+          user,
+          optimizationResult: null,
+        };
+      }
+
+      throw error;
     }
   }
 
