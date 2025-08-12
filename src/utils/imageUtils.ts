@@ -287,6 +287,56 @@ export async function optimizeProfileImage(
 }
 
 /**
+ * Context-aware image optimization for messaging attachments
+ * Automatically applies messaging-specific optimization settings
+ */
+export async function optimizeMessagingImage(
+  file: File,
+  onProgress?: (progress: OptimizationProgress) => void,
+): Promise<{ optimizedFile: File; result: OptimizationResult }> {
+  try {
+    // Validation stage
+    onProgress?.({ stage: 'validating', progress: 10, message: 'Validating image...' });
+
+    if (!file.type.startsWith('image/')) {
+      throw new Error('File must be an image');
+    }
+
+    // Processing stage
+    onProgress?.({ stage: 'processing', progress: 30, message: 'Processing image...' });
+
+    // Compression stage
+    onProgress?.({
+      stage: 'compressing',
+      progress: 60,
+      message: 'Optimizing for messaging...',
+    });
+
+    // Apply messaging-specific optimization
+    const optimizedFile = await imageOptimizer.optimizeForMessaging(file);
+
+    // Get optimization results
+    const result = await imageOptimizer.getOptimizationPreview(file, optimizedFile);
+
+    onProgress?.({
+      stage: 'completed',
+      progress: 100,
+      message: `Optimized: ${result.compressionRatio.toFixed(1)}% smaller`,
+    });
+
+    return { optimizedFile, result };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Optimization failed';
+    onProgress?.({
+      stage: 'error',
+      progress: 0,
+      error: errorMessage,
+    });
+    throw error;
+  }
+}
+
+/**
  * Batch optimize multiple product images with progress tracking
  * Useful for product listings with multiple photos
  */

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { MessageType } from '@/services/messaging';
+import { optimizeMessagingImage } from '@/utils/imageUtils';
 
 interface MessageInputProps {
   onSendMessage: (content: string, type: MessageType) => void;
@@ -21,6 +22,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isOptimizingImage, setIsOptimizingImage] = useState(false);
+  const [originalFileSize, setOriginalFileSize] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -41,6 +44,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const clearFileSelection = () => {
     setSelectedFile(null);
     setFilePreview(null);
+    setIsOptimizingImage(false);
+    setOriginalFileSize(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -91,18 +96,38 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && !disabled) {
-      setSelectedFile(file);
+    if (!file || disabled) return;
+
+    try {
+      let finalFile = file;
+      setOriginalFileSize(file.size);
+
+      // Optimize image if it's an image file
+      if (file.type.startsWith('image/')) {
+        setIsOptimizingImage(true);
+
+        try {
+          const { optimizedFile } = await optimizeMessagingImage(file);
+          finalFile = optimizedFile;
+        } catch (optimizationError) {
+          console.warn('Image optimization failed, using original file:', optimizationError);
+          // Continue with original file if optimization fails
+        } finally {
+          setIsOptimizingImage(false);
+        }
+      }
+
+      setSelectedFile(finalFile);
 
       // Create preview for images
-      if (file.type.startsWith('image/')) {
+      if (finalFile.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = e => {
           setFilePreview(e.target?.result as string);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(finalFile);
       } else {
         setFilePreview(null);
       }
@@ -113,6 +138,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
           textareaRef.current.focus();
         }
       }, 100);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      // Reset states if something goes wrong
+      clearFileSelection();
     }
   };
 
@@ -152,9 +181,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                <p className="text-xs text-gray-500">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+                <div className="flex items-center space-x-2 text-xs text-gray-500">
+                  <span>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                  {originalFileSize && originalFileSize > selectedFile.size && (
+                    <span className="text-green-600">
+                      (saved {((originalFileSize - selectedFile.size) / 1024 / 1024).toFixed(1)} MB)
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <button
@@ -185,6 +219,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
             </div>
           )}
 
+          {/* Optimization progress indicator */}
+          {isOptimizingImage && (
+            <div className="mb-2">
+              <div className="flex items-center space-x-2 text-sm text-green-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                <span>Optimizing image...</span>
+              </div>
+            </div>
+          )}
+
           {/* Upload progress indicator */}
           {uploading && (
             <div className="mb-2">
@@ -202,7 +246,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         <button
           type="button"
           onClick={triggerFileInput}
-          disabled={disabled || uploading}
+          disabled={disabled || uploading || isOptimizingImage}
           className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Attach file"
         >
@@ -232,7 +276,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             value={message}
             onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
-            disabled={disabled || uploading}
+            disabled={disabled || uploading || isOptimizingImage}
             placeholder={selectedFile ? 'Add a caption (optional)...' : placeholder}
             className="w-full px-4 py-2 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             rows={1}
@@ -247,11 +291,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
         {/* Send button */}
         <button
           type="submit"
-          disabled={disabled || uploading || (!message.trim() && !selectedFile)}
+          disabled={
+            disabled || uploading || isOptimizingImage || (!message.trim() && !selectedFile)
+          }
           className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title={selectedFile ? 'Send file' : 'Send message'}
         >
-          {uploading ? (
+          {uploading || isOptimizingImage ? (
             <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-white"></div>
           ) : (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

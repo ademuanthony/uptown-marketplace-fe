@@ -50,6 +50,15 @@ export const OPTIMIZATION_PRESETS = {
     maintainAspectRatio: true,
     cropToSquare: false,
   },
+  messaging: {
+    maxWidth: 1280,
+    maxHeight: 1280,
+    quality: 0.8,
+    maxFileSize: 1 * 1024 * 1024, // 1MB
+    format: 'jpeg' as const,
+    maintainAspectRatio: true,
+    cropToSquare: false,
+  },
 } as const;
 
 class ImageOptimizer {
@@ -321,6 +330,13 @@ class ImageOptimizer {
    */
   async optimizeForThumbnail(file: File): Promise<File> {
     return this.compressImage(file, OPTIMIZATION_PRESETS.thumbnail);
+  }
+
+  /**
+   * Optimize image for messaging uploads
+   */
+  async optimizeForMessaging(file: File): Promise<File> {
+    return this.compressImage(file, OPTIMIZATION_PRESETS.messaging);
   }
 
   /**
