@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +28,7 @@ const MessagesContent: React.FC = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isProcessingUserId, setIsProcessingUserId] = useState(false);
+  const processedUserIdRef = useRef<string | null>(null);
 
   // Initialize real-time messaging
   const { connectionStatus, onNewMessage, onConversationUpdate, startTracking, stopTracking } =
@@ -49,8 +50,6 @@ const MessagesContent: React.FC = () => {
   // Get or create direct conversation with specified user
   const handleUserIdFromQuery = useCallback(
     async (userId: string) => {
-      if (isProcessingUserId) return; // Prevent duplicate requests
-
       try {
         setIsProcessingUserId(true);
 
@@ -81,7 +80,7 @@ const MessagesContent: React.FC = () => {
         setIsProcessingUserId(false);
       }
     },
-    [isProcessingUserId, loadConversations],
+    [loadConversations],
   );
 
   // Load conversations on component mount
@@ -190,10 +189,11 @@ const MessagesContent: React.FC = () => {
   // Handle userId query parameter to get or create direct conversation
   useEffect(() => {
     const userId = searchParams.get('userId');
-    if (userId && user && !authLoading && !loading && !isProcessingUserId) {
+    if (userId && user && !authLoading && !loading && processedUserIdRef.current !== userId) {
+      processedUserIdRef.current = userId;
       handleUserIdFromQuery(userId);
     }
-  }, [searchParams, user, authLoading, loading, isProcessingUserId, handleUserIdFromQuery]);
+  }, [searchParams, user, authLoading, loading, handleUserIdFromQuery]);
 
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
