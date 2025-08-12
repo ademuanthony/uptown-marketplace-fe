@@ -60,10 +60,11 @@ export default function Navbar() {
 
   // Fetch unread messages count
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       const fetchUnreadCount = async () => {
         try {
-          const count = await messagingService.getUnreadConversationsCount();
+          // Pass the current user's ID to filter out messages they sent
+          const count = await messagingService.getUnreadConversationsCount(user.id);
           setUnreadMessagesCount(count);
         } catch (error) {
           console.error('Error fetching unread messages count:', error);
@@ -80,7 +81,7 @@ export default function Navbar() {
       setUnreadMessagesCount(0);
     }
     return () => {};
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">

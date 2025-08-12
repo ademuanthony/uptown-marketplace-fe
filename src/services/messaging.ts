@@ -361,8 +361,8 @@ export class MessagingService {
     }
   }
 
-  // Get total count of conversations with unread messages
-  async getUnreadConversationsCount(): Promise<number> {
+  // Get total count of conversations with unread messages for the current user
+  async getUnreadConversationsCount(currentUserId?: string): Promise<number> {
     try {
       const response = await this.getUserConversations(1, 100); // Get more conversations to ensure accurate count
 
@@ -371,11 +371,21 @@ export class MessagingService {
       }
 
       // Count conversations where current user has unread messages
+      // NOTE: This relies on the backend to properly set unread_count per user
+      // The unread_count object should have user_id as key and count as value
       const unreadCount = response.conversations.reduce((count, conversation) => {
-        // The unread_count should only contain counts for the current user
-        // Backend should filter this appropriately when returning conversations
-        const hasUnreadMessages = Object.values(conversation.unread_count).some(count => count > 0);
-        return hasUnreadMessages ? count + 1 : count;
+        if (!currentUserId) {
+          // If we don't have the current user ID, we can't properly filter
+          // This is a fallback that counts any conversation with unread messages
+          const hasUnreadMessages = Object.values(conversation.unread_count).some(
+            count => count > 0,
+          );
+          return hasUnreadMessages ? count + 1 : count;
+        }
+
+        // Only count if the current user specifically has unread messages
+        const currentUserUnreadCount = conversation.unread_count[currentUserId] || 0;
+        return currentUserUnreadCount > 0 ? count + 1 : count;
       }, 0);
 
       return unreadCount;
