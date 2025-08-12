@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,12 +27,13 @@ const MessagesContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isProcessingUserId, setIsProcessingUserId] = useState(false);
 
   // Initialize real-time messaging
   const { connectionStatus, onNewMessage, onConversationUpdate, startTracking, stopTracking } =
     useRealTimeMessaging();
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await messagingService.getUserConversations(1, 50);
@@ -43,14 +44,52 @@ const MessagesContent: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Get or create direct conversation with specified user
+  const handleUserIdFromQuery = useCallback(
+    async (userId: string) => {
+      if (isProcessingUserId) return; // Prevent duplicate requests
+
+      try {
+        setIsProcessingUserId(true);
+
+        // Get or create direct conversation
+        const conversation = await messagingService.getOrCreateDirectConversation(userId);
+
+        // Reload conversations to ensure we have the latest list
+        await loadConversations();
+
+        // Wait a moment for state to update, then find and select the conversation
+        setTimeout(() => {
+          setConversations(prev => {
+            const targetConversation = prev.find(conv => conv.id === conversation.id);
+            if (targetConversation) {
+              setSelectedConversation(targetConversation);
+              setShowMobileChat(true);
+              toast.success('Conversation ready!');
+            }
+            return prev;
+          });
+        }, 100);
+      } catch (error) {
+        console.error('Error handling userId from query:', error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to start conversation';
+        toast.error(errorMessage);
+      } finally {
+        setIsProcessingUserId(false);
+      }
+    },
+    [isProcessingUserId, loadConversations],
+  );
 
   // Load conversations on component mount
   useEffect(() => {
     if (user && !authLoading) {
       loadConversations();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, loadConversations]);
 
   // Setup real-time conversation updates
   useEffect(() => {
@@ -147,6 +186,14 @@ const MessagesContent: React.FC = () => {
     }
   }, [searchParams, conversations]);
 
+  // Handle userId query parameter to get or create direct conversation
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    if (userId && user && !authLoading && !loading && !isProcessingUserId) {
+      handleUserIdFromQuery(userId);
+    }
+  }, [searchParams, user, authLoading, loading, isProcessingUserId, handleUserIdFromQuery]);
+
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
     setShowMobileChat(true);
@@ -199,10 +246,13 @@ const MessagesContent: React.FC = () => {
   };
 
   // Show loading state
-  if (authLoading) {
+  if (authLoading || isProcessingUserId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          {isProcessingUserId && <p className="text-gray-600">Setting up your conversation...</p>}
+        </div>
       </div>
     );
   }

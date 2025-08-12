@@ -326,6 +326,40 @@ export class MessagingService {
 
     return this.createConversation(request);
   }
+
+  // Get or create a direct conversation with another user (uses dedicated backend endpoint)
+  async getOrCreateDirectConversation(
+    participantId: string,
+    productId?: string,
+  ): Promise<Conversation> {
+    try {
+      const requestBody: Record<string, unknown> = {};
+      if (productId) {
+        requestBody.product_id = productId;
+      }
+
+      const response = await api.post<ApiResponse<CreateConversationResponse>>(
+        `/conversations/direct/${participantId}`,
+        requestBody,
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data.conversation;
+      } else {
+        throw new Error(
+          response.data.error?.message || 'Failed to get or create direct conversation',
+        );
+      }
+    } catch (error: unknown) {
+      console.error('Error getting or creating direct conversation:', error);
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.error?.message || 'Failed to get or create direct conversation',
+        );
+      }
+      throw new Error('Failed to get or create direct conversation');
+    }
+  }
 }
 
 // Export singleton instance
