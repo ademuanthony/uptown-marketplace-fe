@@ -216,6 +216,28 @@ class UserService {
       throw new Error(error instanceof Error ? error.message : 'Failed to get profile');
     }
   }
+
+  // Get user by ID (for opponent info in conversations)
+  async getUserById(userId: string): Promise<User> {
+    try {
+      const response = await api.get<ApiResponse<{ user: User }>>(`/users/${userId}`);
+
+      if (!response.data || !response.data.success || !response.data.data) {
+        throw new Error(response.data?.message || 'Failed to get user');
+      }
+
+      return response.data.data.user;
+    } catch (error) {
+      console.error('Get user by ID error:', error);
+
+      // If it's an axios error, extract the message
+      if (isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+
+      throw new Error(error instanceof Error ? error.message : 'Failed to get user');
+    }
+  }
 }
 
 export const userService = new UserService();

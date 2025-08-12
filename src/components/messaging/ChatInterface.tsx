@@ -5,6 +5,13 @@ import { useRealTimeMessaging } from '@/hooks/useRealTimeMessaging';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { toast } from 'react-hot-toast';
+import {
+  getOpponentInfoAsync,
+  getOpponentAvatarUrl,
+  isDirectConversation,
+  type OpponentInfo,
+} from '@/utils/messaging';
+import Avatar from '../common/Avatar';
 
 interface ChatInterfaceProps {
   conversation: Conversation;
@@ -24,6 +31,27 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversation, onClose }) 
   const isTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const previousScrollHeight = useRef<number>(0);
+  const [opponentInfo, setOpponentInfo] = useState<OpponentInfo | null>(null);
+
+  // Fetch opponent info for direct conversations
+  useEffect(() => {
+    const fetchOpponentInfo = async () => {
+      if (isDirectConversation(conversation) && user?.id) {
+        try {
+          const info = await getOpponentInfoAsync(conversation, user.id);
+          setOpponentInfo(info);
+        } catch (error) {
+          console.error('Failed to fetch opponent info:', error);
+          setOpponentInfo(null);
+        }
+      } else {
+        setOpponentInfo(null);
+      }
+    };
+
+    fetchOpponentInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation.id, user?.id]);
 
   // Initialize real-time messaging
   const {
@@ -279,8 +307,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversation, onClose }) 
 
     switch (conversation.type) {
       case 'direct':
-        const otherParticipants = conversation.participant_ids.filter(id => id !== user?.id);
-        return `Chat with ${otherParticipants.length} user${otherParticipants.length !== 1 ? 's' : ''}`;
+        if (opponentInfo) {
+          return opponentInfo.name;
+        }
+        return 'Loading...'; // Show loading while fetching opponent info
       case 'group':
         return `Group (${conversation.participant_ids.length} members)`;
       case 'order':
@@ -504,6 +534,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversation, onClose }) 
       {/* Header */}
       <div className="p-4 border-b bg-white flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-3">
+          {/* Show opponent avatar for direct conversations */}
+          {isDirectConversation(conversation) && opponentInfo && (
+            <Avatar
+              src={getOpponentAvatarUrl(opponentInfo)}
+              alt={opponentInfo.name}
+              size={40}
+              className="w-10 h-10"
+            />
+          )}
+
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{getConversationTitle()}</h2>
             <div className="flex items-center space-x-2 mt-1">

@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Conversation } from '@/services/messaging';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  getOpponentInfoAsync,
+  getOpponentAvatarUrl,
+  isDirectConversation,
+  type OpponentInfo,
+} from '@/utils/messaging';
+import Avatar from '../common/Avatar';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -19,18 +26,54 @@ const ConversationList: React.FC<ConversationListProps> = ({
   loading = false,
 }) => {
   const { user } = useAuth();
+  const [opponentInfoCache, setOpponentInfoCache] = useState<Record<string, OpponentInfo>>({});
+
+  // Fetch opponent info for direct conversations
+  useEffect(() => {
+    const fetchOpponentInfo = async () => {
+      const directConversations = conversations.filter(conv => isDirectConversation(conv));
+
+      for (const conversation of directConversations) {
+        // Skip if we already have info for this conversation
+        if (opponentInfoCache[conversation.id]) {
+          continue;
+        }
+
+        try {
+          const opponentInfo = await getOpponentInfoAsync(conversation, user?.id);
+          if (opponentInfo) {
+            setOpponentInfoCache(prev => ({
+              ...prev,
+              [conversation.id]: opponentInfo,
+            }));
+          }
+        } catch (error) {
+          console.error(
+            `Failed to fetch opponent info for conversation ${conversation.id}:`,
+            error,
+          );
+        }
+      }
+    };
+
+    if (conversations.length > 0 && user?.id) {
+      fetchOpponentInfo();
+    }
+  }, [conversations, user?.id, opponentInfoCache]);
 
   const getConversationTitle = (conversation: Conversation) => {
     if (conversation.title) {
       return conversation.title;
     }
 
-    // For direct conversations, show the other participant's name
+    // For direct conversations, show the opponent's name
     if (conversation.type === 'direct') {
-      // This would need to be enhanced to show actual user names
-      // For now, show participant count
-      const otherParticipants = conversation.participant_ids.filter(id => id !== user?.id);
-      return `Chat with ${otherParticipants.length} user${otherParticipants.length !== 1 ? 's' : ''}`;
+      const opponentInfo = opponentInfoCache[conversation.id];
+      if (opponentInfo) {
+        return opponentInfo.name;
+      }
+      // Fallback while loading opponent info
+      return 'Loading...';
     }
 
     if (conversation.type === 'group') {
@@ -46,9 +89,21 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const getConversationIcon = (conversation: Conversation) => {
     switch (conversation.type) {
-      case 'direct':
+      case 'direct': {
+        const opponentInfo = opponentInfoCache[conversation.id];
+        if (opponentInfo) {
+          return (
+            <Avatar
+              src={getOpponentAvatarUrl(opponentInfo)}
+              alt={opponentInfo.name}
+              size={40}
+              className="w-10 h-10"
+            />
+          );
+        }
+        // Fallback while loading
         return (
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white text-sm font-medium animate-pulse">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -58,6 +113,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
             </svg>
           </div>
         );
+      }
       case 'group':
         return (
           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
