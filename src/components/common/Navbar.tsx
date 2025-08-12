@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import Link from 'next/link';
 import { Menu, Transition } from '@headlessui/react';
 import { getProfileImageUrl } from '@/utils/imageUtils';
@@ -23,6 +23,7 @@ import {
   WalletIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
+import { messagingService } from '@/services/messaging';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -30,6 +31,7 @@ function classNames(...classes: string[]) {
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const { user, isAuthenticated, logout } = useAuth();
 
   const navigation = [
@@ -55,6 +57,30 @@ export default function Navbar() {
     { name: 'Products', href: '/admin/products', icon: ShoppingBagIcon },
     { name: 'Users', href: '/admin/users', icon: UserIcon },
   ];
+
+  // Fetch unread messages count
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchUnreadCount = async () => {
+        try {
+          const count = await messagingService.getUnreadConversationsCount();
+          setUnreadMessagesCount(count);
+        } catch (error) {
+          console.error('Error fetching unread messages count:', error);
+        }
+      };
+
+      fetchUnreadCount();
+
+      // Set up interval to refresh count periodically (every 30 seconds)
+      const interval = setInterval(fetchUnreadCount, 30000);
+
+      return () => clearInterval(interval);
+    } else {
+      setUnreadMessagesCount(0);
+    }
+    return () => {};
+  }, [isAuthenticated]);
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -132,6 +158,19 @@ export default function Navbar() {
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Post Item
+                </Link>
+
+                {/* Messages */}
+                <Link
+                  href="/messages"
+                  className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors"
+                >
+                  <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                  {unreadMessagesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full min-w-[18px]">
+                      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* Notifications */}
@@ -256,8 +295,31 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile actions and menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            {isAuthenticated && (
+              <>
+                {/* Messages button for mobile */}
+                <Link
+                  href="/messages"
+                  className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors"
+                >
+                  <ChatBubbleLeftRightIcon className="h-6 w-6" />
+                  {unreadMessagesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full min-w-[18px]">
+                      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Notifications button for mobile */}
+                <button className="p-2 text-gray-700 hover:text-primary-600 transition-colors">
+                  <BellIcon className="h-6 w-6" />
+                </button>
+              </>
+            )}
+
+            {/* Mobile menu button */}
             <button
               type="button"
               className="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"

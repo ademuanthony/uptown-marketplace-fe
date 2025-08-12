@@ -360,6 +360,32 @@ export class MessagingService {
       throw new Error('Failed to get or create direct conversation');
     }
   }
+
+  // Get total count of conversations with unread messages
+  async getUnreadConversationsCount(): Promise<number> {
+    try {
+      const response = await this.getUserConversations(1, 100); // Get more conversations to ensure accurate count
+
+      if (!response.conversations) {
+        return 0;
+      }
+
+      // Count conversations where current user has unread messages
+      const unreadCount = response.conversations.reduce((count, conversation) => {
+        // The unread_count object contains user_id -> count mapping
+        const currentUserUnread = Object.values(conversation.unread_count).reduce(
+          (sum, userCount) => sum + userCount,
+          0,
+        );
+        return currentUserUnread > 0 ? count + 1 : count;
+      }, 0);
+
+      return unreadCount;
+    } catch (error: unknown) {
+      console.error('Error getting unread conversations count:', error);
+      return 0; // Return 0 on error to prevent UI issues
+    }
+  }
 }
 
 // Export singleton instance
