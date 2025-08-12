@@ -89,7 +89,8 @@ const MessagesContent: React.FC = () => {
     if (user && !authLoading) {
       loadConversations();
     }
-  }, [user, authLoading, loadConversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]);
 
   // Setup real-time conversation updates
   useEffect(() => {
