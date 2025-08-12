@@ -195,9 +195,15 @@ const MessagesContent: React.FC = () => {
     }
   }, [searchParams, user, authLoading, loading, handleUserIdFromQuery]);
 
-  const handleSelectConversation = (conversation: Conversation) => {
+  const handleSelectConversation = async (conversation: Conversation) => {
     setSelectedConversation(conversation);
     setShowMobileChat(true);
+
+    // Refresh conversations after a short delay to update unread counts
+    // The ChatInterface will mark the conversation as read
+    setTimeout(() => {
+      loadConversations();
+    }, 1000);
   };
 
   const handleBackToList = () => {

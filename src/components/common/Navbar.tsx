@@ -72,8 +72,8 @@ export default function Navbar() {
 
       fetchUnreadCount();
 
-      // Set up interval to refresh count periodically (every 30 seconds)
-      const interval = setInterval(fetchUnreadCount, 30000);
+      // Set up interval to refresh count periodically (every 10 seconds for more responsive updates)
+      const interval = setInterval(fetchUnreadCount, 10000);
 
       return () => clearInterval(interval);
     } else {

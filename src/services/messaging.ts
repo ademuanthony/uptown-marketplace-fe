@@ -361,6 +361,27 @@ export class MessagingService {
     }
   }
 
+  // Mark conversation as read (clears unread count for current user)
+  async markConversationAsRead(conversationId: string): Promise<void> {
+    try {
+      const response = await api.post<ApiResponse<{ success: boolean }>>(
+        `/conversations/${conversationId}/read`,
+      );
+
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.error?.message || 'Failed to mark conversation as read');
+      }
+    } catch (error: unknown) {
+      console.error('Error marking conversation as read:', error);
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.error?.message || 'Failed to mark conversation as read',
+        );
+      }
+      throw new Error('Failed to mark conversation as read');
+    }
+  }
+
   // Get total count of conversations with unread messages
   async getUnreadConversationsCount(): Promise<number> {
     try {
@@ -372,12 +393,10 @@ export class MessagingService {
 
       // Count conversations where current user has unread messages
       const unreadCount = response.conversations.reduce((count, conversation) => {
-        // The unread_count object contains user_id -> count mapping
-        const currentUserUnread = Object.values(conversation.unread_count).reduce(
-          (sum, userCount) => sum + userCount,
-          0,
-        );
-        return currentUserUnread > 0 ? count + 1 : count;
+        // The unread_count should only contain counts for the current user
+        // Backend should filter this appropriately when returning conversations
+        const hasUnreadMessages = Object.values(conversation.unread_count).some(count => count > 0);
+        return hasUnreadMessages ? count + 1 : count;
       }, 0);
 
       return unreadCount;

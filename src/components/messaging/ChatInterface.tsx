@@ -53,6 +53,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversation, onClose }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.id, user?.id]);
 
+  // Mark conversation as read when opened
+  useEffect(() => {
+    const markAsRead = async () => {
+      try {
+        await messagingService.markConversationAsRead(conversation.id);
+        console.info('Marked conversation as read:', conversation.id);
+      } catch (error) {
+        console.error('Failed to mark conversation as read:', error);
+        // Don't show error to user as this is not critical
+      }
+    };
+
+    // Mark as read when conversation is opened
+    if (conversation.id && user?.id) {
+      markAsRead();
+    }
+  }, [conversation.id, user?.id]);
+
   // Initialize real-time messaging
   const {
     connectionStatus,

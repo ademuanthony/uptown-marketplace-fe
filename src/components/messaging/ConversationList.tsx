@@ -159,7 +159,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const getUserUnreadCount = (conversation: Conversation) => {
-    const userUnreadCount = conversation.unread_count[user?.id || ''] || 0;
+    if (!user?.id) return 0;
+
+    // The unread_count should represent messages the current user hasn't read
+    // This should be provided correctly by the backend
+    const userUnreadCount = conversation.unread_count[user.id] || 0;
     return userUnreadCount;
   };
 
