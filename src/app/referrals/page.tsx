@@ -389,16 +389,17 @@ export default function ReferralsPage() {
         </div>
 
         {/* Referral Link Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-8">
+          {/* Header - Stack on mobile */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
               <LinkIcon className="h-5 w-5 mr-2 text-primary-600" />
               Your Referral Link
             </h2>
-            <div className="flex space-x-2">
+            <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-2">
               <button
                 onClick={handleCopyReferralLink}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                className={`flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-colors w-full xs:w-auto ${
                   copySuccess
                     ? 'bg-green-100 text-green-700 border border-green-200'
                     : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
@@ -413,7 +414,7 @@ export default function ReferralsPage() {
               </button>
               <button
                 onClick={handleShareReferralLink}
-                className="flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors"
+                className="flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors w-full xs:w-auto"
               >
                 <ShareIcon className="h-4 w-4 mr-2" />
                 Share
@@ -421,19 +422,24 @@ export default function ReferralsPage() {
             </div>
           </div>
 
+          {/* Content - Stack vertically on mobile */}
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Referral Code:</p>
-                <p className="text-lg font-mono font-semibold text-gray-900">
-                  {profile?.referral_code}
-                </p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+              <div className="flex-1">
+                <p className="text-sm text-gray-600 mb-2">Referral Code:</p>
+                <div className="bg-white rounded-md px-3 py-2 border border-gray-200">
+                  <p className="text-base sm:text-lg font-mono font-semibold text-gray-900 break-all">
+                    {profile?.referral_code}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600 mb-1">Referral Link:</p>
-                <p className="text-sm text-gray-500 max-w-xs truncate">
-                  {profile?.referral_code && generateReferralLink(profile.referral_code)}
-                </p>
+              <div className="flex-1 md:ml-6">
+                <p className="text-sm text-gray-600 mb-2">Referral Link:</p>
+                <div className="bg-white rounded-md px-3 py-2 border border-gray-200">
+                  <p className="text-sm text-gray-500 break-all">
+                    {profile?.referral_code && generateReferralLink(profile.referral_code)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
