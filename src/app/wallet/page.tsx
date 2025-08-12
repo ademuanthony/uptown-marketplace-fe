@@ -34,6 +34,7 @@ const WalletPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Modals and forms
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -94,6 +95,21 @@ const WalletPage: React.FC = () => {
   useEffect(() => {
     loadWalletData();
   }, [loadWalletData]);
+
+  // Refresh check-in stats when page becomes visible (user returns to page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Trigger refresh of check-in stats when page becomes visible
+        setRefreshTrigger(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
@@ -273,6 +289,16 @@ const WalletPage: React.FC = () => {
                   lifetimeEarned={loyaltyAccount.lifetime_earned / 1e2}
                   lifetimeSpent={loyaltyAccount.lifetime_spent / 1e2}
                   isLoading={loading}
+                  refreshTrigger={refreshTrigger}
+                  onBalanceUpdate={newBalance => {
+                    if (loyaltyAccount) {
+                      setLoyaltyAccount({
+                        ...loyaltyAccount,
+                        available_points: Math.round(newBalance * 1e2),
+                        total_points: Math.round(newBalance * 1e2),
+                      });
+                    }
+                  }}
                 />
               </div>
             )}
