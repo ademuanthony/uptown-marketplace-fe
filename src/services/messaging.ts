@@ -361,27 +361,6 @@ export class MessagingService {
     }
   }
 
-  // Mark conversation as read (clears unread count for current user)
-  async markConversationAsRead(conversationId: string): Promise<void> {
-    try {
-      const response = await api.post<ApiResponse<{ success: boolean }>>(
-        `/conversations/${conversationId}/read`,
-      );
-
-      if (!response.data || !response.data.success) {
-        throw new Error(response.data?.error?.message || 'Failed to mark conversation as read');
-      }
-    } catch (error: unknown) {
-      console.error('Error marking conversation as read:', error);
-      if (isAxiosError(error)) {
-        throw new Error(
-          error.response?.data?.error?.message || 'Failed to mark conversation as read',
-        );
-      }
-      throw new Error('Failed to mark conversation as read');
-    }
-  }
-
   // Get total count of conversations with unread messages
   async getUnreadConversationsCount(): Promise<number> {
     try {

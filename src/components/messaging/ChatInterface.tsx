@@ -53,21 +53,46 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversation, onClose }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.id, user?.id]);
 
-  // Mark conversation as read when opened
+  // Mark unread messages as read when conversation is opened
   useEffect(() => {
-    const markAsRead = async () => {
+    const markUnreadMessagesAsRead = async () => {
       try {
-        await messagingService.markConversationAsRead(conversation.id);
-        console.info('Marked conversation as read:', conversation.id);
+        // Get the messages for this conversation to find unread ones
+        const response = await messagingService.getConversationHistory(conversation.id, 1, 20);
+
+        // Find unread messages that are not from the current user
+        const unreadMessages = response.messages.filter(
+          message =>
+            message.sender_id !== user?.id && message.status !== 'read' && !message.read_at,
+        );
+
+        // Mark each unread message as read
+        for (const message of unreadMessages) {
+          try {
+            await messagingService.markMessageAsRead(message.id);
+          } catch (error) {
+            console.error(`Failed to mark message ${message.id} as read:`, error);
+            // Continue with other messages
+          }
+        }
+
+        if (unreadMessages.length > 0) {
+          console.info(
+            `Marked ${unreadMessages.length} messages as read in conversation ${conversation.id}`,
+          );
+        }
       } catch (error) {
-        console.error('Failed to mark conversation as read:', error);
+        console.error('Failed to mark unread messages as read:', error);
         // Don't show error to user as this is not critical
       }
     };
 
-    // Mark as read when conversation is opened
+    // Mark unread messages as read when conversation is opened
     if (conversation.id && user?.id) {
-      markAsRead();
+      // Small delay to ensure messages are loaded first
+      setTimeout(() => {
+        markUnreadMessagesAsRead();
+      }, 500);
     }
   }, [conversation.id, user?.id]);
 

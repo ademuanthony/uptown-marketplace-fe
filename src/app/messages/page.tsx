@@ -199,11 +199,11 @@ const MessagesContent: React.FC = () => {
     setSelectedConversation(conversation);
     setShowMobileChat(true);
 
-    // Refresh conversations after a short delay to update unread counts
-    // The ChatInterface will mark the conversation as read
+    // Refresh conversations after a delay to update unread counts
+    // The ChatInterface will mark unread messages as read
     setTimeout(() => {
       loadConversations();
-    }, 1000);
+    }, 2000);
   };
 
   const handleBackToList = () => {
