@@ -31,7 +31,7 @@ export default function PublicProfilePage() {
   const [profileData, setProfileData] = useState<PublicProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('products');
+  const [activeTab, setActiveTab] = useState<TabType>('timeline');
 
   useEffect(() => {
     const fetchProfile = async () => {
