@@ -5,16 +5,18 @@ import Image from 'next/image';
 import {
   DocumentTextIcon,
   CalendarIcon,
-  PlusIcon,
   HeartIcon,
   ChatBubbleLeftIcon,
   ShareIcon,
+  PhotoIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { getAbsoluteImageUrl } from '@/utils/imageUtils';
+import { getAbsoluteImageUrl, getProfileImageUrl } from '@/utils/imageUtils';
+import Avatar from '@/components/common/Avatar';
+import { useAuth } from '@/hooks/useAuth';
 import { TimelinePost } from '@/services/publicProfile';
 import { socialContentService, TimelinePostWithMetadata } from '@/services/socialContent';
-import { CreateTimelinePost } from './CreateTimelinePost';
+import { CreateTimelinePostModal } from './CreateTimelinePostModal';
 
 interface TimelineTabProps {
   userId?: string;
@@ -23,7 +25,8 @@ interface TimelineTabProps {
 }
 
 export function TimelineTab({ userId, timelinePosts, isOwner = false }: TimelineTabProps) {
-  const [showCreatePost, setShowCreatePost] = useState(false);
+  const { user: currentUser } = useAuth();
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [socialPostsWithMetadata, setSocialPostsWithMetadata] = useState<
     TimelinePostWithMetadata[]
   >([]);
@@ -61,7 +64,7 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
   }, [userId, loadTimelinePosts]);
 
   const handlePostCreated = () => {
-    setShowCreatePost(false);
+    setShowCreatePostModal(false);
     loadTimelinePosts(); // Refresh the posts
   };
 
@@ -113,24 +116,44 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
 
   return (
     <div className="space-y-6">
-      {/* Create Post Button (only for profile owner) */}
-      {isOwner && (
-        <div className="bg-white rounded-lg shadow p-4">
-          {showCreatePost ? (
-            <CreateTimelinePost
-              onPostCreated={handlePostCreated}
-              onCancel={() => setShowCreatePost(false)}
-            />
-          ) : (
-            <button
-              onClick={() => setShowCreatePost(true)}
-              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Share something on your timeline
-            </button>
-          )}
+      {/* Create Post Section (only for profile owner) */}
+      {isOwner && currentUser && (
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4">
+            <div className="flex space-x-3">
+              <Avatar
+                src={getProfileImageUrl(currentUser)}
+                alt={`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
+                size={40}
+                className="h-10 w-10 flex-shrink-0"
+              />
+              <button
+                onClick={() => setShowCreatePostModal(true)}
+                className="flex-1 rounded-full bg-gray-100 hover:bg-gray-200 px-4 py-2 text-left text-gray-500 transition-colors"
+              >
+                What&apos;s on your mind, {currentUser?.first_name}?
+              </button>
+            </div>
+            <div className="mt-4 border-t pt-3">
+              <button
+                onClick={() => setShowCreatePostModal(true)}
+                className="flex items-center justify-center w-full rounded-lg hover:bg-gray-100 px-3 py-2 transition-colors"
+              >
+                <PhotoIcon className="h-6 w-6 text-green-600 mr-2" />
+                <span className="text-sm font-medium text-gray-600">Photo</span>
+              </button>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Create Post Modal */}
+      {isOwner && (
+        <CreateTimelinePostModal
+          isOpen={showCreatePostModal}
+          onClose={() => setShowCreatePostModal(false)}
+          onPostCreated={handlePostCreated}
+        />
       )}
 
       {/* Loading State */}
