@@ -106,6 +106,7 @@ export interface DownlineWithProfile {
   email: string;
   phone_number: string;
   profile_image_url: string;
+  permalink: string;
   referral_code: string;
   level: number;
   joined_at: string;

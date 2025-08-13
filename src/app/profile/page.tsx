@@ -14,6 +14,7 @@ import {
   ShoppingBagIcon,
   HeartIcon,
   Cog6ToothIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { profileSchema, type ProfileFormData } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
@@ -438,7 +439,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-lg shadow-sm p-6 text-center">
             <div className="w-12 h-12 mx-auto bg-primary-100 rounded-lg flex items-center justify-center mb-4">
               <ShoppingBagIcon className="h-6 w-6 text-primary-600" />
@@ -478,6 +479,20 @@ export default function ProfilePage() {
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
               View Settings →
+            </button>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+            <div className="w-12 h-12 mx-auto bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <GlobeAltIcon className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Public Profile</h3>
+            <p className="text-gray-600 text-sm mb-4">View your public profile</p>
+            <button
+              onClick={() => router.push(`/u/${user?.permalink}`)}
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              View Profile →
             </button>
           </div>
         </div>

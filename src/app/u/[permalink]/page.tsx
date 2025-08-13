@@ -144,7 +144,7 @@ export default function PublicProfilePage() {
                         <div className="text-2xl font-bold text-gray-900">
                           {store.active_products}
                         </div>
-                        <div className="text-sm text-gray-500">Active Products</div>
+                        <div className="text-sm text-gray-500">Published Products</div>
                       </div>
                     </div>
                   </div>

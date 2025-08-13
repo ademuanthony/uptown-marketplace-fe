@@ -33,6 +33,7 @@ import {
   UserCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -677,7 +678,14 @@ export default function ReferralsPage() {
                         </div>
                       </div>
 
-                      <div className="pt-3 border-t border-gray-200">
+                      <div className="pt-3 border-t border-gray-200 space-y-2">
+                        <Link
+                          href={`/u/${downline.permalink}`}
+                          className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 transition-colors"
+                        >
+                          <GlobeAltIcon className="h-4 w-4 mr-1" />
+                          View Profile
+                        </Link>
                         <Link
                           href={`/messages?userId=${downline.user_id}`}
                           className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors"
