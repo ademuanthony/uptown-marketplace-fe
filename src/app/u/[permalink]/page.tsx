@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import {
   UserIcon,
@@ -9,6 +10,8 @@ import {
   ShoppingBagIcon,
   DocumentTextIcon,
   StarIcon,
+  PencilIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import { publicProfileService, PublicProfileResponse } from '@/services/publicProfile';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
@@ -142,16 +145,27 @@ export default function PublicProfilePage() {
                     </div>
                   </div>
 
-                  {/* Store Stats */}
+                  {/* Action Buttons */}
                   <div className="mt-4 sm:mt-0 sm:ml-6">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">
-                          {store.active_products}
-                        </div>
-                        <div className="text-sm text-gray-500">Published Products</div>
-                      </div>
-                    </div>
+                    {isOwner ? (
+                      // Edit Profile Button (for profile owner)
+                      <Link
+                        href="/profile"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                      >
+                        <PencilIcon className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Link>
+                    ) : (
+                      // Contact Button (for other viewers)
+                      <Link
+                        href={`/messages?userId=${user.id}`}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                      >
+                        <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                        Contact
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

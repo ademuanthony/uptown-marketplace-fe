@@ -21,7 +21,6 @@ import {
   UsersIcon,
   BoltIcon,
   WalletIcon,
-  ClockIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import { messagingService } from '@/services/messaging';
@@ -43,11 +42,10 @@ export default function Navbar() {
   ];
 
   const userNavigation = [
-    { name: 'My Profile', href: '/profile', icon: UserIcon },
     {
-      name: 'My Timeline',
+      name: 'My Profile',
       href: user?.permalink ? `/u/${user.permalink}` : '/profile',
-      icon: ClockIcon,
+      icon: UserIcon,
     },
     { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
     { name: 'Wallet', href: '/wallet', icon: WalletIcon },
