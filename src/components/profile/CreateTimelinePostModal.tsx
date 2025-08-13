@@ -219,7 +219,7 @@ export function CreateTimelinePostModal({
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="flex min-h-full items-end justify-center p-0 text-center sm:items-center sm:p-4">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -229,11 +229,11 @@ export function CreateTimelinePostModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-t-lg sm:rounded-lg bg-white text-left shadow-xl transition-all w-full sm:my-8 sm:w-full sm:max-w-lg">
                 {/* Header */}
-                <div className="border-b border-gray-200 px-6 py-4">
+                <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
                   <div className="flex items-center justify-between">
-                    <Dialog.Title className="text-lg font-semibold text-gray-900">
+                    <Dialog.Title className="text-base sm:text-lg font-semibold text-gray-900">
                       Create Post
                     </Dialog.Title>
                     <button
@@ -242,13 +242,13 @@ export function CreateTimelinePostModal({
                       onClick={onClose}
                     >
                       <span className="sr-only">Close</span>
-                      <XMarkIcon className="h-6 w-6" />
+                      <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </button>
                   </div>
                 </div>
 
                 {/* Body */}
-                <div className="px-6 pt-4 pb-2">
+                <div className="px-4 sm:px-6 pt-3 sm:pt-4 pb-2">
                   {/* User Info */}
                   <div className="flex items-start space-x-3 mb-4">
                     {user && (
@@ -291,7 +291,7 @@ export function CreateTimelinePostModal({
                       onChange={e => setContent(e.target.value)}
                       placeholder={`What's on your mind, ${user?.first_name}?`}
                       rows={imagePreview ? 3 : 5}
-                      className="w-full resize-none border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 text-lg"
+                      className="w-full resize-none border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 text-base sm:text-lg"
                       disabled={isLoading}
                     />
                   </div>
@@ -321,10 +321,10 @@ export function CreateTimelinePostModal({
                 </div>
 
                 {/* Actions Bar */}
-                <div className="px-6 py-3 border-t border-gray-200">
+                <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
-                      <span className="text-sm font-medium text-gray-700 mr-2">
+                      <span className="hidden sm:inline text-sm font-medium text-gray-700 mr-2">
                         Add to your post
                       </span>
 
