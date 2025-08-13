@@ -86,16 +86,16 @@ export default function PublicProfilePage() {
 
   const tabs = [
     {
-      id: 'products' as TabType,
-      name: 'Products',
-      icon: ShoppingBagIcon,
-      count: store.active_products,
-    },
-    {
       id: 'timeline' as TabType,
       name: 'Timeline',
       icon: DocumentTextIcon,
       count: profileData.timeline?.length || 0,
+    },
+    {
+      id: 'products' as TabType,
+      name: 'Products',
+      icon: ShoppingBagIcon,
+      count: store.active_products,
     },
     {
       id: 'reviews' as TabType,
