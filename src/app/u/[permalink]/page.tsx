@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { publicProfileService, PublicProfileResponse } from '@/services/publicProfile';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
+import { useAuth } from '@/hooks/useAuth';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ProductsTab } from '@/components/profile/ProductsTab';
 import { TimelineTab } from '@/components/profile/TimelineTab';
@@ -22,6 +23,7 @@ type TabType = 'products' | 'timeline' | 'reviews';
 export default function PublicProfilePage() {
   const params = useParams();
   const permalink = params.permalink as string;
+  const { user: currentUser } = useAuth();
 
   const [profileData, setProfileData] = useState<PublicProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,9 @@ export default function PublicProfilePage() {
   const { user, store } = profileData;
   const fullName = publicProfileService.getFullName(user);
   const joinDate = publicProfileService.formatJoinDate(user.joined_at);
+
+  // Check if current user is viewing their own profile
+  const isOwner = currentUser && currentUser.id === user.id;
 
   const tabs = [
     {
@@ -172,7 +177,13 @@ export default function PublicProfilePage() {
         {/* Tab Content */}
         <div className="py-6">
           {activeTab === 'products' && <ProductsTab userId={user.id} />}
-          {activeTab === 'timeline' && <TimelineTab timelinePosts={profileData.timeline || []} />}
+          {activeTab === 'timeline' && (
+            <TimelineTab
+              userId={user.id}
+              timelinePosts={profileData.timeline || []}
+              isOwner={isOwner || false}
+            />
+          )}
           {activeTab === 'reviews' && <ReviewsTab userId={user.id} />}
         </div>
       </div>

@@ -2,8 +2,8 @@ import api from './api';
 import { isAxiosError } from 'axios';
 
 // Timeline post types
-export type TimelinePostType = 'text' | 'image' | 'video' | 'link' | 'poll' | 'event';
-export type PostVisibility = 'public' | 'friends' | 'private' | 'followers';
+export type TimelinePostType = 'text' | 'image' | 'mixed';
+export type PostVisibility = 'public' | 'friends' | 'private';
 export type InteractionType = 'like' | 'comment' | 'share';
 
 // Timeline post interface
@@ -54,11 +54,9 @@ interface ApiResponse<T> {
 // Request/Response types
 export interface CreateTimelinePostRequest {
   content: string;
-  post_type?: TimelinePostType;
-  visibility?: PostVisibility;
-  attachment_url?: string;
-  attachment_type?: string;
-  attachment_size?: number;
+  image_url?: string;
+  post_type: TimelinePostType;
+  visibility: PostVisibility;
 }
 
 export interface CreateTimelinePostResponse {
@@ -93,8 +91,18 @@ export interface ListUserTimelinePostsRequest {
   only_pinned?: boolean;
 }
 
+// Backend response includes post wrapped with metadata
+export interface TimelinePostWithMetadata {
+  post: TimelinePost;
+  like_count: number;
+  comment_count: number;
+  share_count: number;
+  viewer_has_liked: boolean;
+  viewer_has_shared: boolean;
+}
+
 export interface ListUserTimelinePostsResponse {
-  posts: TimelinePost[];
+  posts: TimelinePostWithMetadata[];
   total: number;
   page: number;
   page_size: number;
@@ -293,6 +301,36 @@ export class SocialContentService {
   // Get pinned posts for a user
   async getPinnedPosts(userId: string): Promise<ListUserTimelinePostsResponse> {
     return this.getUserPosts(userId, { only_pinned: true });
+  }
+
+  // Upload timeline post image
+  async uploadTimelineImage(file: File): Promise<string> {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await api.post<ApiResponse<{ image_url: string }>>(
+        '/social/posts/image',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data.image_url;
+      } else {
+        throw new Error(response.data.error?.message || 'Failed to upload timeline image');
+      }
+    } catch (error: unknown) {
+      console.error('Error uploading timeline image:', error);
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error?.message || 'Failed to upload timeline image');
+      }
+      throw new Error('Failed to upload timeline image');
+    }
   }
 }
 

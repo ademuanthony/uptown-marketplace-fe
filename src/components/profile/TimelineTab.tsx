@@ -13,7 +13,7 @@ import {
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
 import { TimelinePost } from '@/services/publicProfile';
-import { socialContentService, TimelinePost as SocialTimelinePost } from '@/services/socialContent';
+import { socialContentService, TimelinePostWithMetadata } from '@/services/socialContent';
 import { CreateTimelinePost } from './CreateTimelinePost';
 
 interface TimelineTabProps {
@@ -24,7 +24,9 @@ interface TimelineTabProps {
 
 export function TimelineTab({ userId, timelinePosts, isOwner = false }: TimelineTabProps) {
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [socialPosts, setSocialPosts] = useState<SocialTimelinePost[]>([]);
+  const [socialPostsWithMetadata, setSocialPostsWithMetadata] = useState<
+    TimelinePostWithMetadata[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
@@ -34,7 +36,16 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
     setIsLoading(true);
     try {
       const response = await socialContentService.getUserPosts(userId);
-      setSocialPosts(response.posts);
+      // Store the full metadata structure
+      setSocialPostsWithMetadata(response.posts);
+      // Update liked posts based on metadata
+      const liked = new Set<string>();
+      response.posts.forEach(item => {
+        if (item.viewer_has_liked) {
+          liked.add(item.post.id);
+        }
+      });
+      setLikedPosts(liked);
     } catch (error) {
       console.error('Failed to load timeline posts:', error);
     } finally {
@@ -95,7 +106,10 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
   };
 
   // Use social posts if available, otherwise fall back to legacy timeline posts
-  const postsToShow = socialPosts.length > 0 ? socialPosts : timelinePosts;
+  const postsToShow =
+    socialPostsWithMetadata.length > 0
+      ? socialPostsWithMetadata.map(item => item.post)
+      : timelinePosts;
 
   return (
     <div className="space-y-6">
@@ -141,45 +155,48 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
 
       {/* Timeline Posts */}
       {!isLoading &&
-        postsToShow.map(post => (
-          <div key={post.id} className="bg-white rounded-lg shadow p-6">
-            {/* Post Header */}
-            <div className="flex items-center text-sm text-gray-500 mb-4">
-              <CalendarIcon className="h-4 w-4 mr-1" />
-              <span>{formatPostDate(post.created_at)}</span>
-            </div>
+        postsToShow.map(post => {
+          // Find the corresponding metadata for this post
+          const postMetadata = socialPostsWithMetadata.find(item => item.post.id === post.id);
 
-            {/* Post Content */}
-            <div className="prose prose-sm max-w-none">
-              <p className="text-gray-900 whitespace-pre-wrap">{post.content}</p>
-            </div>
-
-            {/* Post Image - handle both legacy image_url and new attachment_url */}
-            {(('image_url' in post && post.image_url) ||
-              ('attachment_url' in post && post.attachment_url)) && (
-              <div className="mt-4">
-                <div className="relative w-full max-w-lg mx-auto">
-                  <Image
-                    src={getAbsoluteImageUrl(
-                      ('image_url' in post ? post.image_url : '') ||
-                        ('attachment_url' in post ? post.attachment_url : '') ||
-                        '',
-                    )}
-                    alt="Timeline post image"
-                    width={500}
-                    height={300}
-                    className="rounded-lg object-cover w-full"
-                  />
-                </div>
+          return (
+            <div key={post.id} className="bg-white rounded-lg shadow p-6">
+              {/* Post Header */}
+              <div className="flex items-center text-sm text-gray-500 mb-4">
+                <CalendarIcon className="h-4 w-4 mr-1" />
+                <span>{formatPostDate(post.created_at)}</span>
               </div>
-            )}
 
-            {/* Post Actions */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center space-x-6">
-                  {/* Like Button */}
-                  {'like_count' in post ? (
+              {/* Post Content */}
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-900 whitespace-pre-wrap">{post.content}</p>
+              </div>
+
+              {/* Post Image - handle both legacy image_url and new attachment_url */}
+              {(('image_url' in post && post.image_url) ||
+                ('attachment_url' in post && post.attachment_url)) && (
+                <div className="mt-4">
+                  <div className="relative w-full max-w-lg mx-auto">
+                    <Image
+                      src={getAbsoluteImageUrl(
+                        ('image_url' in post ? post.image_url : '') ||
+                          ('attachment_url' in post ? post.attachment_url : '') ||
+                          '',
+                      )}
+                      alt="Timeline post image"
+                      width={500}
+                      height={300}
+                      className="rounded-lg object-cover w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Post Actions */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center space-x-6">
+                    {/* Like Button */}
                     <button
                       onClick={() => handleLikePost(post.id)}
                       className="flex items-center space-x-1 hover:text-red-600 transition-colors"
@@ -190,41 +207,37 @@ export function TimelineTab({ userId, timelinePosts, isOwner = false }: Timeline
                       ) : (
                         <HeartIcon className="h-5 w-5" />
                       )}
-                      <span>{post.like_count}</span>
+                      <span>
+                        {postMetadata?.like_count || ('like_count' in post ? post.like_count : 0)}
+                      </span>
                     </button>
-                  ) : (
+
+                    {/* Comment Button */}
                     <div className="flex items-center space-x-1">
-                      <HeartIcon className="h-5 w-5" />
-                      <span>0</span>
+                      <ChatBubbleLeftIcon className="h-5 w-5" />
+                      <span>
+                        {postMetadata?.comment_count ||
+                          ('comment_count' in post ? post.comment_count : 0)}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Comment Button */}
-                  <div className="flex items-center space-x-1">
-                    <ChatBubbleLeftIcon className="h-5 w-5" />
-                    <span>{'comment_count' in post ? post.comment_count : 0}</span>
-                  </div>
-
-                  {/* Share Button */}
-                  {'share_count' in post ? (
+                    {/* Share Button */}
                     <button
                       onClick={() => handleSharePost(post.id)}
                       className="flex items-center space-x-1 hover:text-blue-600 transition-colors"
                     >
                       <ShareIcon className="h-5 w-5" />
-                      <span>{post.share_count}</span>
+                      <span>
+                        {postMetadata?.share_count ||
+                          ('share_count' in post ? post.share_count : 0)}
+                      </span>
                     </button>
-                  ) : (
-                    <div className="flex items-center space-x-1">
-                      <ShareIcon className="h-5 w-5" />
-                      <span>0</span>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
     </div>
   );
 }
