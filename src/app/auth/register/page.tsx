@@ -63,11 +63,17 @@ function RegisterContent() {
   }, [searchParams, setValue]);
 
   const onSubmit = async (data: RegisterFormData) => {
+    // Prevent double submission
+    if (isLoading) return;
+
     setIsLoading(true);
     try {
       const result = await registerUser({
         email: data.email,
         password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
         referralCode: data.referralCode,
       });
       if (result.user) {
@@ -83,7 +89,23 @@ function RegisterContent() {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to create account. Please try again.';
-      toast.error(errorMessage);
+
+      // Check if the error is about existing account
+      if (
+        errorMessage.toLowerCase().includes('already exists') ||
+        errorMessage.toLowerCase().includes('email-already-in-use') ||
+        errorMessage.toLowerCase().includes('duplicate')
+      ) {
+        toast.error('An account with this email already exists. Redirecting to login...');
+
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          router.push(`/auth/login?email=${encodeURIComponent(data.email)}`);
+        }, 2000);
+      } else {
+        toast.error(errorMessage);
+      }
+
       console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
@@ -176,6 +198,48 @@ function RegisterContent() {
 
         <div className="bg-white rounded-lg shadow-lg p-8">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  First name
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('firstName')}
+                    type="text"
+                    autoComplete="given-name"
+                    className={`appearance-none block w-full px-3 py-2 border ${
+                      errors.firstName ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
+                    placeholder="John"
+                  />
+                  {errors.firstName && (
+                    <p className="mt-2 text-sm text-red-600">{errors.firstName.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Last name
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('lastName')}
+                    type="text"
+                    autoComplete="family-name"
+                    className={`appearance-none block w-full px-3 py-2 border ${
+                      errors.lastName ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
+                    placeholder="Doe"
+                  />
+                  {errors.lastName && (
+                    <p className="mt-2 text-sm text-red-600">{errors.lastName.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -192,6 +256,26 @@ function RegisterContent() {
                 />
                 {errors.email && (
                   <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+                Phone number (optional)
+              </label>
+              <div className="mt-1">
+                <input
+                  {...register('phoneNumber')}
+                  type="tel"
+                  autoComplete="tel"
+                  className={`appearance-none block w-full px-3 py-2 border ${
+                    errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                  } rounded-md placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
+                  placeholder="+1234567890"
+                />
+                {errors.phoneNumber && (
+                  <p className="mt-2 text-sm text-red-600">{errors.phoneNumber.message}</p>
                 )}
               </div>
             </div>

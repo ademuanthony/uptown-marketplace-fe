@@ -40,6 +40,9 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
   referralCode?: string;
 }
 
@@ -66,6 +69,28 @@ interface BackendAuthResponse {
 
 interface BackendRegisterResponse {
   user: User;
+  custom_token?: string;
+  message: string;
+}
+
+// Error types for better typing
+interface ApiError {
+  response?: {
+    status: number;
+    data: {
+      message?: string;
+      error?: {
+        message?: string;
+        code?: string;
+      };
+      code?: string;
+    };
+  };
+  message: string;
+}
+
+interface FirebaseAuthError {
+  code: string;
   message: string;
 }
 
@@ -85,7 +110,7 @@ class AuthService {
 
       const token = await firebaseResult.user.getIdToken();
 
-      const response = await api.post<ApiResponse<BackendAuthResponse>>('/auth/login', {
+      const response = await api.post<ApiResponse<BackendAuthResponse>>('/users/authenticate', {
         firebase_token: token,
       });
 
@@ -120,6 +145,7 @@ class AuthService {
         throw new Error('Firebase not initialized');
       }
 
+      // First create Firebase user
       const firebaseResult = await createUserWithEmailAndPassword(
         auth,
         credentials.email,
@@ -128,23 +154,21 @@ class AuthService {
 
       const token = await firebaseResult.user.getIdToken();
 
+      // Prepare registration payload for backend
+      const registrationPayload = {
+        email: credentials.email,
+        firebase_uid: firebaseResult.user.uid,
+        first_name: credentials.firstName,
+        last_name: credentials.lastName,
+        phone_number: credentials.phoneNumber || '',
+        upline_code: credentials.referralCode || '',
+      };
+
       try {
-        // Send token to backend to create user record
-        const registerPayload: Record<string, unknown> = {
-          firebase_uid: firebaseResult.user.uid,
-          email: credentials.email,
-          first_name: firebaseResult.user.displayName?.split(' ')[0] || 'User',
-          last_name: firebaseResult.user.displayName?.split(' ')[1] || 'Name',
-        };
-
-        // Add referral code if provided
-        if (credentials.referralCode) {
-          registerPayload.upline_code = credentials.referralCode;
-        }
-
+        // Send registration request to backend
         const response = await api.post<ApiResponse<BackendRegisterResponse>>(
-          '/auth/register',
-          registerPayload,
+          '/users/register',
+          registrationPayload,
         );
 
         // The backend returns: { success: true, data: RegisterUserResponse }
@@ -156,23 +180,55 @@ class AuthService {
 
         // Extract the registration response data
         const registerData = result.data;
-        const { user } = registerData;
+        const { user, custom_token, message } = registerData;
 
         // Store token and user data
-        localStorage.setItem('auth_token', token);
+        // Use custom_token if available, otherwise use Firebase token
+        const authToken = custom_token || token;
+        localStorage.setItem('auth_token', authToken);
         localStorage.setItem('user', JSON.stringify(user));
 
-        return { user, token };
-      } catch (backendError) {
+        console.info('Registration successful:', message);
+
+        return { user, token: authToken };
+      } catch (backendError: unknown) {
+        // Extract detailed error information
+        const errorResponse = (backendError as ApiError)?.response?.data;
         const errorMessage =
-          backendError instanceof Error ? backendError.message : 'Registration failed';
-        console.error('Backend registration failed:', errorMessage);
-        throw new Error(errorMessage);
+          errorResponse?.message ||
+          errorResponse?.error?.message ||
+          (typeof errorResponse?.error === 'string' ? errorResponse.error : '') ||
+          (backendError as Error)?.message ||
+          'Registration failed';
+
+        console.error('Backend registration failed:', {
+          status: (backendError as ApiError)?.response?.status,
+          data: errorResponse,
+          message: errorMessage,
+        });
+
+        // Check for duplicate user errors
+        const errorStr =
+          typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
+        if (
+          errorStr.toLowerCase().includes('already exists') ||
+          errorStr.toLowerCase().includes('duplicate') ||
+          (backendError as ApiError)?.response?.status === 409
+        ) {
+          throw new Error('An account with this email already exists. Please sign in instead.');
+        }
+
+        throw new Error(errorStr);
       }
-    } catch (firebaseError) {
-      const errorMessage =
-        firebaseError instanceof Error ? firebaseError.message : 'Registration failed';
+    } catch (firebaseError: unknown) {
+      const errorMessage = (firebaseError as Error)?.message || 'Registration failed';
       console.error('Firebase registration failed:', errorMessage);
+
+      // Check for Firebase duplicate email error
+      if ((firebaseError as FirebaseAuthError)?.code === 'auth/email-already-in-use') {
+        throw new Error('An account with this email already exists. Please sign in instead.');
+      }
+
       throw new Error(errorMessage);
     }
   }
@@ -221,7 +277,7 @@ class AuthService {
 
       try {
         // Send token to backend
-        const response = await api.post<ApiResponse<BackendAuthResponse>>('/auth/login', {
+        const response = await api.post<ApiResponse<BackendAuthResponse>>('/users/authenticate', {
           firebase_token: token,
         });
 
@@ -265,7 +321,7 @@ class AuthService {
 
       try {
         // Send token to backend
-        const response = await api.post<ApiResponse<BackendAuthResponse>>('/auth/login', {
+        const response = await api.post<ApiResponse<BackendAuthResponse>>('/users/authenticate', {
           firebase_token: token,
         });
 
@@ -333,13 +389,41 @@ class AuthService {
           throw new Error(result.message || 'Failed to get user data');
         }
 
+        // Update localStorage with fresh user data
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+
         return result.data.user;
-      } catch (backendError) {
+      } catch (backendError: unknown) {
+        // Extract more detailed error information
+        const errorResponse = (backendError as ApiError)?.response?.data;
         const errorMessage =
-          backendError instanceof Error ? backendError.message : 'Failed to get user data';
-        throw new Error(errorMessage);
+          errorResponse?.message ||
+          errorResponse?.error?.message ||
+          (typeof errorResponse?.error === 'string' ? errorResponse.error : '') ||
+          (backendError as Error)?.message ||
+          'Failed to get user data';
+
+        // Include error code if available
+        const errorCode = errorResponse?.code || errorResponse?.error?.code;
+        const errorStr =
+          typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
+        const fullErrorMessage = errorCode ? `${errorStr} (${errorCode})` : errorStr;
+
+        console.error('Backend error in getCurrentUser:', {
+          status: (backendError as ApiError)?.response?.status,
+          data: errorResponse,
+          message: errorMessage,
+          code: errorCode,
+        });
+
+        throw new Error(fullErrorMessage);
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // Don't wrap already processed errors
+      if ((error as Error).message && (error as Error).message !== 'Failed to get current user') {
+        throw error;
+      }
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to get current user';
       throw new Error(errorMessage);
     }

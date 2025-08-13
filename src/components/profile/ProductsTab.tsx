@@ -34,7 +34,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
         setError(null);
 
         // Fetch user's products using the list products API with seller_id filter
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const queryParams = new URLSearchParams({
           seller_id: userId,
           status: 'active', // Only show active products
@@ -42,7 +42,7 @@ export function ProductsTab({ userId }: ProductsTabProps) {
           page_size: '20',
         });
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/products?${queryParams}`, {
+        const response = await fetch(`${apiBaseUrl}/products?${queryParams}`, {
           method: 'GET',
           headers: {
             Accept: 'application/json',
