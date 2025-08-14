@@ -20,6 +20,8 @@ import {
   type RecentReferralWithProfile,
   type DownlineWithProfile,
 } from '@/services/referral';
+import { socialConnectionService, ConnectionStatus } from '@/services/socialConnection';
+import { FriendshipButton } from '@/components/common/FriendshipButton';
 import {
   ShareIcon,
   DocumentDuplicateIcon,
@@ -34,6 +36,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   GlobeAltIcon,
+  UserPlusIcon,
+  UserMinusIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -183,12 +187,18 @@ const Pagination: React.FC<PaginationProps> = ({
 };
 
 export default function ReferralsPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'downlines' | 'rewards' | 'leaderboard'>(
     'overview',
   );
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Social connection states
+  const [connectionStatuses, setConnectionStatuses] = useState<Map<string, ConnectionStatus>>(
+    new Map(),
+  );
+  const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
 
   // Data states
   const [stats, setStats] = useState<ReferralStats | null>(null);
@@ -213,6 +223,21 @@ export default function ReferralsPage() {
     totalItems: 0,
     totalPages: 0,
   });
+
+  // Social connection handlers
+  const fetchConnectionStatus = useCallback(
+    async (userId: string) => {
+      if (!currentUser || currentUser.id === userId) return;
+
+      try {
+        const status = await socialConnectionService.getConnectionStatus(userId);
+        setConnectionStatuses(prev => new Map(prev).set(userId, status));
+      } catch (error) {
+        console.error(`Failed to fetch connection status for user ${userId}:`, error);
+      }
+    },
+    [currentUser],
+  );
 
   const loadDownlines = useCallback(async () => {
     try {
@@ -305,6 +330,22 @@ export default function ReferralsPage() {
     }
   }, [isAuthenticated, activeTab, rewardsPagination.currentPage, loadRewards]);
 
+  // Fetch connection statuses for visible downlines
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      currentUser &&
+      downlinesWithProfiles &&
+      downlinesWithProfiles.length > 0
+    ) {
+      downlinesWithProfiles.forEach(downline => {
+        if (downline.user_id !== currentUser.id) {
+          fetchConnectionStatus(downline.user_id);
+        }
+      });
+    }
+  }, [isAuthenticated, currentUser, downlinesWithProfiles, fetchConnectionStatus]);
+
   const handleCopyReferralLink = async () => {
     if (!profile?.referral_code) return;
 
@@ -351,6 +392,59 @@ export default function ReferralsPage() {
       ...prev,
       currentPage: page,
     }));
+  };
+
+  const handleFollowToggle = async (userId: string) => {
+    if (!currentUser || !connectionStatuses.has(userId)) return;
+
+    const currentStatus = connectionStatuses.get(userId)!;
+    setFollowLoading(prev => new Set(prev).add(userId));
+
+    try {
+      const isCurrentlyFollowing = currentStatus.is_following;
+
+      if (isCurrentlyFollowing) {
+        await socialConnectionService.unfollowUser(userId);
+        toast.success('Unfollowed successfully');
+      } else {
+        await socialConnectionService.followUser(userId);
+        toast.success('Following successfully');
+      }
+
+      // Optimistic update
+      setConnectionStatuses(prev => {
+        const newMap = new Map(prev);
+        const existingStatus = newMap.get(userId);
+        if (existingStatus) {
+          newMap.set(userId, {
+            ...existingStatus,
+            is_following: !isCurrentlyFollowing,
+          });
+        }
+        return newMap;
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update follow status';
+      toast.error(errorMessage);
+    } finally {
+      setFollowLoading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleConnectionStatusChange = (userId: string, changes: Partial<ConnectionStatus>) => {
+    setConnectionStatuses(prev => {
+      const newMap = new Map(prev);
+      const existingStatus = newMap.get(userId);
+      if (existingStatus) {
+        newMap.set(userId, { ...existingStatus, ...changes });
+      }
+      return newMap;
+    });
   };
 
   if (!isAuthenticated) {
@@ -632,7 +726,6 @@ export default function ReferralsPage() {
                               ? `${downline.first_name} ${downline.last_name}`
                               : downline.email}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">{downline.email}</p>
                         </div>
                       </div>
 
@@ -679,6 +772,7 @@ export default function ReferralsPage() {
                       </div>
 
                       <div className="pt-3 border-t border-gray-200 space-y-2">
+                        {/* View Profile Button */}
                         <Link
                           href={`/u/${downline.permalink}`}
                           className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 transition-colors"
@@ -686,13 +780,69 @@ export default function ReferralsPage() {
                           <GlobeAltIcon className="h-4 w-4 mr-1" />
                           View Profile
                         </Link>
-                        <Link
-                          href={`/messages?userId=${downline.user_id}`}
-                          className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors"
-                        >
-                          <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1" />
-                          Contact
-                        </Link>
+
+                        {/* Social Connection Buttons */}
+                        {currentUser &&
+                          currentUser.id !== downline.user_id &&
+                          (() => {
+                            const connectionStatus = connectionStatuses.get(downline.user_id);
+                            const isFollowingLoading = followLoading.has(downline.user_id);
+
+                            return (
+                              <div className="space-y-2">
+                                {/* Follow/Unfollow Button */}
+                                {connectionStatus && (
+                                  <button
+                                    onClick={() => handleFollowToggle(downline.user_id)}
+                                    disabled={isFollowingLoading}
+                                    className={`w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                                      connectionStatus.is_following
+                                        ? 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                                        : 'bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200'
+                                    } ${isFollowingLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  >
+                                    {isFollowingLoading ? (
+                                      <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    ) : connectionStatus.is_following ? (
+                                      <UserMinusIcon className="h-4 w-4 mr-1" />
+                                    ) : (
+                                      <UserPlusIcon className="h-4 w-4 mr-1" />
+                                    )}
+                                    {isFollowingLoading
+                                      ? 'Loading...'
+                                      : connectionStatus.is_following
+                                        ? 'Following'
+                                        : 'Follow'}
+                                  </button>
+                                )}
+
+                                {/* Friendship Button */}
+                                {connectionStatus && !connectionStatus.are_friends && (
+                                  <div className="w-full">
+                                    <FriendshipButton
+                                      userId={downline.user_id}
+                                      connectionStatus={connectionStatus}
+                                      onStatusChange={changes =>
+                                        handleConnectionStatusChange(downline.user_id, changes)
+                                      }
+                                      className="w-full text-xs px-3 py-2 justify-center"
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Contact Button - Only show if friends */}
+                                {connectionStatus?.are_friends && (
+                                  <Link
+                                    href={`/messages?userId=${downline.user_id}`}
+                                    className="w-full flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 transition-colors"
+                                  >
+                                    <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1" />
+                                    Contact
+                                  </Link>
+                                )}
+                              </div>
+                            );
+                          })()}
                       </div>
                     </div>
                   ))}
