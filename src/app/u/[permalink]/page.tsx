@@ -12,10 +12,18 @@ import {
   StarIcon,
   PencilIcon,
   ChatBubbleLeftRightIcon,
+  UserPlusIcon,
+  UserMinusIcon,
 } from '@heroicons/react/24/outline';
 import { publicProfileService, PublicProfileResponse } from '@/services/publicProfile';
+import {
+  socialConnectionService,
+  ConnectionStatus,
+  ConnectionSummary,
+} from '@/services/socialConnection';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
+import toast from 'react-hot-toast';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ProductsTab } from '@/components/profile/ProductsTab';
 import { TimelineTab } from '@/components/profile/TimelineTab';
@@ -33,6 +41,11 @@ export default function PublicProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
 
+  // Social connection state
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
+  const [connectionSummary, setConnectionSummary] = useState<ConnectionSummary | null>(null);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!permalink) return;
@@ -42,6 +55,29 @@ export default function PublicProfilePage() {
         setError(null);
         const data = await publicProfileService.getPublicProfile(permalink);
         setProfileData(data);
+
+        // Fetch connection data if user is authenticated and viewing another user's profile
+        if (currentUser && currentUser.id !== data.user.id) {
+          try {
+            const [status, summary] = await Promise.all([
+              socialConnectionService.getConnectionStatus(data.user.id),
+              socialConnectionService.getConnectionSummary(data.user.id),
+            ]);
+            setConnectionStatus(status);
+            setConnectionSummary(summary);
+          } catch (connectionError) {
+            console.error('Failed to fetch connection data:', connectionError);
+            // Don't fail the whole page if connection data fails
+          }
+        } else if (currentUser && currentUser.id === data.user.id) {
+          // For own profile, just fetch summary
+          try {
+            const summary = await socialConnectionService.getConnectionSummary(data.user.id);
+            setConnectionSummary(summary);
+          } catch (connectionError) {
+            console.error('Failed to fetch connection summary:', connectionError);
+          }
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
         setError(errorMessage);
@@ -51,7 +87,52 @@ export default function PublicProfilePage() {
     };
 
     fetchProfile();
-  }, [permalink]);
+  }, [permalink, currentUser]);
+
+  // Handle follow/unfollow actions
+  const handleFollowToggle = async () => {
+    if (!profileData || !connectionStatus || !currentUser) return;
+
+    setIsFollowLoading(true);
+
+    try {
+      const isCurrentlyFollowing = connectionStatus.is_following;
+
+      if (isCurrentlyFollowing) {
+        await socialConnectionService.unfollowUser(profileData.user.id);
+        toast.success('Unfollowed successfully');
+      } else {
+        await socialConnectionService.followUser(profileData.user.id);
+        toast.success('Following successfully');
+      }
+
+      // Optimistic update
+      setConnectionStatus(prev =>
+        prev
+          ? {
+              ...prev,
+              is_following: !isCurrentlyFollowing,
+            }
+          : null,
+      );
+
+      // Update follower count optimistically
+      setConnectionSummary(prev =>
+        prev
+          ? {
+              ...prev,
+              followers_count: prev.followers_count + (isCurrentlyFollowing ? -1 : 1),
+            }
+          : null,
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update follow status';
+      toast.error(errorMessage);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -143,6 +224,26 @@ export default function PublicProfilePage() {
                       <CalendarIcon className="h-4 w-4 mr-1" />
                       <span>Joined {joinDate}</span>
                     </div>
+
+                    {/* Connection Stats */}
+                    {connectionSummary && (
+                      <div className="mt-3 flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <span className="font-medium">{connectionSummary.followers_count}</span>
+                          <span className="ml-1">Followers</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="font-medium">{connectionSummary.following_count}</span>
+                          <span className="ml-1">Following</span>
+                        </div>
+                        {connectionSummary.friends_count > 0 && (
+                          <div className="flex items-center">
+                            <span className="font-medium">{connectionSummary.friends_count}</span>
+                            <span className="ml-1">Friends</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
@@ -157,14 +258,43 @@ export default function PublicProfilePage() {
                         Edit Profile
                       </Link>
                     ) : (
-                      // Contact Button (for other viewers)
-                      <Link
-                        href={`/messages?userId=${user.id}`}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-                      >
-                        <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-                        Contact
-                      </Link>
+                      // Action buttons for other viewers
+                      <div className="flex items-center space-x-3">
+                        {/* Follow/Unfollow Button */}
+                        {currentUser && connectionStatus && (
+                          <button
+                            onClick={handleFollowToggle}
+                            disabled={isFollowLoading}
+                            className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+                              connectionStatus.is_following
+                                ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-gray-500'
+                                : 'border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                            } ${isFollowLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {isFollowLoading ? (
+                              <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            ) : connectionStatus.is_following ? (
+                              <UserMinusIcon className="h-4 w-4 mr-2" />
+                            ) : (
+                              <UserPlusIcon className="h-4 w-4 mr-2" />
+                            )}
+                            {isFollowLoading
+                              ? 'Loading...'
+                              : connectionStatus.is_following
+                                ? 'Following'
+                                : 'Follow'}
+                          </button>
+                        )}
+
+                        {/* Contact Button */}
+                        <Link
+                          href={`/messages?userId=${user.id}`}
+                          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                        >
+                          <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                          Contact
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
