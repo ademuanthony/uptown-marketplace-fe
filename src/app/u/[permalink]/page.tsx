@@ -21,6 +21,7 @@ import {
   ConnectionStatus,
   ConnectionSummary,
 } from '@/services/socialConnection';
+import { socialProfileService, SocialProfile } from '@/services/socialProfile';
 import { getAbsoluteImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
@@ -29,6 +30,7 @@ import { ProductsTab } from '@/components/profile/ProductsTab';
 import { TimelineTab } from '@/components/profile/TimelineTab';
 import { ReviewsTab } from '@/components/profile/ReviewsTab';
 import { FriendshipButton } from '@/components/common/FriendshipButton';
+import { InterestsSection } from '@/components/profile/InterestsSection';
 
 type TabType = 'products' | 'timeline' | 'reviews';
 
@@ -47,6 +49,9 @@ export default function PublicProfilePage() {
   const [connectionSummary, setConnectionSummary] = useState<ConnectionSummary | null>(null);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
+  // Social profile state
+  const [socialProfile, setSocialProfile] = useState<SocialProfile | null>(null);
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!permalink) return;
@@ -56,6 +61,15 @@ export default function PublicProfilePage() {
         setError(null);
         const data = await publicProfileService.getPublicProfile(permalink);
         setProfileData(data);
+
+        // Fetch social profile data for all users (if available)
+        try {
+          const profileInfo = await socialProfileService.getSocialProfile(data.user.id);
+          setSocialProfile(profileInfo);
+        } catch (socialProfileError) {
+          console.info('Social profile not available for user:', socialProfileError);
+          // Social profile is optional, don't show error
+        }
 
         // Fetch connection data if user is authenticated and viewing another user's profile
         if (currentUser && currentUser.id !== data.user.id) {
@@ -261,6 +275,11 @@ export default function PublicProfilePage() {
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {/* User Interests */}
+                    {socialProfile?.interests && socialProfile.interests.length > 0 && (
+                      <InterestsSection interests={socialProfile.interests} className="mt-4" />
                     )}
                   </div>
 
