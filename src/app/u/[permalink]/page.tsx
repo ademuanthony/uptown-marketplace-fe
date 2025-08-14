@@ -9,7 +9,7 @@ import {
   CalendarIcon,
   ShoppingBagIcon,
   DocumentTextIcon,
-  StarIcon,
+  UserGroupIcon,
   PencilIcon,
   ChatBubbleLeftRightIcon,
   UserPlusIcon,
@@ -28,12 +28,12 @@ import toast from 'react-hot-toast';
 import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ProductsTab } from '@/components/profile/ProductsTab';
 import { TimelineTab } from '@/components/profile/TimelineTab';
-import { ReviewsTab } from '@/components/profile/ReviewsTab';
+import { FriendsTab } from '@/components/profile/FriendsTab';
 import { FriendshipButton } from '@/components/common/FriendshipButton';
 import { InterestsSection } from '@/components/profile/InterestsSection';
 import { InterestsEditorModal } from '@/components/profile/InterestsEditorModal';
 
-type TabType = 'products' | 'timeline' | 'reviews';
+type TabType = 'products' | 'timeline' | 'friends';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -247,12 +247,17 @@ export default function PublicProfilePage() {
       icon: ShoppingBagIcon,
       count: store.active_products,
     },
-    {
-      id: 'reviews' as TabType,
-      name: 'Reviews',
-      icon: StarIcon,
-      count: 0, // TODO: Add review count from API
-    },
+    // Only show Friends tab for profile owners
+    ...(isOwner
+      ? [
+          {
+            id: 'friends' as TabType,
+            name: 'Friends',
+            icon: UserGroupIcon,
+            count: connectionSummary?.friends_count || 0,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -416,7 +421,7 @@ export default function PublicProfilePage() {
               isOwner={isOwner || false}
             />
           )}
-          {activeTab === 'reviews' && <ReviewsTab userId={user.id} />}
+          {activeTab === 'friends' && isOwner && <FriendsTab userId={user.id} />}
         </div>
       </div>
 

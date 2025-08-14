@@ -294,8 +294,8 @@ const WalletPage: React.FC = () => {
                     if (loyaltyAccount) {
                       setLoyaltyAccount({
                         ...loyaltyAccount,
-                        available_points: Math.round(newBalance * 1e2),
-                        total_points: Math.round(newBalance * 1e2),
+                        available_points: Math.round(newBalance),
+                        total_points: Math.round(newBalance),
                       });
                     }
                   }}

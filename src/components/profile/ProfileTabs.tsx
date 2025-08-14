@@ -49,7 +49,9 @@ export function ProfileTabs({ tabs, activeTab, onTabChange }: ProfileTabsProps) 
                     ml-2 py-0.5 px-2 rounded-full text-xs font-medium transition-colors
                     ${isActive ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-900'}
                   `}
-                ></span>
+                >
+                  {tab.count}
+                </span>
               )}
             </button>
           );
