@@ -28,6 +28,7 @@ import { ProfileTabs } from '@/components/profile/ProfileTabs';
 import { ProductsTab } from '@/components/profile/ProductsTab';
 import { TimelineTab } from '@/components/profile/TimelineTab';
 import { ReviewsTab } from '@/components/profile/ReviewsTab';
+import { FriendshipButton } from '@/components/common/FriendshipButton';
 
 type TabType = 'products' | 'timeline' | 'reviews';
 
@@ -131,6 +132,23 @@ export default function PublicProfilePage() {
       toast.error(errorMessage);
     } finally {
       setIsFollowLoading(false);
+    }
+  };
+
+  // Handle friendship status changes
+  const handleConnectionStatusChange = (changes: Partial<ConnectionStatus>) => {
+    setConnectionStatus(prev => (prev ? { ...prev, ...changes } : null));
+
+    // Update friends count in summary if friendship status changed
+    if (changes.are_friends !== undefined) {
+      setConnectionSummary(prev =>
+        prev
+          ? {
+              ...prev,
+              friends_count: prev.friends_count + (changes.are_friends ? 1 : -1),
+            }
+          : null,
+      );
     }
   };
 
@@ -284,6 +302,15 @@ export default function PublicProfilePage() {
                                 ? 'Following'
                                 : 'Follow'}
                           </button>
+                        )}
+
+                        {/* Friendship Button */}
+                        {currentUser && connectionStatus && (
+                          <FriendshipButton
+                            userId={user.id}
+                            connectionStatus={connectionStatus}
+                            onStatusChange={handleConnectionStatusChange}
+                          />
                         )}
 
                         {/* Contact Button */}

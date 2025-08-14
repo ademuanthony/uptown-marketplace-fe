@@ -20,6 +20,29 @@ export interface ConnectionSummary {
   friends_count: number;
 }
 
+// Friend request interface
+export interface FriendRequest {
+  id: string;
+  from_user_id: string;
+  from_user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_image_url?: string;
+    permalink: string;
+  };
+  message: string;
+  created_at: string;
+}
+
+// Pending requests response
+export interface PendingRequestsResponse {
+  requests: FriendRequest[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 // API response wrapper
 interface ApiResponse<T> {
   success: boolean;
@@ -157,6 +180,133 @@ class SocialConnectionService {
         throw error;
       }
       throw new Error('Failed to get following');
+    }
+  }
+
+  /**
+   * Send a friend request to a user
+   */
+  async sendFriendRequest(userId: string, message?: string): Promise<void> {
+    try {
+      const response = await api.post<ApiResponse<Record<string, never>>>(
+        `/social/users/${userId}/friend-request`,
+        { message: message || '' },
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to send friend request');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to send friend request');
+    }
+  }
+
+  /**
+   * Accept a friend request from a user
+   */
+  async acceptFriendRequest(userId: string): Promise<void> {
+    try {
+      const response = await api.put<ApiResponse<Record<string, never>>>(
+        `/social/users/${userId}/friend-request/accept`,
+        {},
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to accept friend request');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to accept friend request');
+    }
+  }
+
+  /**
+   * Reject a friend request from a user
+   */
+  async rejectFriendRequest(userId: string): Promise<void> {
+    try {
+      const response = await api.put<ApiResponse<Record<string, never>>>(
+        `/social/users/${userId}/friend-request/reject`,
+        {},
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to reject friend request');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to reject friend request');
+    }
+  }
+
+  /**
+   * Remove a friend (unfriend)
+   */
+  async removeFriend(userId: string): Promise<void> {
+    try {
+      const response = await api.delete<ApiResponse<Record<string, never>>>(
+        `/social/users/${userId}/remove-friend`,
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to remove friend');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to remove friend');
+    }
+  }
+
+  /**
+   * Get pending friend requests for the current user
+   */
+  async getPendingFriendRequests(page = 1, pageSize = 20): Promise<PendingRequestsResponse> {
+    try {
+      const response = await api.get<ApiResponse<PendingRequestsResponse>>(
+        `/social/friend-requests/pending?limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+      );
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error(response.data.error?.message || 'Failed to get pending friend requests');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to get pending friend requests');
+    }
+  }
+
+  /**
+   * Get friends list for a user
+   */
+  async getFriends(userId: string, page = 1, pageSize = 20) {
+    try {
+      const response = await api.get<ApiResponse<unknown>>(
+        `/social/users/${userId}/friends?limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Failed to get friends');
+      }
+
+      return response.data.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to get friends');
     }
   }
 }

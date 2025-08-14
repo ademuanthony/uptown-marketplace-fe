@@ -24,6 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import { messagingService } from '@/services/messaging';
+import { socialConnectionService, PendingRequestsResponse } from '@/services/socialConnection';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -32,6 +33,7 @@ function classNames(...classes: string[]) {
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [pendingFriendRequestsCount, setPendingFriendRequestsCount] = useState(0);
   const { user, isAuthenticated, logout } = useAuth();
 
   const navigation = [
@@ -62,27 +64,42 @@ export default function Navbar() {
     { name: 'Users', href: '/admin/users', icon: UserIcon },
   ];
 
-  // Fetch unread messages count
+  // Fetch unread messages and friend requests count
   useEffect(() => {
     if (isAuthenticated && user) {
-      const fetchUnreadCount = async () => {
+      const fetchNotificationCounts = async () => {
         try {
-          // Pass the current user's ID to filter out messages they sent
-          const count = await messagingService.getUnreadConversationsCount(user.id);
-          setUnreadMessagesCount(count);
+          // Fetch unread messages count
+          const messagesCount = await messagingService.getUnreadConversationsCount(user.id);
+          setUnreadMessagesCount(messagesCount);
+
+          // Fetch pending friend requests
+          try {
+            const friendRequestsData: PendingRequestsResponse =
+              await socialConnectionService.getPendingFriendRequests(1, 100);
+            const requestsCount = Array.isArray(friendRequestsData?.requests)
+              ? friendRequestsData.requests.length
+              : 0;
+            setPendingFriendRequestsCount(requestsCount);
+          } catch (friendRequestsError) {
+            // Friend requests are optional - don't log error if service is not available
+            console.info('Friend requests not available:', friendRequestsError);
+            setPendingFriendRequestsCount(0);
+          }
         } catch (error) {
-          console.error('Error fetching unread messages count:', error);
+          console.error('Error fetching notification counts:', error);
         }
       };
 
-      fetchUnreadCount();
+      fetchNotificationCounts();
 
-      // Set up interval to refresh count periodically (every 10 seconds for more responsive updates)
-      const interval = setInterval(fetchUnreadCount, 10000);
+      // Set up interval to refresh counts periodically (every 30 seconds)
+      const interval = setInterval(fetchNotificationCounts, 30000);
 
       return () => clearInterval(interval);
     } else {
       setUnreadMessagesCount(0);
+      setPendingFriendRequestsCount(0);
     }
     return () => {};
   }, [isAuthenticated, user]);
@@ -179,9 +196,98 @@ export default function Navbar() {
                 </Link>
 
                 {/* Notifications */}
-                <button className="p-2 text-gray-700 hover:text-primary-600 transition-colors">
-                  <BellIcon className="h-6 w-6" />
-                </button>
+                <Menu as="div" className="relative">
+                  <div>
+                    <Menu.Button className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors">
+                      <BellIcon className="h-6 w-6" />
+                      {(unreadMessagesCount > 0 || pendingFriendRequestsCount > 0) && (
+                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full min-w-[18px]">
+                          {Math.min(unreadMessagesCount + pendingFriendRequestsCount, 99)}
+                          {unreadMessagesCount + pendingFriendRequestsCount > 99 ? '+' : ''}
+                        </span>
+                      )}
+                    </Menu.Button>
+                  </div>
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+                      </div>
+
+                      {/* Friend Requests Section */}
+                      {pendingFriendRequestsCount > 0 && (
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <Link
+                            href="/friends/requests"
+                            className="flex items-center justify-between hover:bg-gray-50 rounded-md p-2 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="flex-shrink-0">
+                                <UsersIcon className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">Friend Requests</p>
+                                <p className="text-xs text-gray-500">
+                                  {pendingFriendRequestsCount} pending request
+                                  {pendingFriendRequestsCount === 1 ? '' : 's'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-600 rounded-full min-w-[18px]">
+                                {pendingFriendRequestsCount}
+                              </span>
+                            </div>
+                          </Link>
+                        </div>
+                      )}
+
+                      {/* Messages Section */}
+                      {unreadMessagesCount > 0 && (
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <Link
+                            href="/messages"
+                            className="flex items-center justify-between hover:bg-gray-50 rounded-md p-2 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="flex-shrink-0">
+                                <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">Unread Messages</p>
+                                <p className="text-xs text-gray-500">
+                                  {unreadMessagesCount} unread message
+                                  {unreadMessagesCount === 1 ? '' : 's'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary-600 rounded-full min-w-[18px]">
+                                {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                              </span>
+                            </div>
+                          </Link>
+                        </div>
+                      )}
+
+                      {/* No Notifications */}
+                      {unreadMessagesCount === 0 && pendingFriendRequestsCount === 0 && (
+                        <div className="px-4 py-6 text-center">
+                          <BellIcon className="h-8 w-8 text-gray-300 mx-auto" />
+                          <p className="mt-2 text-sm text-gray-500">No new notifications</p>
+                        </div>
+                      )}
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
 
                 {/* User Dropdown */}
                 <Menu as="div" className="relative">
