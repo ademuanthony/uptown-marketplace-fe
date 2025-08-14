@@ -31,6 +31,7 @@ import { TimelineTab } from '@/components/profile/TimelineTab';
 import { ReviewsTab } from '@/components/profile/ReviewsTab';
 import { FriendshipButton } from '@/components/common/FriendshipButton';
 import { InterestsSection } from '@/components/profile/InterestsSection';
+import { InterestsEditorModal } from '@/components/profile/InterestsEditorModal';
 
 type TabType = 'products' | 'timeline' | 'reviews';
 
@@ -51,6 +52,9 @@ export default function PublicProfilePage() {
 
   // Social profile state
   const [socialProfile, setSocialProfile] = useState<SocialProfile | null>(null);
+
+  // Interests editor state
+  const [isInterestsEditorOpen, setIsInterestsEditorOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -166,6 +170,39 @@ export default function PublicProfilePage() {
     }
   };
 
+  // Handle interests update
+  const handleUpdateInterests = async (newInterests: string[]) => {
+    if (!currentUser) return;
+
+    try {
+      let updatedProfile: SocialProfile;
+
+      try {
+        // Always try to update first (in case profile exists but wasn't loaded)
+        updatedProfile = await socialProfileService.updateSocialProfile({
+          interests: newInterests,
+        });
+      } catch (updateError) {
+        // If update fails with "not found", try to create a new profile
+        if (updateError instanceof Error && updateError.message.includes('not found')) {
+          const displayName = `${currentUser.first_name} ${currentUser.last_name}`;
+          updatedProfile = await socialProfileService.createSocialProfile({
+            display_name: displayName,
+            interests: newInterests,
+          });
+        } else {
+          // If it's any other error, re-throw it
+          throw updateError;
+        }
+      }
+
+      setSocialProfile(updatedProfile);
+    } catch (error) {
+      console.error('Failed to update interests:', error);
+      throw error; // Re-throw to let the modal handle the error display
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -278,9 +315,12 @@ export default function PublicProfilePage() {
                     )}
 
                     {/* User Interests */}
-                    {socialProfile?.interests && socialProfile.interests.length > 0 && (
-                      <InterestsSection interests={socialProfile.interests} className="mt-4" />
-                    )}
+                    <InterestsSection
+                      interests={socialProfile?.interests || []}
+                      className="mt-4"
+                      isOwner={!!isOwner}
+                      onEditInterests={() => setIsInterestsEditorOpen(true)}
+                    />
                   </div>
 
                   {/* Action Buttons */}
@@ -379,6 +419,16 @@ export default function PublicProfilePage() {
           {activeTab === 'reviews' && <ReviewsTab userId={user.id} />}
         </div>
       </div>
+
+      {/* Interests Editor Modal */}
+      {!!isOwner && (
+        <InterestsEditorModal
+          isOpen={isInterestsEditorOpen}
+          onClose={() => setIsInterestsEditorOpen(false)}
+          currentInterests={socialProfile?.interests || []}
+          onSave={handleUpdateInterests}
+        />
+      )}
     </div>
   );
 }

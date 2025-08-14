@@ -1,10 +1,12 @@
 'use client';
 
-import { TagIcon } from '@heroicons/react/24/outline';
+import { TagIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 interface InterestsSectionProps {
   interests: string[];
   className?: string;
+  isOwner?: boolean;
+  onEditInterests?: () => void;
 }
 
 // Interest categories with their associated colors and keywords
@@ -176,16 +178,54 @@ function formatInterest(interest: string): string {
     .join(' ');
 }
 
-export function InterestsSection({ interests, className = '' }: InterestsSectionProps) {
+export function InterestsSection({
+  interests,
+  className = '',
+  isOwner = false,
+  onEditInterests,
+}: InterestsSectionProps) {
   if (!interests || interests.length === 0) {
+    if (isOwner) {
+      // Show simplified add interests button for owner when no interests
+      return (
+        <div className={`${className}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <TagIcon className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Interests</span>
+              <span className="text-sm text-gray-400">•</span>
+              <span className="text-sm text-gray-500">None added</span>
+            </div>
+            <button
+              onClick={onEditInterests}
+              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <TagIcon className="h-4 w-4 mr-1.5" />
+              Add Interests
+            </button>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
   return (
     <div className={`${className}`}>
-      <div className="flex items-center space-x-2 mb-3">
-        <TagIcon className="h-4 w-4 text-gray-500" />
-        <span className="text-sm font-medium text-gray-700">Interests</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <TagIcon className="h-4 w-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Interests</span>
+        </div>
+        {isOwner && onEditInterests && (
+          <button
+            onClick={onEditInterests}
+            className="inline-flex items-center px-2.5 py-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 text-xs font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:bg-gray-50"
+          >
+            <PencilIcon className="h-3 w-3 mr-1" />
+            Edit
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
