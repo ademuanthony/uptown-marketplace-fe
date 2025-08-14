@@ -37,6 +37,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
 
   const navigation = [
+    { name: 'Explore', href: '/explore' },
     { name: 'Categories', href: '/categories' },
     { name: 'Featured', href: '/featured' },
     { name: 'Deals', href: '/deals' },

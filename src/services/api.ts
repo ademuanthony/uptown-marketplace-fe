@@ -115,18 +115,18 @@ api.interceptors.response.use(
         console.error('Token refresh failed:', refreshError);
       }
 
-      // // If refresh fails or this is a retry, sign out and redirect
-      // console.warn('Authentication failed, signing out user');
+      // If refresh fails or this is a retry, sign out and redirect
+      console.warn('Authentication failed, signing out user');
 
-      // try {
-      //   await signOut(auth);
-      // } catch (signOutError) {
-      //   console.error('Error signing out Firebase user:', signOutError);
-      // }
+      try {
+        await signOut(auth);
+      } catch (signOutError) {
+        console.error('Error signing out Firebase user:', signOutError);
+      }
 
-      // localStorage.removeItem('auth_token');
-      // localStorage.removeItem('user');
-      // window.location.href = '/auth/login';
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   },
