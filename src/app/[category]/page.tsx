@@ -360,6 +360,7 @@ function CategoryContent() {
                         id={product.id}
                         title={product.title}
                         price={product.price ? product.price / 1e4 : 0}
+                        currency={product.currency}
                         image={getProductImageUrl(product.images?.[0])}
                         rating={0}
                         reviewCount={0}

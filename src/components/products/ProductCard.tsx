@@ -14,6 +14,7 @@ interface ProductCardProps {
   id: string;
   title: string;
   price: number;
+  currency: string;
   image: string;
   rating?: number;
   reviewCount?: number;
@@ -30,6 +31,7 @@ export default function ProductCard({
   id,
   title,
   price,
+  currency,
   image,
   rating = 0,
   reviewCount = 0,
@@ -155,7 +157,10 @@ export default function ProductCard({
             <span className="text-sm text-gray-400">({reviewCount})</span>
           </div>
 
-          <p className="text-xl font-semibold text-gray-900 mb-2">${price.toFixed(2)}</p>
+          <p className="text-xl font-semibold text-gray-900 mb-2">
+            {currency === 'USD' ? '$' : '₦'}
+            {price.toFixed(2)}
+          </p>
 
           {(sellerName || location) && (
             <div className="text-sm text-gray-500">

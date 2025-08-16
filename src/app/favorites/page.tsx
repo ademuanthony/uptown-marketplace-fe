@@ -235,6 +235,7 @@ export default function FavoritesPage() {
                           id={item.product.id}
                           title={item.product.title}
                           price={item.product.price / 100} // Convert from cents to dollars
+                          currency={item.product.currency}
                           image={getProductImageUrl(item.product.images?.[0])}
                           rating={0} // TODO: Add rating from backend
                           reviewCount={0} // TODO: Add review count from backend

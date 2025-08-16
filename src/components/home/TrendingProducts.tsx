@@ -136,6 +136,7 @@ export default function TrendingProducts() {
                 id={product.id}
                 title={product.title}
                 price={product.price / 1e4} // Convert from cents to dollars
+                currency={product.currency}
                 image={getProductImageUrl(product.images?.[0])}
                 rating={0} // TODO: Add rating to backend response
                 reviewCount={0} // TODO: Add review count to backend response
