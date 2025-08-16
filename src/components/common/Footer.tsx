@@ -123,15 +123,15 @@ export default function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2 text-gray-300">
                 <PhoneIcon className="h-4 w-4 text-primary-400" />
-                <span>+1 (555) 123-4567</span>
+                <span>+234 (803) 0000-000</span>
               </div>
               <div className="flex items-center gap-2 text-gray-300">
                 <EnvelopeIcon className="h-4 w-4 text-primary-400" />
                 <a
-                  href="mailto:support@uptownmarketplace.com"
+                  href="mailto:support@uptown.ng"
                   className="hover:text-primary-400 transition-colors"
                 >
-                  support@uptownmarketplace.com
+                  support@uptown.ng
                 </a>
               </div>
             </div>
