@@ -21,13 +21,17 @@ import { productService, type Product } from '@/services/product';
 import { categoryService, type Category } from '@/services/category';
 import { favoritesService } from '@/services/favorites';
 import { messagingService } from '@/services/messaging';
+import { userService } from '@/services/user';
+import { type User } from '@/services/auth';
 import { getProductImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
+  const [seller, setSeller] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -61,6 +65,17 @@ export default function ProductDetailPage() {
         }
 
         setProduct(fetchedProduct);
+
+        // Fetch seller information
+        if (fetchedProduct.seller_id) {
+          try {
+            const sellerInfo = await userService.getUserById(fetchedProduct.seller_id);
+            setSeller(sellerInfo);
+          } catch (error) {
+            console.error('Failed to fetch seller information:', error);
+            // Don't show error to user, seller info is not critical
+          }
+        }
 
         // Check if product is favorited by current user (only if authenticated)
         if (user) {
@@ -638,9 +653,28 @@ Let me know if you're open to offers!`;
             <div className="border-t pt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Seller Information</h2>
               <div className="flex items-center space-x-3">
-                <UserCircleIcon className="h-12 w-12 text-gray-400" />
+                {seller?.profile_image_url ? (
+                  <Image
+                    src={seller.profile_image_url}
+                    alt={`${seller.first_name} ${seller.last_name}`}
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <UserCircleIcon className="h-12 w-12 text-gray-400" />
+                )}
                 <div>
-                  <p className="font-medium text-gray-900">Seller ID: {product.seller_id}</p>
+                  {seller ? (
+                    <Link
+                      href={`/u/${seller.permalink || seller.id}`}
+                      className="font-medium text-gray-900 hover:text-primary-600 transition-colors"
+                    >
+                      {seller.first_name} {seller.last_name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium text-gray-900">Loading seller...</p>
+                  )}
                   <div className="flex items-center space-x-1 text-sm text-gray-500">
                     <StarIcon className="h-4 w-4" />
                     <span>No ratings yet</span>
