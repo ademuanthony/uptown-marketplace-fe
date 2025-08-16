@@ -142,7 +142,7 @@ export default function ProductDetailPage() {
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,
-    }).format(price / 100); // Convert from cents
+    }).format(price / 1e4); // Convert from cents
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

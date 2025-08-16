@@ -414,7 +414,7 @@ export default function MyStorePage() {
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: item.currency,
-                        }).format(item.price)}
+                        }).format(item.price / 1e4)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(item.created_at).toLocaleDateString()}

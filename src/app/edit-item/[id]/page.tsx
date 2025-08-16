@@ -9,7 +9,6 @@ import {
   PhotoIcon,
   XMarkIcon,
   MapPinIcon,
-  CurrencyDollarIcon,
   TagIcon,
   InformationCircleIcon,
   ArrowLeftIcon,
@@ -53,7 +52,7 @@ export default function EditItemPage() {
       currency: 'USD',
       condition: 'used',
       location: {
-        country: 'United States',
+        country: 'Nigeria',
       },
     },
   });
@@ -108,8 +107,8 @@ export default function EditItemPage() {
         reset({
           title: product.title,
           description: product.description,
-          price: (product.price / 100).toString(), // Convert from cents to dollars
-          currency: product.currency,
+          price: (product.price / 1e4).toString(), // Convert from cents to dollars
+          currency: (product.currency === 'NGN' ? 'NGN' : 'USD') as 'USD' | 'NGN',
           category_id: product.category_id,
           condition: product.condition,
           location: {
@@ -340,21 +339,36 @@ export default function EditItemPage() {
       case 2:
         return (
           <>
-            {/* Price */}
+            {/* Price and Currency */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+              <div className="flex gap-2">
+                {/* Currency Selector */}
+                <select
+                  {...register('currency')}
+                  className="pl-3 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white appearance-none bg-no-repeat bg-[length:16px_16px] bg-[right_0.5rem_center]"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                  }}
+                >
+                  <option value="NGN">NGN (₦)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+
+                {/* Price Input */}
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-400">{watch('currency') === 'NGN' ? '₦' : '$'}</span>
+                  </div>
+                  <input
+                    {...register('price')}
+                    type="text"
+                    className={`w-full pl-8 pr-3 py-2 border ${
+                      errors.price ? 'border-red-300' : 'border-gray-300'
+                    } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
+                    placeholder="0.00"
+                  />
                 </div>
-                <input
-                  {...register('price')}
-                  type="text"
-                  className={`w-full pl-10 pr-3 py-2 border ${
-                    errors.price ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
-                  placeholder="0.00"
-                />
               </div>
               {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
             </div>

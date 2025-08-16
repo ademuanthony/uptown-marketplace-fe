@@ -359,7 +359,7 @@ function CategoryContent() {
                       <ProductCard
                         id={product.id}
                         title={product.title}
-                        price={product.price ? product.price / 100 : 0}
+                        price={product.price ? product.price / 1e4 : 0}
                         image={getProductImageUrl(product.images?.[0])}
                         rating={0}
                         reviewCount={0}

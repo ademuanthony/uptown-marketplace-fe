@@ -83,7 +83,7 @@ class ProductService {
       const requestData = {
         ...productData,
         seller_id: user.id,
-        price: Math.round(productData.price * 100), // Convert to cents
+        price: Math.round(productData.price), // Convert to cents
       };
 
       const response = await api.post<ApiResponse<CreateProductResponse>>('/products', requestData);
@@ -353,7 +353,7 @@ class ProductService {
 
       // Convert price from dollars to cents if present
       if (transformedData.price !== undefined && typeof transformedData.price === 'number') {
-        transformedData.price = Math.round(transformedData.price * 100);
+        transformedData.price = Math.round(transformedData.price);
       }
 
       const response = await api.put<ApiResponse<{ product: Product }>>(
