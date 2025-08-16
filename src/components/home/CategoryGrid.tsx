@@ -38,8 +38,8 @@ const categories = [
     color: 'bg-primary-100 text-primary-600',
   },
   {
-    slug: 'beauty',
-    name: 'Beauty',
+    slug: 'health-beauty',
+    name: 'Health & Beauty',
     icon: SparklesIcon,
     color: 'bg-secondary-100 text-secondary-600',
   },
