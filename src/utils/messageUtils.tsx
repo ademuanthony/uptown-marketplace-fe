@@ -24,7 +24,7 @@ export function decodeHtmlEntities(text: string): string {
 /**
  * Detects URLs in text and converts them to clickable links
  */
-export function linkifyText(text: string): React.ReactNode[] {
+export function linkifyText(text: string, isOwnMessage: boolean = false): React.ReactNode[] {
   // Regular expression to match URLs
   const urlRegex = /(https?:\/\/[^\s]+)/g;
 
@@ -39,7 +39,11 @@ export function linkifyText(text: string): React.ReactNode[] {
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline text-blue-600 hover:text-blue-800 break-all"
+          className={`underline break-all font-medium ${
+            isOwnMessage
+              ? 'text-yellow-200 hover:text-yellow-100'
+              : 'text-blue-600 hover:text-blue-800'
+          }`}
           onClick={e => e.stopPropagation()}
         >
           {part}
@@ -54,10 +58,13 @@ export function linkifyText(text: string): React.ReactNode[] {
 /**
  * Processes message content to decode HTML entities and make links clickable
  */
-export function processMessageContent(content: string): React.ReactNode {
+export function processMessageContent(
+  content: string,
+  isOwnMessage: boolean = false,
+): React.ReactNode {
   // First decode HTML entities
   const decodedContent = decodeHtmlEntities(content);
 
   // Then linkify the decoded text
-  return <>{linkifyText(decodedContent)}</>;
+  return <>{linkifyText(decodedContent, isOwnMessage)}</>;
 }

@@ -66,9 +66,8 @@ export default function ProductCard({
       categoryService
         .getCategory(categoryId)
         .then(category => {
-          // Since category doesn't have slug, use name as fallback
           if (category.name) {
-            setResolvedCategorySlug(category.name.toLowerCase().replace(/\s+/g, '-'));
+            setResolvedCategorySlug(category.slug);
           }
         })
         .catch(() => {

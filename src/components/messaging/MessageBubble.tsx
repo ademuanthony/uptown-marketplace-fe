@@ -65,7 +65,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
 
         {/* Message content */}
         <div className="break-words">
-          {message.type === 'text' && <div>{processMessageContent(message.content)}</div>}
+          {message.type === 'text' && (
+            <div>{processMessageContent(message.content, isOwnMessage)}</div>
+          )}
 
           {message.type === 'image' && (
             <div>
@@ -92,7 +94,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
                 </div>
               )}
               {message.content && (
-                <div className="text-sm">{processMessageContent(message.content)}</div>
+                <div className="text-sm">
+                  {processMessageContent(message.content, isOwnMessage)}
+                </div>
               )}
             </div>
           )}
@@ -128,7 +132,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
                 </a>
               </div>
               {message.content && (
-                <div className="text-sm">{processMessageContent(message.content)}</div>
+                <div className="text-sm">
+                  {processMessageContent(message.content, isOwnMessage)}
+                </div>
               )}
             </div>
           )}
