@@ -2,6 +2,7 @@ import React from 'react';
 import { Message, MessageStatus } from '@/services/messaging';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { processMessageContent } from '@/utils/messageUtils';
 
 interface MessageBubbleProps {
   message: Message;
@@ -64,7 +65,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
 
         {/* Message content */}
         <div className="break-words">
-          {message.type === 'text' && <p>{message.content}</p>}
+          {message.type === 'text' && <div>{processMessageContent(message.content)}</div>}
 
           {message.type === 'image' && (
             <div>
@@ -90,7 +91,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
                   <div className="w-6 h-6 animate-spin rounded-full border-b-2 border-gray-600"></div>
                 </div>
               )}
-              {message.content && <p className="text-sm">{message.content}</p>}
+              {message.content && (
+                <div className="text-sm">{processMessageContent(message.content)}</div>
+              )}
             </div>
           )}
 
@@ -124,7 +127,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onMarkA
                   Download
                 </a>
               </div>
-              {message.content && <p className="text-sm">{message.content}</p>}
+              {message.content && (
+                <div className="text-sm">{processMessageContent(message.content)}</div>
+              )}
             </div>
           )}
         </div>
