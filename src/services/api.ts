@@ -13,6 +13,10 @@ const api = axios.create({
   },
 });
 
+// Token refresh state to prevent multiple simultaneous refreshes
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   async config => {
@@ -21,7 +25,7 @@ api.interceptors.request.use(
       const { currentUser } = auth;
 
       if (currentUser) {
-        // Get fresh Firebase token
+        // Get Firebase token (cached for 5 minutes by default)
         const token = await currentUser.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
         console.info('Added Firebase Authorization header:', `Bearer ${token.substring(0, 20)}...`);
@@ -99,20 +103,31 @@ api.interceptors.response.use(
       try {
         const { currentUser } = auth;
         if (currentUser) {
-          // Try to refresh the token
-          const newToken = await currentUser.getIdToken(true);
-          localStorage.setItem('auth_token', newToken);
+          // Prevent multiple simultaneous refresh attempts
+          if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = currentUser.getIdToken(true);
+          }
 
-          // Retry the original request with new token
-          const originalRequest = error.config;
-          if (!originalRequest._retry) {
-            originalRequest._retry = true;
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return api(originalRequest);
+          // Wait for the refresh to complete
+          const newToken = await refreshPromise;
+          if (newToken) {
+            localStorage.setItem('auth_token', newToken);
+
+            // Retry the original request with new token
+            const originalRequest = error.config;
+            if (!originalRequest._retry) {
+              originalRequest._retry = true;
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return api(originalRequest);
+            }
           }
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
+      } finally {
+        isRefreshing = false;
+        refreshPromise = null;
       }
 
       // // If refresh fails or this is a retry, sign out and redirect

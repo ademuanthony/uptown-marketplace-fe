@@ -90,7 +90,7 @@ const PointsCard: React.FC<PointsCardProps> = ({
 
       // Update balance if callback provided
       if (onBalanceUpdate && result.points_earned) {
-        onBalanceUpdate(balance + result.points_earned);
+        onBalanceUpdate(balance + result.points_earned / 1e2);
       }
 
       // Show success state

@@ -21,6 +21,7 @@ import {
   UsersIcon,
   BoltIcon,
   WalletIcon,
+  // BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import { messagingService } from '@/services/messaging';
@@ -51,6 +52,7 @@ export default function Navbar() {
       icon: UserIcon,
     },
     { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
+    // { name: 'My Ebooks', href: '/ebooks', icon: BookOpenIcon },
     { name: 'Wallet', href: '/wallet', icon: WalletIcon },
     { name: 'Fuel', href: '/fuel', icon: BoltIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
