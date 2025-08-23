@@ -45,6 +45,8 @@ export interface TradingBot {
   winning_trades: number;
   losing_trades: number;
   last_trade_at?: string;
+  parent_id?: string;
+  is_copyable: boolean;
   created_at: string;
   updated_at: string;
   started_at?: string;
@@ -63,6 +65,12 @@ export interface CreateBotInput {
   take_profit_percentage?: number;
   pull_back_percentage?: number;
   max_drawdown_percentage?: number;
+}
+
+export interface CopyBotInput {
+  parent_bot_id: string;
+  exchange_credentials_id: string;
+  name: string;
 }
 
 export interface UpdateBotConfigInput {
@@ -425,6 +433,38 @@ class TradingBotService {
       worst_trade_pnl: 0,
       total_volume: 0,
     };
+  }
+
+  async getCopyableBots(limit = 20, offset = 0): Promise<TradingBot[]> {
+    try {
+      const response = await api.get<ApiResponse<TradingBot[]>>(
+        `/trading-bots/copyable?limit=${limit}&offset=${offset}`,
+      );
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error || error.message);
+      }
+      throw error;
+    }
+  }
+
+  async copyBot(input: CopyBotInput): Promise<TradingBot> {
+    try {
+      const response = await api.post<ApiResponse<TradingBot>>('/trading-bots/copy', input);
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to copy trading bot');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error || error.message);
+      }
+      throw error;
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   PlusIcon,
@@ -12,6 +12,7 @@ import {
   ChartBarIcon,
   RocketLaunchIcon,
   DocumentChartBarIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import {
   CheckCircleIcon,
@@ -23,15 +24,20 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { tradingBotService, TradingBot, BotStatus, UserBotStatistics } from '@/services/tradingBot';
 import CreateBotModal from '@/components/trading/CreateBotModal';
+import CopyBotModal from '@/components/trading/CopyBotModal';
 
 export default function TradingBotsPage() {
   const [bots, setBots] = useState<TradingBot[]>([]);
   const [statistics, setStatistics] = useState<UserBotStatistics | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const emptyStateDropdownRef = useRef<HTMLDivElement>(null);
 
   const loadBots = async () => {
     setIsLoading(true);
@@ -55,6 +61,25 @@ export default function TradingBotsPage() {
       loadBots();
     }
   }, [isAuthenticated]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        emptyStateDropdownRef.current &&
+        !emptyStateDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCreateDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Show loading while auth is being checked
   if (authLoading) {
@@ -173,13 +198,43 @@ export default function TradingBotsPage() {
                   <p className="text-sm text-gray-600">Manage your automated trading strategies</p>
                 </div>
               </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Create Bot
-              </button>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setShowCreateDropdown(!showCreateDropdown)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Create Bot
+                  <ChevronDownIcon className="h-4 w-4 ml-2" />
+                </button>
+
+                {showCreateDropdown && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setIsCreateModalOpen(true);
+                          setShowCreateDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Create from Scratch
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsCopyModalOpen(true);
+                          setShowCreateDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      >
+                        <DocumentChartBarIcon className="h-4 w-4 mr-2" />
+                        Create from Template
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -269,13 +324,43 @@ export default function TradingBotsPage() {
                 Get started by creating your first trading bot.
               </p>
               <div className="mt-6">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Create Your First Bot
-                </button>
+                <div className="relative inline-block" ref={emptyStateDropdownRef}>
+                  <button
+                    onClick={() => setShowCreateDropdown(!showCreateDropdown)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Create Your First Bot
+                    <ChevronDownIcon className="h-4 w-4 ml-2" />
+                  </button>
+
+                  {showCreateDropdown && (
+                    <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            setIsCreateModalOpen(true);
+                            setShowCreateDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        >
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Create from Scratch
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsCopyModalOpen(true);
+                            setShowCreateDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        >
+                          <DocumentChartBarIcon className="h-4 w-4 mr-2" />
+                          Create from Template
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
@@ -441,10 +526,19 @@ export default function TradingBotsPage() {
         </div>
 
         {/* Create Bot Modal */}
-        {isModalOpen && (
+        {isCreateModalOpen && (
           <CreateBotModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onSuccess={loadBots}
+          />
+        )}
+
+        {/* Copy Bot Modal */}
+        {isCopyModalOpen && (
+          <CopyBotModal
+            isOpen={isCopyModalOpen}
+            onClose={() => setIsCopyModalOpen(false)}
             onSuccess={loadBots}
           />
         )}
