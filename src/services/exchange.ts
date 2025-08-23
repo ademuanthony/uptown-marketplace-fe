@@ -70,9 +70,14 @@ export interface TestConnectionResult {
 }
 
 class ExchangeService {
-  async createExchangeCredentials(input: CreateExchangeCredentialsInput): Promise<MaskedExchangeCredentials> {
+  async createExchangeCredentials(
+    input: CreateExchangeCredentialsInput,
+  ): Promise<MaskedExchangeCredentials> {
     try {
-      const response = await api.post<ApiResponse<MaskedExchangeCredentials>>('/exchange-configs', input);
+      const response = await api.post<ApiResponse<MaskedExchangeCredentials>>(
+        '/exchange-configs',
+        input,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -102,7 +107,9 @@ class ExchangeService {
 
   async getExchangeCredentialsByID(id: string): Promise<MaskedExchangeCredentials> {
     try {
-      const response = await api.get<ApiResponse<MaskedExchangeCredentials>>(`/exchange-configs/${id}`);
+      const response = await api.get<ApiResponse<MaskedExchangeCredentials>>(
+        `/exchange-configs/${id}`,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -145,7 +152,9 @@ class ExchangeService {
 
   async testExchangeConnection(id: string): Promise<TestConnectionResult> {
     try {
-      const response = await api.post<ApiResponse<TestConnectionResult>>(`/exchange-configs/${id}/test`);
+      const response = await api.post<ApiResponse<TestConnectionResult>>(
+        `/exchange-configs/${id}/test`,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }

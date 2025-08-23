@@ -8,7 +8,11 @@ interface StrategyConfigFormProps {
   onChange: (config: Record<string, unknown>) => void;
 }
 
-export default function StrategyConfigForm({ strategy, config, onChange }: StrategyConfigFormProps) {
+export default function StrategyConfigForm({
+  strategy,
+  config,
+  onChange,
+}: StrategyConfigFormProps) {
   const updateConfig = (key: string, value: unknown) => {
     onChange({
       ...config,
@@ -32,7 +36,10 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="take_profit_percentage" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="take_profit_percentage"
+              className="block text-sm font-medium text-gray-700"
+            >
               Take Profit Percentage (%) *
             </label>
             <input
@@ -42,7 +49,9 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               max="100"
               step="0.1"
               value={getNumberValue('take_profit_percentage', 5.0)}
-              onChange={e => updateConfig('take_profit_percentage', parseFloat(e.target.value) || 0)}
+              onChange={e =>
+                updateConfig('take_profit_percentage', parseFloat(e.target.value) || 0)
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="5.0"
             />
@@ -52,7 +61,10 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
           </div>
 
           <div>
-            <label htmlFor="pull_back_percentage" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="pull_back_percentage"
+              className="block text-sm font-medium text-gray-700"
+            >
               Pull Back Percentage (%) *
             </label>
             <input
@@ -66,15 +78,15 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="3.0"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Maximum allowed pullback before exit
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Maximum allowed pullback before exit</p>
           </div>
         </div>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
           <div className="text-sm text-yellow-800">
-            <strong>Strategy Overview:</strong> The Alpha Compounder strategy aims to compound gains by taking profits at specified levels while allowing for controlled pullbacks. It&apos;s designed for trending markets with moderate volatility.
+            <strong>Strategy Overview:</strong> The Alpha Compounder strategy aims to compound gains
+            by taking profits at specified levels while allowing for controlled pullbacks. It&apos;s
+            designed for trending markets with moderate volatility.
           </div>
         </div>
       </div>
@@ -100,9 +112,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Number of buy/sell orders to place
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Number of buy/sell orders to place</p>
           </div>
 
           <div>
@@ -120,15 +130,16 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="1.0"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Percentage spacing between grid levels
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Percentage spacing between grid levels</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="investment_per_order" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="investment_per_order"
+              className="block text-sm font-medium text-gray-700"
+            >
               Investment Per Order (USDT) *
             </label>
             <input
@@ -141,9 +152,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Amount to invest per grid order
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Amount to invest per grid order</p>
           </div>
 
           <div>
@@ -161,15 +170,15 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="0.5"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Target profit percentage per grid level
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Target profit percentage per grid level</p>
           </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="text-sm text-blue-800">
-            <strong>Strategy Overview:</strong> Grid trading places multiple buy and sell orders at predetermined intervals around the current price. Best suited for sideways markets with regular price fluctuations.
+            <strong>Strategy Overview:</strong> Grid trading places multiple buy and sell orders at
+            predetermined intervals around the current price. Best suited for sideways markets with
+            regular price fluctuations.
           </div>
         </div>
       </div>
@@ -195,9 +204,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="24"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Hours between each buy order
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Hours between each buy order</p>
           </div>
 
           <div>
@@ -214,9 +221,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Amount to buy each interval
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Amount to buy each interval</p>
           </div>
         </div>
 
@@ -235,9 +240,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Maximum number of buy orders
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Maximum number of buy orders</p>
           </div>
 
           <div>
@@ -254,15 +257,16 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="3"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Number of safety orders for averaging down
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Number of safety orders for averaging down</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="safety_order_volume_scale" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="safety_order_volume_scale"
+              className="block text-sm font-medium text-gray-700"
+            >
               Safety Order Volume Scale *
             </label>
             <input
@@ -272,17 +276,20 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               max="10"
               step="0.1"
               value={getNumberValue('safety_order_volume_scale', 2.0)}
-              onChange={e => updateConfig('safety_order_volume_scale', parseFloat(e.target.value) || 0)}
+              onChange={e =>
+                updateConfig('safety_order_volume_scale', parseFloat(e.target.value) || 0)
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="2.0"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Multiplier for safety order volume
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Multiplier for safety order volume</p>
           </div>
 
           <div>
-            <label htmlFor="safety_order_step_scale" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="safety_order_step_scale"
+              className="block text-sm font-medium text-gray-700"
+            >
               Safety Order Step Scale *
             </label>
             <input
@@ -292,19 +299,21 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               max="10"
               step="0.1"
               value={getNumberValue('safety_order_step_scale', 1.5)}
-              onChange={e => updateConfig('safety_order_step_scale', parseFloat(e.target.value) || 0)}
+              onChange={e =>
+                updateConfig('safety_order_step_scale', parseFloat(e.target.value) || 0)
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="1.5"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Multiplier for safety order price steps
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Multiplier for safety order price steps</p>
           </div>
         </div>
 
         <div className="bg-green-50 border border-green-200 rounded-md p-4">
           <div className="text-sm text-green-800">
-            <strong>Strategy Overview:</strong> Dollar Cost Averaging systematically buys assets at regular intervals regardless of price, reducing the impact of volatility. Safety orders help average down during market dips.
+            <strong>Strategy Overview:</strong> Dollar Cost Averaging systematically buys assets at
+            regular intervals regardless of price, reducing the impact of volatility. Safety orders
+            help average down during market dips.
           </div>
         </div>
       </div>
@@ -330,13 +339,14 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="20"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Period for calculating moving average
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Period for calculating moving average</p>
           </div>
 
           <div>
-            <label htmlFor="deviation_threshold" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="deviation_threshold"
+              className="block text-sm font-medium text-gray-700"
+            >
               Deviation Threshold (%) *
             </label>
             <input
@@ -358,7 +368,9 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
 
         <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
           <div className="text-sm text-purple-800">
-            <strong>Strategy Overview:</strong> Mean reversion assumes that prices will eventually return to their historical average. The strategy buys when price is below the mean and sells when above.
+            <strong>Strategy Overview:</strong> Mean reversion assumes that prices will eventually
+            return to their historical average. The strategy buys when price is below the mean and
+            sells when above.
           </div>
         </div>
       </div>
@@ -384,9 +396,7 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Period for fast moving average
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Period for fast moving average</p>
           </div>
 
           <div>
@@ -403,15 +413,15 @@ export default function StrategyConfigForm({ strategy, config, onChange }: Strat
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               placeholder="30"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Period for slow moving average
-            </p>
+            <p className="mt-1 text-xs text-gray-500">Period for slow moving average</p>
           </div>
         </div>
 
         <div className="bg-orange-50 border border-orange-200 rounded-md p-4">
           <div className="text-sm text-orange-800">
-            <strong>Strategy Overview:</strong> Trend following uses moving average crossovers to identify and follow price trends. Buy signals occur when the fast MA crosses above the slow MA.
+            <strong>Strategy Overview:</strong> Trend following uses moving average crossovers to
+            identify and follow price trends. Buy signals occur when the fast MA crosses above the
+            slow MA.
           </div>
         </div>
       </div>

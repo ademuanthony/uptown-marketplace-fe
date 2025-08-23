@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  ArrowLeftIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
-import { tradingBotService, TradingBot, TradingPosition, PositionHistorySummary } from '@/services/tradingBot';
+import { ArrowLeftIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import {
+  tradingBotService,
+  TradingBot,
+  TradingPosition,
+  PositionHistorySummary,
+} from '@/services/tradingBot';
 import PositionHistorySummaryComponent from '@/components/trading/PositionHistorySummary';
 import PositionHistoryTable from '@/components/trading/PositionHistoryTable';
 
@@ -30,7 +32,7 @@ export default function BotPositionHistoryPage() {
         // Fetch bot details and position history in parallel
         const [botData, historyData] = await Promise.all([
           tradingBotService.getBotById(botId),
-          tradingBotService.getBotPositionHistory(botId)
+          tradingBotService.getBotPositionHistory(botId),
         ]);
 
         setBot(botData);
@@ -94,7 +96,7 @@ export default function BotPositionHistoryPage() {
             <ArrowLeftIcon className="mr-1 h-5 w-5" />
             Back to Trading Bots
           </button>
-          
+
           <div className="md:flex md:items-center md:justify-between">
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
@@ -125,9 +127,7 @@ export default function BotPositionHistoryPage() {
         {/* Positions Table */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Trading Positions
-            </h3>
+            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Trading Positions</h3>
             <PositionHistoryTable positions={positions} />
           </div>
         </div>

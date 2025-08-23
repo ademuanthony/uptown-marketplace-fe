@@ -13,14 +13,14 @@ interface ApiResponse<T> {
 export type ExchangeName = 'binance' | 'bybit' | 'hyperliquid' | 'okx' | 'bitget';
 export type BotStatus = 'draft' | 'running' | 'paused' | 'stopped' | 'error';
 export type TradingMode = 'spot' | 'futures';
-export type StrategyType = 
-  | 'alpha_compounder' 
-  | 'grid_trading' 
-  | 'dca' 
-  | 'mean_reversion' 
-  | 'trend_following' 
-  | 'arbitrage' 
-  | 'scalping' 
+export type StrategyType =
+  | 'alpha_compounder'
+  | 'grid_trading'
+  | 'dca'
+  | 'mean_reversion'
+  | 'trend_following'
+  | 'arbitrage'
+  | 'scalping'
   | 'custom';
 
 export interface BotStrategy {
@@ -170,7 +170,7 @@ class TradingBotService {
     try {
       // Transform the input based on strategy type to match backend expectations
       const transformedInput = this.transformCreateBotInput(input);
-      
+
       const response = await api.post<ApiResponse<TradingBot>>('/trading-bots', transformedInput);
       if (response.data.success && response.data.data) {
         return response.data.data;
@@ -357,7 +357,9 @@ class TradingBotService {
 
   async getSupportedStrategies(): Promise<SupportedStrategy[]> {
     try {
-      const response = await api.get<ApiResponse<{strategies: SupportedStrategy[]}>>('/trading-strategies/supported');
+      const response = await api.get<ApiResponse<{ strategies: SupportedStrategy[] }>>(
+        '/trading-strategies/supported',
+      );
       if (response.data.success && response.data.data?.strategies) {
         return response.data.data.strategies;
       }
@@ -375,7 +377,9 @@ class TradingBotService {
 
   async getBotPositions(botId: string): Promise<TradingPosition[]> {
     try {
-      const response = await api.get<ApiResponse<TradingPosition[]>>(`/trading-bots/${botId}/positions`);
+      const response = await api.get<ApiResponse<TradingPosition[]>>(
+        `/trading-bots/${botId}/positions`,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -388,9 +392,13 @@ class TradingBotService {
     }
   }
 
-  async getBotPositionHistory(botId: string): Promise<{ positions: TradingPosition[]; summary: PositionHistorySummary }> {
+  async getBotPositionHistory(
+    botId: string,
+  ): Promise<{ positions: TradingPosition[]; summary: PositionHistorySummary }> {
     try {
-      const response = await api.get<ApiResponse<{ positions: TradingPosition[]; summary: PositionHistorySummary }>>(`/trading-bots/${botId}/positions/history`);
+      const response = await api.get<
+        ApiResponse<{ positions: TradingPosition[]; summary: PositionHistorySummary }>
+      >(`/trading-bots/${botId}/positions/history`);
       if (response.data.success && response.data.data) {
         return response.data.data;
       }

@@ -4,7 +4,13 @@ import { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
-import { tradingBotService, CreateBotInput, SupportedStrategy, StrategyType, TradingMode } from '@/services/tradingBot';
+import {
+  tradingBotService,
+  CreateBotInput,
+  SupportedStrategy,
+  StrategyType,
+  TradingMode,
+} from '@/services/tradingBot';
 import { exchangeService, MaskedExchangeCredentials } from '@/services/exchange';
 import StrategyConfigForm from './StrategyConfigForm';
 
@@ -15,77 +21,95 @@ interface CreateBotModalProps {
 }
 
 const POPULAR_SYMBOLS = [
-  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT',
-  'XRPUSDT', 'DOTUSDT', 'DOGEUSDT', 'AVAXUSDT', 'LINKUSDT',
-  'MATICUSDT', 'UNIUSDT', 'LTCUSDT', 'BCHUSDT', 'FILUSDT'
+  'BTCUSDT',
+  'ETHUSDT',
+  'BNBUSDT',
+  'ADAUSDT',
+  'SOLUSDT',
+  'XRPUSDT',
+  'DOTUSDT',
+  'DOGEUSDT',
+  'AVAXUSDT',
+  'LINKUSDT',
+  'MATICUSDT',
+  'UNIUSDT',
+  'LTCUSDT',
+  'BCHUSDT',
+  'FILUSDT',
 ];
 
 // Default strategies fallback when backend is not available
-const getDefaultStrategies = (): SupportedStrategy[] => [
-  {
-    type: 'alpha_compounder',
-    name: 'Alpha Compounder',
-    description: 'Compound gains by taking profits at specified levels while allowing controlled pullbacks',
-    risk_level: 'medium',
-    supported_modes: ['spot', 'futures'],
-    configuration_schema: {
-      take_profit_percentage: { required: true, type: 'number', min: 0.1, max: 100 },
-      pull_back_percentage: { required: true, type: 'number', min: 0.1, max: 50 },
+const getDefaultStrategies = (): SupportedStrategy[] =>
+  [
+    {
+      type: 'alpha_compounder',
+      name: 'Alpha Compounder',
+      description:
+        'Compound gains by taking profits at specified levels while allowing controlled pullbacks',
+      risk_level: 'medium',
+      supported_modes: ['spot', 'futures'],
+      configuration_schema: {
+        take_profit_percentage: { required: true, type: 'number', min: 0.1, max: 100 },
+        pull_back_percentage: { required: true, type: 'number', min: 0.1, max: 50 },
+      },
+      min_balance: 50,
+      recommended_symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'],
     },
-    min_balance: 50,
-    recommended_symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'],
-  },
-  {
-    type: 'grid_trading',
-    name: 'Grid Trading',
-    description: 'Place multiple buy and sell orders at predetermined intervals around current price',
-    risk_level: 'low',
-    supported_modes: ['spot'],
-    configuration_schema: {
-      grid_size: { required: true, type: 'number', min: 3, max: 50 },
-      grid_spacing: { required: true, type: 'number', min: 0.1, max: 10 },
-      investment_per_order: { required: true, type: 'number', min: 1 },
-      profit_per_grid: { required: true, type: 'number', min: 0.1, max: 5 },
+    {
+      type: 'grid_trading',
+      name: 'Grid Trading',
+      description:
+        'Place multiple buy and sell orders at predetermined intervals around current price',
+      risk_level: 'low',
+      supported_modes: ['spot'],
+      configuration_schema: {
+        grid_size: { required: true, type: 'number', min: 3, max: 50 },
+        grid_spacing: { required: true, type: 'number', min: 0.1, max: 10 },
+        investment_per_order: { required: true, type: 'number', min: 1 },
+        profit_per_grid: { required: true, type: 'number', min: 0.1, max: 5 },
+      },
+      min_balance: 100,
+      recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
     },
-    min_balance: 100,
-    recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
-  },
-  {
-    type: 'dca',
-    name: 'Dollar Cost Averaging',
-    description: 'Systematically buy assets at regular intervals regardless of price',
-    risk_level: 'low',
-    supported_modes: ['spot'],
-    configuration_schema: {
-      buy_interval_hours: { required: true, type: 'number', min: 1, max: 168 },
-      buy_amount: { required: true, type: 'number', min: 1 },
-      max_orders: { required: true, type: 'number', min: 1, max: 100 },
-      safety_orders: { required: true, type: 'number', min: 0, max: 20 },
+    {
+      type: 'dca',
+      name: 'Dollar Cost Averaging',
+      description: 'Systematically buy assets at regular intervals regardless of price',
+      risk_level: 'low',
+      supported_modes: ['spot'],
+      configuration_schema: {
+        buy_interval_hours: { required: true, type: 'number', min: 1, max: 168 },
+        buy_amount: { required: true, type: 'number', min: 1 },
+        max_orders: { required: true, type: 'number', min: 1, max: 100 },
+        safety_orders: { required: true, type: 'number', min: 0, max: 20 },
+      },
+      min_balance: 25,
+      recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
     },
-    min_balance: 25,
-    recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
-  },
-].map(strategy => ({
-  ...strategy,
-  // Ensure all properties exist with safe defaults
-  type: strategy.type as StrategyType,
-  name: strategy.name || 'Unknown Strategy',
-  description: strategy.description || 'No description available',
-  risk_level: (strategy.risk_level || 'medium') as 'low' | 'medium' | 'high',
-  supported_modes: (strategy.supported_modes || ['spot']) as TradingMode[],
-  configuration_schema: strategy.configuration_schema || {},
-  min_balance: strategy.min_balance || 0,
-  recommended_symbols: strategy.recommended_symbols || [],
-}) as SupportedStrategy);
+  ].map(
+    strategy =>
+      ({
+        ...strategy,
+        // Ensure all properties exist with safe defaults
+        type: strategy.type as StrategyType,
+        name: strategy.name || 'Unknown Strategy',
+        description: strategy.description || 'No description available',
+        risk_level: (strategy.risk_level || 'medium') as 'low' | 'medium' | 'high',
+        supported_modes: (strategy.supported_modes || ['spot']) as TradingMode[],
+        configuration_schema: strategy.configuration_schema || {},
+        min_balance: strategy.min_balance || 0,
+        recommended_symbols: strategy.recommended_symbols || [],
+      }) as SupportedStrategy,
+  );
 
 export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBotModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [supportedStrategies, setSupportedStrategies] = useState<SupportedStrategy[]>([]);
   const [exchanges, setExchanges] = useState<MaskedExchangeCredentials[]>([]);
-  
+
   const [formData, setFormData] = useState<CreateBotInput>({
     name: '',
     description: '',
@@ -108,15 +132,16 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         tradingBotService.getSupportedStrategies().catch(() => []),
         exchangeService.getExchangeCredentials(),
       ]);
-      
+
       // Ensure strategiesData is an array and provide fallback if empty
-      const strategies = Array.isArray(strategiesData) && strategiesData.length > 0 
-        ? strategiesData 
-        : getDefaultStrategies();
-      
+      const strategies =
+        Array.isArray(strategiesData) && strategiesData.length > 0
+          ? strategiesData
+          : getDefaultStrategies();
+
       setSupportedStrategies(strategies);
       setExchanges(exchangesData.filter(ex => ex.is_active));
-      
+
       if (strategies.length > 0) {
         const firstStrategy = strategies[0];
         if (firstStrategy) {
@@ -127,7 +152,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
           }));
         }
       }
-      
+
       if (exchangesData.length > 0) {
         const firstExchange = exchangesData[0];
         if (firstExchange) {
@@ -177,7 +202,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         return;
       }
     }
-    
+
     if (currentStep === 2) {
       // Validate strategy selection
       if (!selectedStrategy || !selectedStrategy.type) {
@@ -185,7 +210,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         return;
       }
     }
-    
+
     setCurrentStep(prev => prev + 1);
   };
 
@@ -204,7 +229,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
       const config = formData.strategy.config;
       const takeProfitPercentage = Number(config.take_profit_percentage);
       const pullBackPercentage = Number(config.pull_back_percentage);
-      
+
       if (!takeProfitPercentage || takeProfitPercentage <= 0) {
         toast.error('Take profit percentage must be greater than 0');
         return;
@@ -230,10 +255,8 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
       const schema = selectedStrategy.configuration_schema;
       if (schema && typeof schema === 'object' && Object.keys(schema).length > 0) {
         const typedSchema = schema as Record<string, { required?: boolean }>;
-        const requiredFields = Object.keys(typedSchema).filter(
-          key => typedSchema[key]?.required
-        );
-        
+        const requiredFields = Object.keys(typedSchema).filter(key => typedSchema[key]?.required);
+
         for (const field of requiredFields) {
           if (!formData.strategy.config[field]) {
             toast.error(`${field.replace('_', ' ')} is required for this strategy`);
@@ -249,7 +272,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
       toast.success('Trading bot created successfully');
       onSuccess();
       onClose();
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -274,10 +297,14 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
 
   const getRiskLevelColor = (level: string) => {
     switch (level) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'low':
+        return 'text-green-600 bg-green-100';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'high':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -329,7 +356,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
@@ -339,7 +366,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                     {/* Progress Steps */}
                     <div className="mt-6 mb-8">
                       <div className="flex items-center justify-center">
-                        {[1, 2, 3].map((step) => (
+                        {[1, 2, 3].map(step => (
                           <div key={step} className="flex items-center">
                             <div
                               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -366,7 +393,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                         <span>Configuration</span>
                       </div>
                     </div>
-                    
+
                     {isLoading ? (
                       <div className="flex justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -378,14 +405,19 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                           <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                <label
+                                  htmlFor="name"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
                                   Bot Name *
                                 </label>
                                 <input
                                   type="text"
                                   id="name"
                                   value={formData.name}
-                                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                  onChange={e =>
+                                    setFormData(prev => ({ ...prev, name: e.target.value }))
+                                  }
                                   placeholder="e.g., My BTCUSDT Bot"
                                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                   required
@@ -393,40 +425,55 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                               </div>
 
                               <div>
-                                <label htmlFor="exchange" className="block text-sm font-medium text-gray-700">
+                                <label
+                                  htmlFor="exchange"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
                                   Exchange *
                                 </label>
                                 <select
                                   id="exchange"
                                   value={formData.exchange_credentials_id}
-                                  onChange={e => setFormData(prev => ({ ...prev, exchange_credentials_id: e.target.value }))}
+                                  onChange={e =>
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      exchange_credentials_id: e.target.value,
+                                    }))
+                                  }
                                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                   required
                                 >
                                   <option value="">Select an exchange</option>
                                   {exchanges.map(exchange => (
                                     <option key={exchange.id} value={exchange.id}>
-                                      {exchange.account_name} ({getExchangeDisplayName(exchange.exchange)})
+                                      {exchange.account_name} (
+                                      {getExchangeDisplayName(exchange.exchange)})
                                     </option>
                                   ))}
                                 </select>
                                 {exchanges.length === 0 && (
                                   <p className="mt-1 text-xs text-red-600">
-                                    No active exchanges found. Please add an exchange in settings first.
+                                    No active exchanges found. Please add an exchange in settings
+                                    first.
                                   </p>
                                 )}
                               </div>
                             </div>
 
                             <div>
-                              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                              <label
+                                htmlFor="description"
+                                className="block text-sm font-medium text-gray-700"
+                              >
                                 Description
                               </label>
                               <textarea
                                 id="description"
                                 rows={3}
                                 value={formData.description}
-                                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                onChange={e =>
+                                  setFormData(prev => ({ ...prev, description: e.target.value }))
+                                }
                                 placeholder="Optional description for your bot"
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                               />
@@ -434,7 +481,10 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <div>
-                                <label htmlFor="symbol" className="block text-sm font-medium text-gray-700">
+                                <label
+                                  htmlFor="symbol"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
                                   Trading Symbol *
                                 </label>
                                 <div className="mt-1">
@@ -442,7 +492,12 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                     type="text"
                                     id="symbol"
                                     value={formData.symbol}
-                                    onChange={e => setFormData(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                                    onChange={e =>
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        symbol: e.target.value.toUpperCase(),
+                                      }))
+                                    }
                                     placeholder="BTCUSDT"
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     required
@@ -463,13 +518,21 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                               </div>
 
                               <div>
-                                <label htmlFor="trading_mode" className="block text-sm font-medium text-gray-700">
+                                <label
+                                  htmlFor="trading_mode"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
                                   Trading Mode *
                                 </label>
                                 <select
                                   id="trading_mode"
                                   value={formData.trading_mode}
-                                  onChange={e => setFormData(prev => ({ ...prev, trading_mode: e.target.value as TradingMode }))}
+                                  onChange={e =>
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      trading_mode: e.target.value as TradingMode,
+                                    }))
+                                  }
                                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 >
                                   <option value="spot">Spot Trading</option>
@@ -478,7 +541,10 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                               </div>
 
                               <div>
-                                <label htmlFor="starting_balance" className="block text-sm font-medium text-gray-700">
+                                <label
+                                  htmlFor="starting_balance"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
                                   Starting Balance (USDT) *
                                 </label>
                                 <input
@@ -487,7 +553,12 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                   min="1"
                                   step="0.01"
                                   value={formData.starting_balance}
-                                  onChange={e => setFormData(prev => ({ ...prev, starting_balance: parseFloat(e.target.value) || 0 }))}
+                                  onChange={e =>
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      starting_balance: parseFloat(e.target.value) || 0,
+                                    }))
+                                  }
                                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                   required
                                 />
@@ -499,7 +570,9 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                         {/* Step 2: Strategy Selection */}
                         {currentStep === 2 && (
                           <div className="space-y-4">
-                            <h4 className="text-lg font-medium text-gray-900">Choose Trading Strategy</h4>
+                            <h4 className="text-lg font-medium text-gray-900">
+                              Choose Trading Strategy
+                            </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {(supportedStrategies || []).map(strategy => (
                                 <div
@@ -519,16 +592,25 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                 >
                                   <div className="flex items-start justify-between">
                                     <div>
-                                      <h5 className="font-medium text-gray-900">{strategy.name || 'Unknown Strategy'}</h5>
-                                      <p className="text-sm text-gray-600 mt-1">{strategy.description || 'No description available'}</p>
+                                      <h5 className="font-medium text-gray-900">
+                                        {strategy.name || 'Unknown Strategy'}
+                                      </h5>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        {strategy.description || 'No description available'}
+                                      </p>
                                     </div>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRiskLevelColor(strategy.risk_level || 'medium')}`}>
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRiskLevelColor(strategy.risk_level || 'medium')}`}
+                                    >
                                       {(strategy.risk_level || 'medium').toUpperCase()}
                                     </span>
                                   </div>
                                   <div className="mt-3 text-xs text-gray-500">
                                     <div>Min Balance: ${strategy.min_balance || 0}</div>
-                                    <div>Modes: {(strategy.supported_modes || []).join(', ').toUpperCase()}</div>
+                                    <div>
+                                      Modes:{' '}
+                                      {(strategy.supported_modes || []).join(', ').toUpperCase()}
+                                    </div>
                                   </div>
                                 </div>
                               ))}
@@ -539,7 +621,9 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                         {/* Step 3: Strategy Configuration */}
                         {currentStep === 3 && selectedStrategy && (
                           <div className="space-y-4">
-                            <h4 className="text-lg font-medium text-gray-900">Configure Strategy</h4>
+                            <h4 className="text-lg font-medium text-gray-900">
+                              Configure Strategy
+                            </h4>
                             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                               <div className="flex">
                                 <InformationCircleIcon className="h-5 w-5 text-blue-400" />
@@ -553,11 +637,11 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                 </div>
                               </div>
                             </div>
-                            
+
                             <StrategyConfigForm
                               strategy={selectedStrategy}
                               config={formData.strategy.config}
-                              onChange={(config) => 
+                              onChange={config =>
                                 setFormData(prev => ({
                                   ...prev,
                                   strategy: { ...prev.strategy, config },
@@ -576,7 +660,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                           >
                             {currentStep === 1 ? 'Cancel' : 'Back'}
                           </button>
-                          
+
                           {currentStep < 3 ? (
                             <button
                               type="button"

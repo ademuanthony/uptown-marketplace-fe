@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { 
+import {
   ArrowUpIcon,
   ArrowDownIcon,
   ClockIcon,
   FunnelIcon,
-  ChevronUpDownIcon
+  ChevronUpDownIcon,
 } from '@heroicons/react/24/outline';
 import { TradingPosition } from '@/services/tradingBot';
 
@@ -14,7 +14,13 @@ interface PositionHistoryTableProps {
   positions: TradingPosition[];
 }
 
-type SortField = 'opened_at' | 'closed_at' | 'total_pnl' | 'quantity' | 'entry_price' | 'exit_price';
+type SortField =
+  | 'opened_at'
+  | 'closed_at'
+  | 'total_pnl'
+  | 'quantity'
+  | 'entry_price'
+  | 'exit_price';
 type SortOrder = 'asc' | 'desc';
 
 export default function PositionHistoryTable({ positions }: PositionHistoryTableProps) {
@@ -46,7 +52,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
     const closed = closedAt ? new Date(closedAt) : new Date();
     const diffMs = closed.getTime() - opened.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
-    
+
     if (diffHours < 24) {
       return `${diffHours.toFixed(1)}h`;
     }
@@ -61,11 +67,13 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
       closed: 'bg-green-100 text-green-800',
       partially_closed: 'bg-yellow-100 text-yellow-800',
     };
-    
+
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800'
-      }`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          statusStyles[status as keyof typeof statusStyles] || 'bg-gray-100 text-gray-800'
+        }`}
+      >
         {status.replace('_', ' ')}
       </span>
     );
@@ -73,9 +81,11 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
 
   const getSideBadge = (side: string) => {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        side === 'long' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-      }`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          side === 'long' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}
+      >
         {side === 'long' ? (
           <ArrowUpIcon className="mr-1 h-3 w-3" />
         ) : (
@@ -165,7 +175,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
         </div>
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+          onChange={e => setFilterStatus(e.target.value)}
           className="rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
         >
           <option value="all">All Positions</option>
@@ -201,13 +211,11 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedPositions.map((position) => (
+            {sortedPositions.map(position => (
               <tr key={position.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col space-y-1">
-                    <div className="text-sm font-medium text-gray-900">
-                      {position.symbol}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{position.symbol}</div>
                     {getSideBadge(position.side)}
                   </div>
                 </td>
@@ -239,9 +247,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(position.status)}
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(position.status)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatDateTime(position.opened_at)}
                 </td>

@@ -5,7 +5,12 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import LoadingButton from './LoadingButton';
-import { exchangeService, CreateExchangeCredentialsInput, SupportedExchange, ExchangeName } from '@/services/exchange';
+import {
+  exchangeService,
+  CreateExchangeCredentialsInput,
+  SupportedExchange,
+  ExchangeName,
+} from '@/services/exchange';
 
 interface AddExchangeModalProps {
   isOpen: boolean;
@@ -17,7 +22,7 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
   const [supportedExchanges, setSupportedExchanges] = useState<SupportedExchange[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState<CreateExchangeCredentialsInput>({
     account_name: '',
     exchange: 'binance' as ExchangeName,
@@ -62,7 +67,7 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.account_name.trim()) {
       toast.error('Account name is required');
@@ -88,12 +93,12 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
         passphrase: selectedExchange?.requires_passphrase ? formData.passphrase : undefined,
         permissions: selectedExchange?.permissions || [],
       };
-      
+
       await exchangeService.createExchangeCredentials(input);
       toast.success('Exchange configuration added successfully');
       onSuccess();
       onClose();
-      
+
       // Reset form
       setFormData({
         account_name: '',
@@ -149,13 +154,13 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                   </button>
                 </div>
-                
+
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
                       Add Exchange Configuration
                     </Dialog.Title>
-                    
+
                     {isLoading ? (
                       <div className="flex justify-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -163,14 +168,19 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                     ) : (
                       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                         <div>
-                          <label htmlFor="account_name" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="account_name"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Account Name
                           </label>
                           <input
                             type="text"
                             id="account_name"
                             value={formData.account_name}
-                            onChange={e => setFormData(prev => ({ ...prev, account_name: e.target.value }))}
+                            onChange={e =>
+                              setFormData(prev => ({ ...prev, account_name: e.target.value }))
+                            }
                             placeholder="e.g., Main Trading Account"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                             required
@@ -178,13 +188,21 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                         </div>
 
                         <div>
-                          <label htmlFor="exchange" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="exchange"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Exchange
                           </label>
                           <select
                             id="exchange"
                             value={formData.exchange}
-                            onChange={e => setFormData(prev => ({ ...prev, exchange: e.target.value as ExchangeName }))}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                exchange: e.target.value as ExchangeName,
+                              }))
+                            }
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                           >
                             {supportedExchanges.map(exchange => (
@@ -196,14 +214,19 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                         </div>
 
                         <div>
-                          <label htmlFor="api_key" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="api_key"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             API Key
                           </label>
                           <input
                             type="text"
                             id="api_key"
                             value={formData.api_key}
-                            onChange={e => setFormData(prev => ({ ...prev, api_key: e.target.value }))}
+                            onChange={e =>
+                              setFormData(prev => ({ ...prev, api_key: e.target.value }))
+                            }
                             placeholder="Enter your API key"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
                             required
@@ -211,14 +234,19 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                         </div>
 
                         <div>
-                          <label htmlFor="api_secret" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="api_secret"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             API Secret
                           </label>
                           <input
                             type="password"
                             id="api_secret"
                             value={formData.api_secret}
-                            onChange={e => setFormData(prev => ({ ...prev, api_secret: e.target.value }))}
+                            onChange={e =>
+                              setFormData(prev => ({ ...prev, api_secret: e.target.value }))
+                            }
                             placeholder="Enter your API secret"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
                             required
@@ -227,14 +255,19 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
 
                         {selectedExchange?.requires_passphrase && (
                           <div>
-                            <label htmlFor="passphrase" className="block text-sm font-medium text-gray-700">
+                            <label
+                              htmlFor="passphrase"
+                              className="block text-sm font-medium text-gray-700"
+                            >
                               Passphrase
                             </label>
                             <input
                               type="password"
                               id="passphrase"
                               value={formData.passphrase}
-                              onChange={e => setFormData(prev => ({ ...prev, passphrase: e.target.value }))}
+                              onChange={e =>
+                                setFormData(prev => ({ ...prev, passphrase: e.target.value }))
+                              }
                               placeholder="Enter your passphrase"
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
                               required={selectedExchange?.requires_passphrase}
@@ -251,10 +284,15 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                               id="is_testnet"
                               type="checkbox"
                               checked={formData.is_testnet}
-                              onChange={e => setFormData(prev => ({ ...prev, is_testnet: e.target.checked }))}
+                              onChange={e =>
+                                setFormData(prev => ({ ...prev, is_testnet: e.target.checked }))
+                              }
                               className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
-                            <label htmlFor="is_testnet" className="ml-2 block text-sm text-gray-700">
+                            <label
+                              htmlFor="is_testnet"
+                              className="ml-2 block text-sm text-gray-700"
+                            >
                               Use Testnet
                             </label>
                           </div>
@@ -263,7 +301,10 @@ export default function AddExchangeModal({ isOpen, onClose, onSuccess }: AddExch
                         <div className="rounded-md bg-blue-50 p-4">
                           <div className="flex">
                             <div className="flex-shrink-0">
-                              <InformationCircleIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                              <InformationCircleIcon
+                                className="h-5 w-5 text-blue-400"
+                                aria-hidden="true"
+                              />
                             </div>
                             <div className="ml-3">
                               <h3 className="text-sm font-medium text-blue-800">Security Notice</h3>

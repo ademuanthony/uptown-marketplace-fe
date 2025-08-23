@@ -71,7 +71,10 @@ export default function TradingBotsPage() {
     return null;
   }
 
-  const handleBotAction = async (action: 'start' | 'pause' | 'resume' | 'stop' | 'delete', botId: string) => {
+  const handleBotAction = async (
+    action: 'start' | 'pause' | 'resume' | 'stop' | 'delete',
+    botId: string,
+  ) => {
     if (action === 'delete' && !confirm('Are you sure you want to delete this bot?')) {
       return;
     }
@@ -220,7 +223,9 @@ export default function TradingBotsPage() {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total P&L</dt>
-                    <dd className={`text-lg font-medium ${statistics.total_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <dd
+                      className={`text-lg font-medium ${statistics.total_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
                       {formatCurrency(statistics.total_pnl)}
                     </dd>
                   </dl>
@@ -236,7 +241,9 @@ export default function TradingBotsPage() {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total Volume</dt>
-                    <dd className="text-lg font-medium text-gray-900">{formatCurrency(statistics.total_volume)}</dd>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {formatCurrency(statistics.total_volume)}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -258,7 +265,9 @@ export default function TradingBotsPage() {
             <div className="text-center py-12">
               <RocketLaunchIcon className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No trading bots</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating your first trading bot.</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by creating your first trading bot.
+              </p>
               <div className="mt-6">
                 <button
                   onClick={() => setIsModalOpen(true)}
@@ -298,38 +307,53 @@ export default function TradingBotsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {bots.map((bot) => {
-                    const pnlPercentage = bot.starting_balance > 0 
-                      ? ((bot.current_balance - bot.starting_balance) / bot.starting_balance) * 100 
-                      : 0;
-                    const winRate = bot.total_trades > 0 ? (bot.winning_trades / bot.total_trades) * 100 : 0;
+                  {bots.map(bot => {
+                    const pnlPercentage =
+                      bot.starting_balance > 0
+                        ? ((bot.current_balance - bot.starting_balance) / bot.starting_balance) *
+                          100
+                        : 0;
+                    const winRate =
+                      bot.total_trades > 0 ? (bot.winning_trades / bot.total_trades) * 100 : 0;
 
                     return (
                       <tr key={bot.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">{bot.name}</div>
-                            <div className="text-sm text-gray-500">{bot.description || 'No description'}</div>
+                            <div className="text-sm text-gray-500">
+                              {bot.description || 'No description'}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{bot.strategy.type.replace('_', ' ').toUpperCase()}</div>
-                          <div className="text-sm text-gray-500">{bot.trading_mode.toUpperCase()}</div>
+                          <div className="text-sm text-gray-900">
+                            {bot.strategy.type.replace('_', ' ').toUpperCase()}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {bot.trading_mode.toUpperCase()}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{bot.symbol}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bot.status)}`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bot.status)}`}
+                          >
                             {getStatusIcon(bot.status)}
                             <span className="ml-1">{bot.status.toUpperCase()}</span>
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className={`text-sm font-medium ${bot.total_profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <div
+                            className={`text-sm font-medium ${bot.total_profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                          >
                             {formatCurrency(bot.total_profit_loss)}
                           </div>
-                          <div className={`text-xs ${pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          <div
+                            className={`text-xs ${pnlPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                          >
                             {formatPercentage(pnlPercentage)}
                           </div>
                         </td>

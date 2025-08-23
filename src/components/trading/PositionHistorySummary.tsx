@@ -1,12 +1,12 @@
 'use client';
 
-import { 
+import {
   ChartBarIcon,
   CurrencyDollarIcon,
   ClockIcon,
   ScaleIcon,
   ArrowUpIcon,
-  ArrowDownIcon
+  ArrowDownIcon,
 } from '@heroicons/react/24/outline';
 import { PositionHistorySummary as SummaryType } from '@/services/tradingBot';
 
@@ -122,7 +122,7 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
     <div className="space-y-6">
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => {
+        {stats.map(stat => {
           const IconComponent = stat.icon;
           return (
             <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
@@ -133,12 +133,8 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        {stat.name}
-                      </dt>
-                      <dd className={`text-lg font-medium ${stat.color}`}>
-                        {stat.value}
-                      </dd>
+                      <dt className="text-sm font-medium text-gray-500 truncate">{stat.name}</dt>
+                      <dd className={`text-lg font-medium ${stat.color}`}>{stat.value}</dd>
                     </dl>
                   </div>
                 </div>
@@ -151,11 +147,9 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
       {/* Detailed Stats */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Performance Details
-          </h3>
+          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Performance Details</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {detailedStats.map((stat) => {
+            {detailedStats.map(stat => {
               const IconComponent = stat.icon;
               return (
                 <div key={stat.label} className="flex items-center space-x-3">
@@ -163,12 +157,8 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
                     <IconComponent className={`h-5 w-5 ${stat.color || 'text-gray-400'}`} />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">
-                      {stat.value}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {stat.label}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{stat.value}</div>
+                    <div className="text-sm text-gray-500">{stat.label}</div>
                   </div>
                 </div>
               );
@@ -180,29 +170,30 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
       {/* Progress Indicators */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Position Status
-          </h3>
+          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Position Status</h3>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm font-medium text-gray-700">
                 <span>Closed Positions</span>
-                <span>{summary.closed_positions} / {summary.total_positions}</span>
+                <span>
+                  {summary.closed_positions} / {summary.total_positions}
+                </span>
               </div>
               <div className="mt-1 relative">
                 <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-200">
                   <div
                     style={{
-                      width: summary.total_positions > 0 
-                        ? `${(summary.closed_positions / summary.total_positions) * 100}%` 
-                        : '0%'
+                      width:
+                        summary.total_positions > 0
+                          ? `${(summary.closed_positions / summary.total_positions) * 100}%`
+                          : '0%',
                     }}
                     className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"
                   />
                 </div>
               </div>
             </div>
-            
+
             {summary.win_rate > 0 && (
               <div>
                 <div className="flex justify-between text-sm font-medium text-gray-700">
@@ -214,8 +205,11 @@ export default function PositionHistorySummary({ summary }: PositionHistorySumma
                     <div
                       style={{ width: `${Math.min(summary.win_rate, 100)}%` }}
                       className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                        summary.win_rate >= 70 ? 'bg-green-500' : 
-                        summary.win_rate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                        summary.win_rate >= 70
+                          ? 'bg-green-500'
+                          : summary.win_rate >= 50
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
                       }`}
                     />
                   </div>
