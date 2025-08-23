@@ -12,6 +12,7 @@ import {
   DevicePhoneMobileIcon,
   EnvelopeIcon,
   GlobeAltIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/user';
@@ -20,6 +21,7 @@ import ToggleSwitch from '@/components/settings/ToggleSwitch';
 import SettingsCard from '@/components/settings/SettingsCard';
 import SettingsItem from '@/components/settings/SettingsItem';
 import LoadingButton from '@/components/settings/LoadingButton';
+import ExchangeSettings from '@/components/settings/ExchangeSettings';
 
 // Types for different settings sections
 interface PasswordChangeData {
@@ -43,7 +45,7 @@ interface PrivacySettings {
   allowDataSharing: boolean;
 }
 
-type TabType = 'account' | 'security' | 'notifications' | 'privacy';
+type TabType = 'account' | 'security' | 'notifications' | 'privacy' | 'exchanges';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('account');
@@ -90,6 +92,12 @@ export default function SettingsPage() {
       name: 'Privacy',
       icon: EyeIcon,
       description: 'Privacy and data settings',
+    },
+    {
+      id: 'exchanges' as TabType,
+      name: 'Exchanges',
+      icon: ArrowsRightLeftIcon,
+      description: 'Exchange API connections',
     },
   ];
 
@@ -152,6 +160,8 @@ export default function SettingsPage() {
         return <NotificationSettings onUpdate={handleNotificationUpdate} isLoading={isLoading} />;
       case 'privacy':
         return <PrivacySettings onUpdate={handlePrivacyUpdate} isLoading={isLoading} />;
+      case 'exchanges':
+        return <ExchangeSettings />;
       default:
         return <AccountSettings />;
     }

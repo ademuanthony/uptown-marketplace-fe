@@ -21,6 +21,7 @@ import {
   UsersIcon,
   BoltIcon,
   WalletIcon,
+  RocketLaunchIcon,
   // BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,6 +55,7 @@ export default function Navbar() {
     { name: 'My Store', href: '/my-store', icon: ShoppingBagIcon },
     // { name: 'My Ebooks', href: '/ebooks', icon: BookOpenIcon },
     { name: 'Wallet', href: '/wallet', icon: WalletIcon },
+    { name: 'Trading Bots', href: '/trading-bots', icon: RocketLaunchIcon },
     { name: 'Fuel', href: '/fuel', icon: BoltIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
     { name: 'Referrals', href: '/referrals', icon: UsersIcon },
