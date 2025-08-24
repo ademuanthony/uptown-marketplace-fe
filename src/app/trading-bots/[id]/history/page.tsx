@@ -107,7 +107,15 @@ export default function BotPositionHistoryPage() {
                   <div className="mt-2 flex items-center text-sm text-gray-500">
                     <span className="font-medium">{bot.name}</span>
                     <span className="mx-1">•</span>
-                    <span>{bot.symbol}</span>
+                    <span>{bot.symbols.join(', ')}</span>
+                    {bot.symbols.length > 1 && (
+                      <>
+                        <span className="mx-1">•</span>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          {bot.symbols.length} symbols
+                        </span>
+                      </>
+                    )}
                     <span className="mx-1">•</span>
                     <span className="capitalize">{bot.strategy.type.replace('_', ' ')}</span>
                   </div>

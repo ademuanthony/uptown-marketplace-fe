@@ -6,12 +6,14 @@ interface StrategyConfigFormProps {
   strategy: SupportedStrategy;
   config: Record<string, unknown>;
   onChange: (config: Record<string, unknown>) => void;
+  symbols?: string[]; // New prop for symbols array
 }
 
 export default function StrategyConfigForm({
   strategy,
   config,
   onChange,
+  symbols = [],
 }: StrategyConfigFormProps) {
   const updateConfig = (key: string, value: unknown) => {
     onChange({
@@ -32,61 +34,164 @@ export default function StrategyConfigForm({
 
   // Alpha Compounder Strategy Configuration
   if (strategy.type === 'alpha_compounder') {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="take_profit_percentage"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Take Profit Percentage (%) *
-            </label>
-            <input
-              type="number"
-              id="take_profit_percentage"
-              min="0.1"
-              max="100"
-              step="0.1"
-              value={getNumberValue('take_profit_percentage', 5.0)}
-              onChange={e =>
-                updateConfig('take_profit_percentage', parseFloat(e.target.value) || 0)
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="5.0"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Target profit percentage before taking profits
-            </p>
-          </div>
+    // Initialize symbols config if it doesn't exist
+    const symbolsConfig =
+      (config.symbols as {
+        symbol: string;
+        take_profit_percentage: number;
+        pull_back_percentage: number;
+      }[]) ||
+      symbols.map(symbol => ({
+        symbol,
+        take_profit_percentage: 5.0,
+        pull_back_percentage: 3.0,
+      }));
 
-          <div>
-            <label
-              htmlFor="pull_back_percentage"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Pull Back Percentage (%) *
-            </label>
-            <input
-              type="number"
-              id="pull_back_percentage"
-              min="0.1"
-              max="50"
-              step="0.1"
-              value={getNumberValue('pull_back_percentage', 3.0)}
-              onChange={e => updateConfig('pull_back_percentage', parseFloat(e.target.value) || 0)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              placeholder="3.0"
-            />
-            <p className="mt-1 text-xs text-gray-500">Maximum allowed pullback before exit</p>
+    const updateSymbolConfig = (symbolIndex: number, key: string, value: number) => {
+      const updatedSymbols = symbolsConfig.map((symbolConfig, index) =>
+        index === symbolIndex ? { ...symbolConfig, [key]: value } : symbolConfig,
+      );
+      updateConfig('symbols', updatedSymbols);
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="text-sm text-yellow-800">
+            <strong>Alpha Compounder Strategy:</strong> Configure take profit and pullback
+            percentages for each trading symbol. Each symbol can have its own risk parameters based
+            on volatility and market behavior.
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-          <div className="text-sm text-yellow-800">
-            <strong>Strategy Overview:</strong> The Alpha Compounder strategy aims to compound gains
-            by taking profits at specified levels while allowing for controlled pullbacks. It&apos;s
-            designed for trending markets with moderate volatility.
+        {symbols.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>Please select trading symbols first to configure the strategy.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {symbols.map((symbol, index) => {
+              const symbolConfig = symbolsConfig.find(s => s.symbol === symbol) || {
+                symbol,
+                take_profit_percentage: 5.0,
+                pull_back_percentage: 3.0,
+              };
+
+              return (
+                <div key={symbol} className="border rounded-lg p-4 bg-gray-50">
+                  <h4 className="font-medium text-gray-900 mb-3">{symbol} Configuration</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor={`take_profit_${symbol}`}
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Take Profit Percentage (%) *
+                      </label>
+                      <input
+                        type="number"
+                        id={`take_profit_${symbol}`}
+                        min="0.1"
+                        max="100"
+                        step="0.1"
+                        value={symbolConfig.take_profit_percentage}
+                        onChange={e =>
+                          updateSymbolConfig(
+                            index,
+                            'take_profit_percentage',
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        placeholder="5.0"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Target profit percentage for {symbol}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`pull_back_${symbol}`}
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Pull Back Percentage (%) *
+                      </label>
+                      <input
+                        type="number"
+                        id={`pull_back_${symbol}`}
+                        min="0.1"
+                        max="50"
+                        step="0.1"
+                        value={symbolConfig.pull_back_percentage}
+                        onChange={e =>
+                          updateSymbolConfig(
+                            index,
+                            'pull_back_percentage',
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        placeholder="3.0"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Maximum allowed pullback for {symbol}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="text-sm text-blue-800">
+            <strong>Quick Setup:</strong>
+            <div className="mt-2 space-x-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const conservativeConfig = symbols.map(symbol => ({
+                    symbol,
+                    take_profit_percentage: 3.0,
+                    pull_back_percentage: 1.5,
+                  }));
+                  updateConfig('symbols', conservativeConfig);
+                }}
+                className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-xs hover:bg-green-200"
+              >
+                Conservative (3%/1.5%)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const moderateConfig = symbols.map(symbol => ({
+                    symbol,
+                    take_profit_percentage: 5.0,
+                    pull_back_percentage: 3.0,
+                  }));
+                  updateConfig('symbols', moderateConfig);
+                }}
+                className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs hover:bg-yellow-200"
+              >
+                Moderate (5%/3%)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const aggressiveConfig = symbols.map(symbol => ({
+                    symbol,
+                    take_profit_percentage: 8.0,
+                    pull_back_percentage: 5.0,
+                  }));
+                  updateConfig('symbols', aggressiveConfig);
+                }}
+                className="px-3 py-1 bg-red-100 text-red-800 rounded-md text-xs hover:bg-red-200"
+              >
+                Aggressive (8%/5%)
+              </button>
+            </div>
           </div>
         </div>
       </div>

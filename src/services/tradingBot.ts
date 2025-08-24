@@ -34,7 +34,7 @@ export interface TradingBot {
   exchange_credentials_id: string;
   name: string;
   description: string;
-  symbol: string;
+  symbols: string[]; // Updated to support multiple symbols
   status: BotStatus;
   strategy: BotStrategy;
   trading_mode: TradingMode;
@@ -47,6 +47,7 @@ export interface TradingBot {
   last_trade_at?: string;
   parent_id?: string;
   is_copyable: boolean;
+  max_active_positions: number; // New field for max active positions
   created_at: string;
   updated_at: string;
   started_at?: string;
@@ -57,10 +58,11 @@ export interface CreateBotInput {
   name: string;
   description?: string;
   exchange_credentials_id: string;
-  symbol: string;
+  symbols: string[]; // Updated to support multiple symbols
   strategy: BotStrategy;
   trading_mode: TradingMode;
   starting_balance: number;
+  max_active_positions: number; // New field for max active positions
   // Alpha Compounder specific fields (flattened for backend compatibility)
   take_profit_percentage?: number;
   pull_back_percentage?: number;
@@ -71,6 +73,7 @@ export interface CopyBotInput {
   parent_bot_id: string;
   exchange_credentials_id: string;
   name: string;
+  max_active_positions?: number; // Optional override for max active positions
 }
 
 export interface UpdateBotConfigInput {
@@ -152,9 +155,14 @@ export interface PositionHistorySummary {
   total_volume: number;
 }
 
-export interface AlphaCompounderConfig {
+export interface SymbolConfig {
+  symbol: string;
   take_profit_percentage: number;
   pull_back_percentage: number;
+}
+
+export interface AlphaCompounderConfig {
+  symbols: SymbolConfig[]; // Updated to support per-symbol configuration
 }
 
 export interface GridTradingConfig {
@@ -186,6 +194,14 @@ class TradingBotService {
       throw new Error(response.data.error || 'Failed to create trading bot');
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to create trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -197,20 +213,25 @@ class TradingBotService {
       name: input.name,
       description: input.description,
       exchange_credentials_id: input.exchange_credentials_id,
-      symbol: input.symbol,
+      symbols: input.symbols, // Now using symbols array
       strategy: input.strategy,
       trading_mode: input.trading_mode,
       starting_balance: input.starting_balance,
+      max_active_positions: input.max_active_positions,
     };
 
-    // For Alpha Compounder strategy, flatten the config to top-level fields
+    // For Alpha Compounder strategy, send the new multi-symbol config format
     if (input.strategy.type === 'alpha_compounder') {
-      const config = input.strategy.config;
+      // First cast to unknown, then to AlphaCompounderConfig for proper type conversion
+      const config = input.strategy.config as unknown as AlphaCompounderConfig;
       return {
         ...baseInput,
-        take_profit_percentage: config.take_profit_percentage || 5.0,
-        pull_back_percentage: config.pull_back_percentage || 3.0,
-        max_drawdown_percentage: config.max_drawdown_percentage || null,
+        strategy: {
+          type: input.strategy.type,
+          config: {
+            symbols: config.symbols || [],
+          },
+        },
       };
     }
 
@@ -256,6 +277,14 @@ class TradingBotService {
       }
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to start trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -270,6 +299,14 @@ class TradingBotService {
       }
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to pause trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -284,6 +321,14 @@ class TradingBotService {
       }
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to resume trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -298,6 +343,14 @@ class TradingBotService {
       }
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to stop trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -312,6 +365,14 @@ class TradingBotService {
       }
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to delete trading bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -327,6 +388,16 @@ class TradingBotService {
       throw new Error(response.data.error || 'Failed to update bot configuration');
     } catch (error) {
       if (isAxiosError(error)) {
+        // Handle structured error response from backend
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          // Extract message from structured error object
+          const errorMessage =
+            errorData.error.message ||
+            errorData.error.details ||
+            'Failed to update bot configuration';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;

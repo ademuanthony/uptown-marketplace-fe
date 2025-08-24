@@ -25,6 +25,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { tradingBotService, TradingBot, BotStatus, UserBotStatistics } from '@/services/tradingBot';
 import CreateBotModal from '@/components/trading/CreateBotModal';
 import CopyBotModal from '@/components/trading/CopyBotModal';
+import ConfigureBotModal from '@/components/trading/ConfigureBotModal';
+import DeleteBotModal from '@/components/trading/DeleteBotModal';
 
 export default function TradingBotsPage() {
   const [bots, setBots] = useState<TradingBot[]>([]);
@@ -32,6 +34,10 @@ export default function TradingBotsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [isConfigureModalOpen, setIsConfigureModalOpen] = useState(false);
+  const [selectedBotForConfig, setSelectedBotForConfig] = useState<TradingBot | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedBotForDelete, setSelectedBotForDelete] = useState<TradingBot | null>(null);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -99,8 +105,14 @@ export default function TradingBotsPage() {
   const handleBotAction = async (
     action: 'start' | 'pause' | 'resume' | 'stop' | 'delete',
     botId: string,
+    bot?: TradingBot,
   ) => {
-    if (action === 'delete' && !confirm('Are you sure you want to delete this bot?')) {
+    // For delete action, open the modal instead of executing immediately
+    if (action === 'delete') {
+      if (bot) {
+        setSelectedBotForDelete(bot);
+        setIsDeleteModalOpen(true);
+      }
       return;
     }
 
@@ -123,14 +135,28 @@ export default function TradingBotsPage() {
           await tradingBotService.stopBot(botId);
           toast.success('Bot stopped successfully');
           break;
-        case 'delete':
-          await tradingBotService.deleteBot(botId);
-          toast.success('Bot deleted successfully');
-          break;
       }
       await loadBots();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : `Failed to ${action} bot`;
+      toast.error(errorMessage);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedBotForDelete) return;
+
+    setActionLoading(selectedBotForDelete.id);
+    try {
+      await tradingBotService.deleteBot(selectedBotForDelete.id);
+      toast.success('Bot deleted successfully');
+      setIsDeleteModalOpen(false);
+      setSelectedBotForDelete(null);
+      await loadBots();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete bot';
       toast.error(errorMessage);
     } finally {
       setActionLoading(null);
@@ -375,7 +401,7 @@ export default function TradingBotsPage() {
                       Strategy
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Symbol
+                      Symbols
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -420,7 +446,15 @@ export default function TradingBotsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{bot.symbol}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {bot.symbols.join(', ')}
+                            {bot.symbols.length > 1 && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                {bot.symbols.length} symbols • Max {bot.max_active_positions}{' '}
+                                positions
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
@@ -498,16 +532,22 @@ export default function TradingBotsPage() {
                               <DocumentChartBarIcon className="h-5 w-5" />
                             </button>
 
-                            <button
-                              onClick={() => router.push(`/trading-bots/${bot.id}`)}
-                              className="text-blue-600 hover:text-blue-900"
-                              title="Configure Bot"
-                            >
-                              <CogIcon className="h-5 w-5" />
-                            </button>
+                            {/* Configure Bot button - only show if bot was not copied (no parent_id) */}
+                            {!bot.parent_id && (
+                              <button
+                                onClick={() => {
+                                  setSelectedBotForConfig(bot);
+                                  setIsConfigureModalOpen(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="Configure Bot"
+                              >
+                                <CogIcon className="h-5 w-5" />
+                              </button>
+                            )}
 
                             <button
-                              onClick={() => handleBotAction('delete', bot.id)}
+                              onClick={() => handleBotAction('delete', bot.id, bot)}
                               disabled={actionLoading === bot.id}
                               className="text-red-600 hover:text-red-900 disabled:opacity-50"
                               title="Delete Bot"
@@ -542,6 +582,31 @@ export default function TradingBotsPage() {
             onSuccess={loadBots}
           />
         )}
+
+        {/* Configure Bot Modal */}
+        {isConfigureModalOpen && selectedBotForConfig && (
+          <ConfigureBotModal
+            isOpen={isConfigureModalOpen}
+            onClose={() => {
+              setIsConfigureModalOpen(false);
+              setSelectedBotForConfig(null);
+            }}
+            onSuccess={loadBots}
+            bot={selectedBotForConfig}
+          />
+        )}
+
+        {/* Delete Bot Modal */}
+        <DeleteBotModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setSelectedBotForDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          bot={selectedBotForDelete}
+          isDeleting={!!selectedBotForDelete && actionLoading === selectedBotForDelete.id}
+        />
       </div>
     </div>
   );

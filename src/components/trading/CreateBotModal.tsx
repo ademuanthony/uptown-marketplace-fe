@@ -114,13 +114,14 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
     name: '',
     description: '',
     exchange_credentials_id: '',
-    symbol: '',
+    symbols: [], // Updated to support multiple symbols
     strategy: {
       type: 'alpha_compounder' as StrategyType,
       config: {},
     },
     trading_mode: 'spot' as TradingMode,
     starting_balance: 100,
+    max_active_positions: 1, // New field with default value
   });
 
   const [selectedStrategy, setSelectedStrategy] = useState<SupportedStrategy | null>(null);
@@ -193,12 +194,16 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         toast.error('Please select an exchange');
         return;
       }
-      if (!formData.symbol.trim()) {
-        toast.error('Trading symbol is required');
+      if (!formData.symbols || formData.symbols.length === 0) {
+        toast.error('At least one trading symbol is required');
         return;
       }
       if (formData.starting_balance <= 0) {
         toast.error('Starting balance must be greater than 0');
+        return;
+      }
+      if (formData.max_active_positions <= 0) {
+        toast.error('Max active positions must be greater than 0');
         return;
       }
     }
@@ -227,28 +232,44 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
     // Validate strategy configuration
     if (selectedStrategy.type === 'alpha_compounder') {
       const config = formData.strategy.config;
-      const takeProfitPercentage = Number(config.take_profit_percentage);
-      const pullBackPercentage = Number(config.pull_back_percentage);
+      const symbolsConfig = config.symbols as Array<{
+        symbol: string;
+        take_profit_percentage: number;
+        pull_back_percentage: number;
+      }>;
 
-      if (!takeProfitPercentage || takeProfitPercentage <= 0) {
-        toast.error('Take profit percentage must be greater than 0');
+      if (!symbolsConfig || !Array.isArray(symbolsConfig) || symbolsConfig.length === 0) {
+        toast.error('Strategy configuration is missing. Please configure the strategy parameters.');
         return;
       }
-      if (takeProfitPercentage > 100) {
-        toast.error('Take profit percentage cannot exceed 100%');
-        return;
-      }
-      if (!pullBackPercentage || pullBackPercentage <= 0) {
-        toast.error('Pull back percentage must be greater than 0');
-        return;
-      }
-      if (pullBackPercentage > 50) {
-        toast.error('Pull back percentage cannot exceed 50%');
-        return;
-      }
-      if (takeProfitPercentage <= pullBackPercentage) {
-        toast.error('Take profit percentage must be greater than pull back percentage');
-        return;
+
+      // Validate each symbol's configuration
+      for (const symbolConfig of symbolsConfig) {
+        const takeProfitPercentage = Number(symbolConfig.take_profit_percentage);
+        const pullBackPercentage = Number(symbolConfig.pull_back_percentage);
+
+        if (!takeProfitPercentage || takeProfitPercentage <= 0) {
+          toast.error(`Take profit percentage must be greater than 0 for ${symbolConfig.symbol}`);
+          return;
+        }
+        if (takeProfitPercentage > 100) {
+          toast.error(`Take profit percentage cannot exceed 100% for ${symbolConfig.symbol}`);
+          return;
+        }
+        if (!pullBackPercentage || pullBackPercentage <= 0) {
+          toast.error(`Pull back percentage must be greater than 0 for ${symbolConfig.symbol}`);
+          return;
+        }
+        if (pullBackPercentage > 50) {
+          toast.error(`Pull back percentage cannot exceed 50% for ${symbolConfig.symbol}`);
+          return;
+        }
+        if (takeProfitPercentage <= pullBackPercentage) {
+          toast.error(
+            `Take profit percentage must be greater than pull back percentage for ${symbolConfig.symbol}`,
+          );
+          return;
+        }
       }
     } else {
       // Generic validation for other strategies
@@ -278,13 +299,14 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         name: '',
         description: '',
         exchange_credentials_id: '',
-        symbol: '',
+        symbols: [],
         strategy: {
           type: 'alpha_compounder' as StrategyType,
           config: {},
         },
         trading_mode: 'spot' as TradingMode,
         starting_balance: 100,
+        max_active_positions: 1,
       });
       setCurrentStep(1);
     } catch (error) {
@@ -479,42 +501,128 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                               />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div>
-                                <label
-                                  htmlFor="symbol"
-                                  className="block text-sm font-medium text-gray-700"
-                                >
-                                  Trading Symbol *
-                                </label>
-                                <div className="mt-1">
+                            {/* Multi-Symbol Selection */}
+                            <div className="col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Trading Symbols * (Select one or more)
+                              </label>
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap gap-2">
+                                  {POPULAR_SYMBOLS.map(symbol => (
+                                    <button
+                                      key={symbol}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          symbols: prev.symbols.includes(symbol)
+                                            ? prev.symbols.filter(s => s !== symbol)
+                                            : [...prev.symbols, symbol],
+                                        }));
+                                      }}
+                                      className={`text-sm px-3 py-2 rounded-md font-medium transition-colors ${
+                                        formData.symbols.includes(symbol)
+                                          ? 'bg-primary-600 text-white'
+                                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                      }`}
+                                    >
+                                      {symbol}
+                                    </button>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-2">
                                   <input
                                     type="text"
-                                    id="symbol"
-                                    value={formData.symbol}
-                                    onChange={e =>
-                                      setFormData(prev => ({
-                                        ...prev,
-                                        symbol: e.target.value.toUpperCase(),
-                                      }))
-                                    }
-                                    placeholder="BTCUSDT"
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                    required
+                                    placeholder="Add custom symbol (e.g., SOLUSDT)"
+                                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const input = e.target as HTMLInputElement;
+                                        const symbol = input.value.trim().toUpperCase();
+                                        if (symbol && !formData.symbols.includes(symbol)) {
+                                          setFormData(prev => ({
+                                            ...prev,
+                                            symbols: [...prev.symbols, symbol],
+                                          }));
+                                          input.value = '';
+                                        }
+                                      }
+                                    }}
                                   />
-                                  <div className="mt-2 flex flex-wrap gap-1">
-                                    {POPULAR_SYMBOLS.slice(0, 5).map(symbol => (
-                                      <button
+                                  <button
+                                    type="button"
+                                    onClick={e => {
+                                      const input = e.currentTarget
+                                        .previousElementSibling as HTMLInputElement;
+                                      const symbol = input.value.trim().toUpperCase();
+                                      if (symbol && !formData.symbols.includes(symbol)) {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          symbols: [...prev.symbols, symbol],
+                                        }));
+                                        input.value = '';
+                                      }
+                                    }}
+                                    className="px-3 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-500"
+                                  >
+                                    Add
+                                  </button>
+                                </div>
+                                {formData.symbols.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-sm text-gray-600">Selected:</span>
+                                    {formData.symbols.map(symbol => (
+                                      <span
                                         key={symbol}
-                                        type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, symbol }))}
-                                        className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                                        className="inline-flex items-center px-2 py-1 text-xs bg-primary-100 text-primary-800 rounded-md"
                                       >
                                         {symbol}
-                                      </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              symbols: prev.symbols.filter(s => s !== symbol),
+                                            }));
+                                          }}
+                                          className="ml-1 text-primary-600 hover:text-primary-800"
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
                                     ))}
                                   </div>
-                                </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                              <div>
+                                <label
+                                  htmlFor="max_active_positions"
+                                  className="block text-sm font-medium text-gray-700"
+                                >
+                                  Max Active Positions *
+                                </label>
+                                <input
+                                  type="number"
+                                  id="max_active_positions"
+                                  min="1"
+                                  max="20"
+                                  value={formData.max_active_positions}
+                                  onChange={e =>
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      max_active_positions: parseInt(e.target.value) || 1,
+                                    }))
+                                  }
+                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                  required
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                  Maximum concurrent positions across all symbols
+                                </p>
                               </div>
 
                               <div>
@@ -641,6 +749,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                             <StrategyConfigForm
                               strategy={selectedStrategy}
                               config={formData.strategy.config}
+                              symbols={formData.symbols}
                               onChange={config =>
                                 setFormData(prev => ({
                                   ...prev,

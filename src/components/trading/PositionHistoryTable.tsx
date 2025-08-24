@@ -11,7 +11,7 @@ import {
 import { TradingPosition } from '@/services/tradingBot';
 
 interface PositionHistoryTableProps {
-  positions: TradingPosition[];
+  positions: TradingPosition[] | null;
 }
 
 type SortField =
@@ -111,7 +111,10 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
     }
   };
 
-  const filteredPositions = positions.filter(position => {
+  // Handle null positions by defaulting to empty array
+  const safePositions = positions || [];
+
+  const filteredPositions = safePositions.filter(position => {
     if (filterStatus === 'all') return true;
     return position.status === filterStatus;
   });
@@ -153,7 +156,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
     </th>
   );
 
-  if (positions.length === 0) {
+  if (positions && positions.length === 0) {
     return (
       <div className="text-center py-12">
         <ClockIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -184,7 +187,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
           <option value="partially_closed">Partially Closed</option>
         </select>
         <span className="text-sm text-gray-500">
-          Showing {sortedPositions.length} of {positions.length} positions
+          Showing {sortedPositions.length} of {positions ? positions.length : 0} positions
         </span>
       </div>
 

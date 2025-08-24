@@ -28,9 +28,11 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
   const [copyConfig, setCopyConfig] = useState<{
     name: string;
     exchange_credentials_id: string;
+    max_active_positions?: number;
   }>({
     name: '',
     exchange_credentials_id: '',
+    max_active_positions: undefined,
   });
 
   // Load copyable bots
@@ -70,7 +72,7 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
     const searchLower = searchTerm.toLowerCase();
     return (
       bot.name.toLowerCase().includes(searchLower) ||
-      bot.symbol.toLowerCase().includes(searchLower) ||
+      bot.symbols.some(symbol => symbol.toLowerCase().includes(searchLower)) ||
       bot.strategy.type.toLowerCase().includes(searchLower) ||
       bot.description.toLowerCase().includes(searchLower)
     );
@@ -97,6 +99,7 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
     setCopyConfig(prev => ({
       ...prev,
       name: `${bot.name} (Copy)`,
+      max_active_positions: bot.max_active_positions, // Default to original bot's value
     }));
     setStep(2);
   };
@@ -107,6 +110,7 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
     setCopyConfig({
       name: '',
       exchange_credentials_id: '',
+      max_active_positions: undefined,
     });
   };
 
@@ -127,6 +131,7 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       parent_bot_id: selectedBot.id,
       exchange_credentials_id: copyConfig.exchange_credentials_id,
       name: copyConfig.name.trim(),
+      max_active_positions: copyConfig.max_active_positions,
     };
 
     setIsSubmitting(true);
@@ -139,7 +144,7 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       // Reset modal state
       setStep(1);
       setSelectedBot(null);
-      setCopyConfig({ name: '', exchange_credentials_id: '' });
+      setCopyConfig({ name: '', exchange_credentials_id: '', max_active_positions: undefined });
     } catch (error) {
       console.error('Failed to copy bot:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to copy bot';
@@ -286,7 +291,14 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
                                     <div className="flex items-start justify-between mb-3">
                                       <div>
                                         <h4 className="font-medium text-gray-900">{bot.name}</h4>
-                                        <p className="text-sm text-gray-500">{bot.symbol}</p>
+                                        <p className="text-sm text-gray-500">
+                                          {bot.symbols.join(', ')}
+                                          {bot.symbols.length > 1 && (
+                                            <span className="ml-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                                              {bot.symbols.length} symbols
+                                            </span>
+                                          )}
+                                        </p>
                                       </div>
                                       <div className="flex items-center space-x-1">
                                         <StarIcon className="h-4 w-4 text-yellow-400 fill-current" />
@@ -350,8 +362,13 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
                               <div>
                                 <p className="font-medium text-gray-500">{selectedBot.name}</p>
                                 <p className="text-sm text-gray-500">
-                                  {selectedBot.symbol} •{' '}
+                                  {selectedBot.symbols.join(', ')} •{' '}
                                   {selectedBot.strategy.type.replace('_', ' ')}
+                                  {selectedBot.symbols.length > 1 && (
+                                    <span className="ml-1 text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                                      {selectedBot.symbols.length} symbols
+                                    </span>
+                                  )}
                                 </p>
                               </div>
                               <div className="text-right">
@@ -424,16 +441,54 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
                           </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              htmlFor="max_active_positions"
+                              className="block text-sm font-medium text-gray-700"
+                            >
+                              Max Active Positions
+                            </label>
+                            <input
+                              type="number"
+                              id="max_active_positions"
+                              min="1"
+                              max={selectedBot ? selectedBot.symbols.length : 10}
+                              value={copyConfig.max_active_positions || ''}
+                              onChange={e =>
+                                setCopyConfig(prev => ({
+                                  ...prev,
+                                  max_active_positions: e.target.value
+                                    ? parseInt(e.target.value, 10)
+                                    : undefined,
+                                }))
+                              }
+                              placeholder={
+                                selectedBot
+                                  ? `Default: ${selectedBot.max_active_positions}`
+                                  : 'Default from template'
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                              Leave empty to use template default (
+                              {selectedBot?.max_active_positions || 'N/A'}). Max{' '}
+                              {selectedBot?.symbols.length || 1} for this bot.
+                            </p>
+                          </div>
+                        </div>
+
                         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">About Copying</h4>
                           <ul className="text-sm text-blue-700 space-y-1">
                             <li>
-                              • The bot will be created with the same strategy and configuration as
-                              the template
+                              • The bot will be created with the same strategy, symbols, and
+                              configuration as the template
                             </li>
                             <li>
                               • Your bot will start fresh with zero trades and performance metrics
                             </li>
+                            <li>• You can optionally override the max active positions limit</li>
                             <li>• You can modify the strategy after copying if needed</li>
                             <li>
                               • The original bot creator will not have access to your copied bot
