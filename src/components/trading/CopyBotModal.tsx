@@ -29,10 +29,21 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
     name: string;
     exchange_credentials_id: string;
     max_active_positions?: number;
+    // Bot-specific trading configuration overrides
+    leverage?: number;
+    position_size_percent?: number;
+    max_position_size?: number;
+    use_auto_leverage?: boolean;
+    risk_per_trade?: number;
   }>({
     name: '',
     exchange_credentials_id: '',
     max_active_positions: undefined,
+    leverage: undefined,
+    position_size_percent: undefined,
+    max_position_size: undefined,
+    use_auto_leverage: undefined,
+    risk_per_trade: undefined,
   });
 
   // Load copyable bots
@@ -100,6 +111,12 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       ...prev,
       name: `${bot.name} (Copy)`,
       max_active_positions: bot.max_active_positions, // Default to original bot's value
+      // Inherit parent bot's configuration as defaults
+      leverage: bot.leverage,
+      position_size_percent: bot.position_size_percent,
+      max_position_size: bot.max_position_size,
+      use_auto_leverage: bot.use_auto_leverage,
+      risk_per_trade: bot.risk_per_trade,
     }));
     setStep(2);
   };
@@ -111,6 +128,11 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       name: '',
       exchange_credentials_id: '',
       max_active_positions: undefined,
+      leverage: undefined,
+      position_size_percent: undefined,
+      max_position_size: undefined,
+      use_auto_leverage: undefined,
+      risk_per_trade: undefined,
     });
   };
 
@@ -127,11 +149,41 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       return;
     }
 
+    // Validate bot-specific configuration if provided
+    if (copyConfig.leverage && (copyConfig.leverage < 1 || copyConfig.leverage > 100)) {
+      toast.error('Leverage must be between 1 and 100');
+      return;
+    }
+    if (
+      copyConfig.position_size_percent &&
+      (copyConfig.position_size_percent < 0.1 || copyConfig.position_size_percent > 100)
+    ) {
+      toast.error('Position size percentage must be between 0.1% and 100%');
+      return;
+    }
+    if (copyConfig.max_position_size && copyConfig.max_position_size < 0) {
+      toast.error('Maximum position size must be greater than 0');
+      return;
+    }
+    if (
+      copyConfig.risk_per_trade &&
+      (copyConfig.risk_per_trade < 0.1 || copyConfig.risk_per_trade > 100)
+    ) {
+      toast.error('Risk per trade must be between 0.1% and 100%');
+      return;
+    }
+
     const copyInput: CopyBotInput = {
       parent_bot_id: selectedBot.id,
       exchange_credentials_id: copyConfig.exchange_credentials_id,
       name: copyConfig.name.trim(),
       max_active_positions: copyConfig.max_active_positions,
+      // Include bot-specific configuration overrides
+      leverage: copyConfig.leverage,
+      position_size_percent: copyConfig.position_size_percent,
+      max_position_size: copyConfig.max_position_size,
+      use_auto_leverage: copyConfig.use_auto_leverage,
+      risk_per_trade: copyConfig.risk_per_trade,
     };
 
     setIsSubmitting(true);
@@ -144,7 +196,16 @@ export default function CopyBotModal({ isOpen, onClose, onSuccess }: CopyBotModa
       // Reset modal state
       setStep(1);
       setSelectedBot(null);
-      setCopyConfig({ name: '', exchange_credentials_id: '', max_active_positions: undefined });
+      setCopyConfig({
+        name: '',
+        exchange_credentials_id: '',
+        max_active_positions: undefined,
+        leverage: undefined,
+        position_size_percent: undefined,
+        max_position_size: undefined,
+        use_auto_leverage: undefined,
+        risk_per_trade: undefined,
+      });
     } catch (error) {
       console.error('Failed to copy bot:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to copy bot';

@@ -1,13 +1,9 @@
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
   sendPasswordResetEmail,
-  GoogleAuthProvider,
-  signInWithPopup,
-  FacebookAuthProvider,
 } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import api from './api';
@@ -89,11 +85,6 @@ interface ApiError {
   message: string;
 }
 
-interface FirebaseAuthError {
-  code: string;
-  message: string;
-}
-
 class AuthService {
   // Firebase Authentication Methods
   async signIn(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -141,31 +132,18 @@ class AuthService {
 
   async signUp(credentials: RegisterCredentials): Promise<AuthResponse> {
     try {
-      if (!auth) {
-        throw new Error('Firebase not initialized');
-      }
-
-      // First create Firebase user
-      const firebaseResult = await createUserWithEmailAndPassword(
-        auth,
-        credentials.email,
-        credentials.password,
-      );
-
-      const token = await firebaseResult.user.getIdToken();
-
       // Prepare registration payload for backend
       const registrationPayload = {
         email: credentials.email,
-        firebase_uid: firebaseResult.user.uid,
+        password: credentials.password,
         first_name: credentials.firstName,
         last_name: credentials.lastName,
         phone_number: credentials.phoneNumber || '',
-        upline_code: credentials.referralCode || '',
+        referral_code: credentials.referralCode || '',
       };
 
       try {
-        // Send registration request to backend
+        // Send registration request to backend (backend will create Firebase account)
         const response = await api.post<ApiResponse<BackendRegisterResponse>>(
           '/users/register',
           registrationPayload,
@@ -180,17 +158,32 @@ class AuthService {
 
         // Extract the registration response data
         const registerData = result.data;
-        const { user, custom_token, message } = registerData;
+        const { user, message } = registerData;
 
-        // Store token and user data
-        // Use custom_token if available, otherwise use Firebase token
-        const authToken = custom_token || token;
-        localStorage.setItem('auth_token', authToken);
+        // After successful backend registration, sign in to Firebase
+        // This ensures the user is authenticated in Firebase
+        if (auth) {
+          try {
+            await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+            const firebaseUser = auth.currentUser;
+            if (firebaseUser) {
+              const token = await firebaseUser.getIdToken();
+              localStorage.setItem('auth_token', token);
+            }
+          } catch (signInError) {
+            console.warn(
+              'Failed to sign in after registration, user may need to sign in manually',
+              signInError,
+            );
+          }
+        }
+
+        // Store user data
         localStorage.setItem('user', JSON.stringify(user));
-
         console.info('Registration successful:', message);
 
-        return { user, token: authToken };
+        const finalToken = localStorage.getItem('auth_token') || '';
+        return { user, token: finalToken };
       } catch (backendError: unknown) {
         // Extract detailed error information
         const errorResponse = (backendError as ApiError)?.response?.data;
@@ -218,17 +211,18 @@ class AuthService {
           throw new Error('An account with this email already exists. Please sign in instead.');
         }
 
+        // Check for Firebase-related errors that indicate successful account creation
+        if (errorStr.toLowerCase().includes('firebase user not found')) {
+          throw new Error(
+            'Registration completed, but there was an issue with account setup. Please try signing in.',
+          );
+        }
+
         throw new Error(errorStr);
       }
-    } catch (firebaseError: unknown) {
-      const errorMessage = (firebaseError as Error)?.message || 'Registration failed';
-      console.error('Firebase registration failed:', errorMessage);
-
-      // Check for Firebase duplicate email error
-      if ((firebaseError as FirebaseAuthError)?.code === 'auth/email-already-in-use') {
-        throw new Error('An account with this email already exists. Please sign in instead.');
-      }
-
+    } catch (error: unknown) {
+      const errorMessage = (error as Error)?.message || 'Registration failed';
+      console.error('Registration failed:', errorMessage);
       throw new Error(errorMessage);
     }
   }
@@ -260,94 +254,6 @@ class AuthService {
     } catch (firebaseError) {
       const errorMessage =
         firebaseError instanceof Error ? firebaseError.message : 'Password reset failed';
-      throw new Error(errorMessage);
-    }
-  }
-
-  async signInWithGoogle(): Promise<AuthResponse> {
-    if (!auth) {
-      throw new Error('Firebase not initialized');
-    }
-
-    try {
-      const provider = new GoogleAuthProvider();
-      const firebaseResult = await signInWithPopup(auth, provider);
-
-      const token = await firebaseResult.user.getIdToken();
-
-      try {
-        // Send token to backend
-        const response = await api.post<ApiResponse<BackendAuthResponse>>('/users/authenticate', {
-          firebase_token: token,
-        });
-
-        // The backend returns: { success: true, data: AuthenticateUserResponse }
-        const result = response.data;
-
-        if (!result || !result.success || !result.data) {
-          throw new Error(result.message || 'Social login failed');
-        }
-
-        const authData = result.data;
-        const { user } = authData;
-        const authToken = authData.custom_token || token;
-
-        localStorage.setItem('auth_token', authToken);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        return { user, token: authToken };
-      } catch (backendError) {
-        const errorMessage =
-          backendError instanceof Error ? backendError.message : 'Social login failed';
-        throw new Error(errorMessage);
-      }
-    } catch (firebaseError) {
-      const errorMessage =
-        firebaseError instanceof Error ? firebaseError.message : 'Google login failed';
-      throw new Error(errorMessage);
-    }
-  }
-
-  async signInWithFacebook(): Promise<AuthResponse> {
-    if (!auth) {
-      throw new Error('Firebase not initialized');
-    }
-
-    try {
-      const provider = new FacebookAuthProvider();
-      const firebaseResult = await signInWithPopup(auth, provider);
-
-      const token = await firebaseResult.user.getIdToken();
-
-      try {
-        // Send token to backend
-        const response = await api.post<ApiResponse<BackendAuthResponse>>('/users/authenticate', {
-          firebase_token: token,
-        });
-
-        // The backend returns: { success: true, data: AuthenticateUserResponse }
-        const result = response.data;
-
-        if (!result || !result.success || !result.data) {
-          throw new Error(result.message || 'Social login failed');
-        }
-
-        const authData = result.data;
-        const { user } = authData;
-        const authToken = authData.custom_token || token;
-
-        localStorage.setItem('auth_token', authToken);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        return { user, token: authToken };
-      } catch (backendError) {
-        const errorMessage =
-          backendError instanceof Error ? backendError.message : 'Social login failed';
-        throw new Error(errorMessage);
-      }
-    } catch (firebaseError) {
-      const errorMessage =
-        firebaseError instanceof Error ? firebaseError.message : 'Facebook login failed';
       throw new Error(errorMessage);
     }
   }

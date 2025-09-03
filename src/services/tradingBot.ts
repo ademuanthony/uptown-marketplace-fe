@@ -48,6 +48,12 @@ export interface TradingBot {
   parent_id?: string;
   is_copyable: boolean;
   max_active_positions: number; // New field for max active positions
+  // Bot-specific trading configuration (overrides strategy defaults)
+  leverage?: number; // Bot-specific leverage (1-100)
+  position_size_percent?: number; // Position size as % of balance
+  max_position_size?: number; // Maximum position size in base currency
+  use_auto_leverage?: boolean; // Auto-adjust leverage based on confidence
+  risk_per_trade?: number; // Risk per trade as % of balance
   created_at: string;
   updated_at: string;
   started_at?: string;
@@ -63,6 +69,12 @@ export interface CreateBotInput {
   trading_mode: TradingMode;
   starting_balance: number;
   max_active_positions: number; // New field for max active positions
+  // Bot-specific trading configuration (optional overrides)
+  leverage?: number; // Bot-specific leverage (1-100)
+  position_size_percent?: number; // Position size as % of balance
+  max_position_size?: number; // Maximum position size in base currency
+  use_auto_leverage?: boolean; // Auto-adjust leverage based on confidence
+  risk_per_trade?: number; // Risk per trade as % of balance
   // Alpha Compounder specific fields (flattened for backend compatibility)
   take_profit_percentage?: number;
   pull_back_percentage?: number;
@@ -74,6 +86,12 @@ export interface CopyBotInput {
   exchange_credentials_id: string;
   name: string;
   max_active_positions?: number; // Optional override for max active positions
+  // Bot-specific trading configuration overrides (optional for copy bots)
+  leverage?: number; // Override parent's leverage (1-100)
+  position_size_percent?: number; // Override parent's position size %
+  max_position_size?: number; // Override parent's max position size
+  use_auto_leverage?: boolean; // Override parent's auto leverage setting
+  risk_per_trade?: number; // Override parent's risk per trade %
 }
 
 export interface UpdateBotConfigInput {
@@ -81,6 +99,12 @@ export interface UpdateBotConfigInput {
   description?: string;
   strategy?: BotStrategy;
   starting_balance?: number;
+  // Bot-specific trading configuration updates
+  leverage?: number; // Bot-specific leverage (1-100)
+  position_size_percent?: number; // Position size as % of balance
+  max_position_size?: number; // Maximum position size in base currency
+  use_auto_leverage?: boolean; // Auto-adjust leverage based on confidence
+  risk_per_trade?: number; // Risk per trade as % of balance
 }
 
 export interface BotStatistics {
@@ -159,10 +183,29 @@ export interface SymbolConfig {
   symbol: string;
   take_profit_percentage: number;
   pull_back_percentage: number;
+  // Position sizing configuration
+  position_size?: number; // Fixed position size (0 = use percentage)
+  position_size_percent?: number; // Percentage of balance per trade
+  max_position_size?: number; // Maximum position size limit
+  // Leverage configuration (for futures)
+  leverage?: number; // Leverage multiplier (1-100, 1 = no leverage)
+  use_auto_leverage?: boolean; // Auto-adjust leverage based on confidence
+  max_leverage?: number; // Maximum allowed leverage
 }
 
 export interface AlphaCompounderConfig {
   symbols: SymbolConfig[]; // Updated to support per-symbol configuration
+  // Global configuration
+  default_leverage?: number; // Default leverage for all symbols (1-100)
+  default_position_size?: number; // Default position size percentage
+  risk_per_trade?: number; // Maximum risk per trade as % of balance
+  max_concurrent_trades?: number; // Maximum concurrent positions
+  // Risk management
+  stop_loss_percent?: number; // Global stop loss percentage
+  enable_stop_loss?: boolean; // Enable stop loss orders
+  enable_take_profit?: boolean; // Enable take profit orders
+  // Position sizing mode
+  sizing_mode?: 'fixed' | 'percent' | 'risk_based' | 'auto'; // Position sizing strategy
 }
 
 export interface GridTradingConfig {
@@ -218,6 +261,12 @@ class TradingBotService {
       trading_mode: input.trading_mode,
       starting_balance: input.starting_balance,
       max_active_positions: input.max_active_positions,
+      // Bot-specific trading configuration
+      leverage: input.leverage,
+      position_size_percent: input.position_size_percent,
+      max_position_size: input.max_position_size,
+      use_auto_leverage: input.use_auto_leverage,
+      risk_per_trade: input.risk_per_trade,
     };
 
     // For Alpha Compounder strategy, send the new multi-symbol config format

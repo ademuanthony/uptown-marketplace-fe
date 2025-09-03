@@ -119,34 +119,6 @@ export function useAuth() {
     }
   };
 
-  const loginWithGoogle = async () => {
-    try {
-      const { user, token } = await authService.signInWithGoogle();
-      setAuthState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
-      });
-      return { user, token };
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const loginWithFacebook = async () => {
-    try {
-      const { user, token } = await authService.signInWithFacebook();
-      setAuthState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
-      });
-      return { user, token };
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const resetPassword = async (email: string) => {
     try {
       await authService.resetPassword(email);
@@ -175,8 +147,6 @@ export function useAuth() {
     login,
     register,
     logout,
-    loginWithGoogle,
-    loginWithFacebook,
     resetPassword,
     refreshToken,
     updateUser,

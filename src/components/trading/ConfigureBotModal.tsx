@@ -103,6 +103,12 @@ export default function ConfigureBotModal({
     description: bot.description,
     strategy: bot.strategy,
     starting_balance: bot.starting_balance,
+    // Bot-specific configuration
+    leverage: bot.leverage,
+    position_size_percent: bot.position_size_percent,
+    max_position_size: bot.max_position_size,
+    use_auto_leverage: bot.use_auto_leverage,
+    risk_per_trade: bot.risk_per_trade,
   });
 
   const [selectedStrategy, setSelectedStrategy] = useState<SupportedStrategy | null>(null);
@@ -140,6 +146,12 @@ export default function ConfigureBotModal({
         description: bot.description,
         strategy: bot.strategy,
         starting_balance: bot.starting_balance,
+        // Bot-specific configuration
+        leverage: bot.leverage,
+        position_size_percent: bot.position_size_percent,
+        max_position_size: bot.max_position_size,
+        use_auto_leverage: bot.use_auto_leverage,
+        risk_per_trade: bot.risk_per_trade,
       });
       setCurrentStep(1);
       loadInitialData();
@@ -163,6 +175,30 @@ export default function ConfigureBotModal({
       }
       if (!formData.starting_balance || formData.starting_balance <= 0) {
         toast.error('Starting balance must be greater than 0');
+        return;
+      }
+
+      // Validate bot-specific configuration if provided
+      if (formData.leverage && (formData.leverage < 1 || formData.leverage > 100)) {
+        toast.error('Leverage must be between 1 and 100');
+        return;
+      }
+      if (
+        formData.position_size_percent &&
+        (formData.position_size_percent < 0.1 || formData.position_size_percent > 100)
+      ) {
+        toast.error('Position size percentage must be between 0.1% and 100%');
+        return;
+      }
+      if (formData.max_position_size && formData.max_position_size < 0) {
+        toast.error('Maximum position size must be greater than 0');
+        return;
+      }
+      if (
+        formData.risk_per_trade &&
+        (formData.risk_per_trade < 0.1 || formData.risk_per_trade > 100)
+      ) {
+        toast.error('Risk per trade must be between 0.1% and 100%');
         return;
       }
     }
@@ -399,6 +435,179 @@ export default function ConfigureBotModal({
                                 placeholder="Optional description for your bot"
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                               />
+                            </div>
+
+                            {/* Bot-Specific Trading Configuration */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                                Bot-Specific Trading Configuration
+                                <span className="ml-2 text-xs text-gray-500 font-normal">
+                                  (Override strategy defaults)
+                                </span>
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                  <label
+                                    htmlFor="leverage"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
+                                    Leverage
+                                  </label>
+                                  <input
+                                    type="number"
+                                    id="leverage"
+                                    min="1"
+                                    max="100"
+                                    value={formData.leverage || ''}
+                                    onChange={e =>
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        leverage: e.target.value
+                                          ? parseInt(e.target.value)
+                                          : undefined,
+                                      }))
+                                    }
+                                    placeholder="1-100 (empty = use strategy default)"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                  />
+                                  <p className="mt-1 text-xs text-gray-500">
+                                    Current:{' '}
+                                    {bot.leverage ? `${bot.leverage}x` : 'Using strategy default'}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <label
+                                    htmlFor="position_size_percent"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
+                                    Position Size %
+                                  </label>
+                                  <input
+                                    type="number"
+                                    id="position_size_percent"
+                                    min="0.1"
+                                    max="100"
+                                    step="0.1"
+                                    value={formData.position_size_percent || ''}
+                                    onChange={e =>
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        position_size_percent: e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : undefined,
+                                      }))
+                                    }
+                                    placeholder="0.1-100 (empty = use strategy default)"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                  />
+                                  <p className="mt-1 text-xs text-gray-500">
+                                    Current:{' '}
+                                    {bot.position_size_percent
+                                      ? `${bot.position_size_percent}%`
+                                      : 'Using strategy default'}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <label
+                                    htmlFor="max_position_size"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
+                                    Max Position Size
+                                  </label>
+                                  <input
+                                    type="number"
+                                    id="max_position_size"
+                                    min="0"
+                                    step="0.01"
+                                    value={formData.max_position_size || ''}
+                                    onChange={e =>
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        max_position_size: e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : undefined,
+                                      }))
+                                    }
+                                    placeholder="Max size in USDT (empty = no limit)"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                  />
+                                  <p className="mt-1 text-xs text-gray-500">
+                                    Current:{' '}
+                                    {bot.max_position_size
+                                      ? `${bot.max_position_size} USDT`
+                                      : 'No limit'}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <label
+                                    htmlFor="risk_per_trade"
+                                    className="block text-sm font-medium text-gray-700"
+                                  >
+                                    Risk per Trade %
+                                  </label>
+                                  <input
+                                    type="number"
+                                    id="risk_per_trade"
+                                    min="0.1"
+                                    max="100"
+                                    step="0.1"
+                                    value={formData.risk_per_trade || ''}
+                                    onChange={e =>
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        risk_per_trade: e.target.value
+                                          ? parseFloat(e.target.value)
+                                          : undefined,
+                                      }))
+                                    }
+                                    placeholder="0.1-100 (empty = use strategy default)"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                  />
+                                  <p className="mt-1 text-xs text-gray-500">
+                                    Current:{' '}
+                                    {bot.risk_per_trade
+                                      ? `${bot.risk_per_trade}%`
+                                      : 'Using strategy default'}
+                                  </p>
+                                </div>
+
+                                <div className="flex items-center space-y-2">
+                                  <div>
+                                    <input
+                                      type="checkbox"
+                                      id="use_auto_leverage"
+                                      checked={formData.use_auto_leverage || false}
+                                      onChange={e =>
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          use_auto_leverage: e.target.checked,
+                                        }))
+                                      }
+                                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                    />
+                                    <label
+                                      htmlFor="use_auto_leverage"
+                                      className="ml-2 block text-sm text-gray-700"
+                                    >
+                                      Auto-adjust leverage based on confidence
+                                    </label>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      Current: {bot.use_auto_leverage ? 'Enabled' : 'Disabled'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-start gap-2">
+                                <InformationCircleIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-gray-600">
+                                  These bot-specific settings override strategy defaults. Leave
+                                  fields empty to use the strategy&apos;s configuration. Changes
+                                  will take effect on the next trade cycle.
+                                </p>
+                              </div>
                             </div>
 
                             {/* Read-only Bot Information */}
