@@ -532,6 +532,17 @@ export default function TradingBotsPage() {
                               <DocumentChartBarIcon className="h-5 w-5" />
                             </button>
 
+                            {/* AI Analysis button - only show for AI Signal bots */}
+                            {bot.strategy.type === 'ai_signal' && (
+                              <button
+                                onClick={() => router.push(`/trading-bots/${bot.id}/analysis`)}
+                                className="text-green-600 hover:text-green-900"
+                                title="View AI Analysis"
+                              >
+                                <ChartBarIcon className="h-5 w-5" />
+                              </button>
+                            )}
+
                             {/* Configure Bot button - only show if bot was not copied (no parent_id) */}
                             {!bot.parent_id && (
                               <button

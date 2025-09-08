@@ -21,6 +21,7 @@ export type StrategyType =
   | 'trend_following'
   | 'arbitrage'
   | 'scalping'
+  | 'ai_signal'
   | 'custom';
 
 export interface BotStrategy {
@@ -222,6 +223,114 @@ export interface DCAConfig {
   safety_orders: number;
   safety_order_volume_scale: number;
   safety_order_step_scale: number;
+}
+
+export interface AISignalConfig {
+  // Analysis Configuration
+  analysis_timeframes: string[]; // e.g., ["1m", "5m", "15m", "30m", "1h", "4h", "1d"]
+  main_timeframe: string; // Primary timeframe for analysis (e.g., "1h")
+  higher_timeframe: string; // Higher timeframe for trend context (e.g., "4h")
+
+  // AI Configuration
+  ai_provider: 'openai' | 'anthropic' | 'local';
+  ai_model: string; // "gpt-4o", "claude-3-sonnet", etc.
+  api_key?: string; // API key for AI service (optional for display)
+
+  // Technical Indicators
+  indicator_settings: IndicatorSettings;
+
+  // Signal Generation
+  min_signal_strength: number; // Minimum signal strength (0.0-1.0)
+  max_positions_count: number; // Max concurrent positions
+
+  // Risk Management
+  risk_per_trade: number; // Risk per trade as % of balance
+  stop_loss_percent: number; // Stop loss percentage
+  take_profit_percent: number; // Take profit percentage
+  max_leverage: number; // Maximum leverage (1-100)
+
+  // Symbol Configuration
+  scan_all_symbols: boolean; // Whether to scan all supported symbols
+  whitelisted_symbols: string[]; // Specific symbols to analyze
+  blacklisted_symbols: string[]; // Symbols to exclude from analysis
+
+  // Execution Settings
+  execution_interval: number; // Analysis interval in minutes
+  max_daily_trades: number; // Maximum trades per day
+
+  // Chart Generation
+  chart_config: ChartConfig;
+}
+
+export interface IndicatorSettings {
+  // Moving Averages
+  short_sma: number; // Short-term SMA period (e.g., 20)
+  long_sma: number; // Long-term SMA period (e.g., 50)
+
+  // RSI Configuration
+  rsi_period: number; // RSI calculation period (e.g., 14)
+  rsi_overbought: number; // RSI overbought level (e.g., 70)
+  rsi_oversold: number; // RSI oversold level (e.g., 30)
+
+  // MACD Configuration
+  macd_fast: number; // MACD fast EMA period (e.g., 12)
+  macd_slow: number; // MACD slow EMA period (e.g., 26)
+  macd_signal: number; // MACD signal EMA period (e.g., 9)
+}
+
+export interface ChartConfig {
+  width: number; // Chart width in pixels
+  height: number; // Chart height in pixels
+  candlestick_count: number; // Number of candlesticks to include
+  show_volume: boolean; // Whether to show volume bars
+  show_indicators: boolean; // Whether to show technical indicators
+  chart_style: 'light' | 'dark'; // Chart style
+}
+
+// AI Signal specific types
+export interface AITradingSignal {
+  symbol: string;
+  action: 'buy' | 'sell' | 'hold';
+  confidence: number; // 0.0 to 1.0
+  reasoning: string; // AI's explanation
+  target_price?: number | null;
+  stop_loss?: number | null;
+  priority: number; // 1-10, higher = more urgent
+  timestamp?: string; // Added by frontend, not in AI response
+}
+
+// Structured response from AI (matches backend)
+export interface AISignalResponse {
+  signal: AITradingSignal;
+}
+
+export interface AIAnalysisResult {
+  symbol: string;
+  analysis_time: string;
+  signal: AITradingSignal;
+  technical_data: TechnicalIndicatorData;
+  market_conditions: MarketConditions;
+}
+
+export interface TechnicalIndicatorData {
+  short_sma: number;
+  long_sma: number;
+  rsi: number;
+  macd: number;
+  macd_signal: number;
+  macd_histogram: number;
+  change_24h: number;
+  change_percent_24h: number;
+  volume_24h: number;
+  high_24h: number;
+  low_24h: number;
+}
+
+export interface MarketConditions {
+  overall_trend: 'bullish' | 'bearish' | 'sideways';
+  volatility_level: 'low' | 'medium' | 'high';
+  market_sentiment: 'fear' | 'neutral' | 'greed';
+  btc_dominance?: number;
 }
 
 class TradingBotService {

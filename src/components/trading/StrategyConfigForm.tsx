@@ -533,6 +533,233 @@ export default function StrategyConfigForm({
     );
   }
 
+  // AI Signal Strategy Configuration
+  if (strategy.type === 'ai_signal') {
+    const getStringValue = (key: string, defaultValue: string): string => {
+      const value = config[key];
+      return typeof value === 'string' ? value : defaultValue;
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Timeframe Configuration */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Analysis Timeframes</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="main_timeframe" className="block text-sm font-medium text-gray-700">
+                Main Timeframe *
+              </label>
+              <select
+                id="main_timeframe"
+                value={getStringValue('main_timeframe', '1h')}
+                onChange={e => updateConfig('main_timeframe', e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              >
+                <option value="1m">1 Minute</option>
+                <option value="5m">5 Minutes</option>
+                <option value="15m">15 Minutes</option>
+                <option value="30m">30 Minutes</option>
+                <option value="1h">1 Hour</option>
+                <option value="4h">4 Hours</option>
+                <option value="1d">1 Day</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Primary timeframe for analysis</p>
+            </div>
+
+            <div>
+              <label htmlFor="higher_timeframe" className="block text-sm font-medium text-gray-700">
+                Higher Timeframe *
+              </label>
+              <select
+                id="higher_timeframe"
+                value={getStringValue('higher_timeframe', '4h')}
+                onChange={e => updateConfig('higher_timeframe', e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              >
+                <option value="15m">15 Minutes</option>
+                <option value="30m">30 Minutes</option>
+                <option value="1h">1 Hour</option>
+                <option value="4h">4 Hours</option>
+                <option value="1d">1 Day</option>
+                <option value="1w">1 Week</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Higher timeframe for trend context</p>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="execution_interval" className="block text-sm font-medium text-gray-700">
+              Analysis Interval (minutes) *
+            </label>
+            <input
+              type="number"
+              id="execution_interval"
+              min="15"
+              max="1440"
+              value={getIntValue('execution_interval', 60)}
+              onChange={e => updateConfig('execution_interval', parseInt(e.target.value) || 60)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="60"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              How often to perform AI analysis (15-1440 minutes)
+            </p>
+          </div>
+        </div>
+
+        {/* Signal Configuration */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-green-900 mb-4">Signal Generation</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="min_signal_strength"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Minimum Signal Confidence *
+              </label>
+              <input
+                type="number"
+                id="min_signal_strength"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                value={getNumberValue('min_signal_strength', 0.7)}
+                onChange={e =>
+                  updateConfig('min_signal_strength', parseFloat(e.target.value) || 0.7)
+                }
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="0.7"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Only execute trades above this confidence level (0.1-1.0)
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="max_positions_count"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Max Active Positions *
+              </label>
+              <input
+                type="number"
+                id="max_positions_count"
+                min="1"
+                max="10"
+                value={getIntValue('max_positions_count', 3)}
+                onChange={e => updateConfig('max_positions_count', parseInt(e.target.value) || 3)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="3"
+              />
+              <p className="mt-1 text-xs text-gray-500">Maximum concurrent positions (1-10)</p>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="max_daily_trades" className="block text-sm font-medium text-gray-700">
+              Max Daily Trades *
+            </label>
+            <input
+              type="number"
+              id="max_daily_trades"
+              min="1"
+              max="50"
+              value={getIntValue('max_daily_trades', 10)}
+              onChange={e => updateConfig('max_daily_trades', parseInt(e.target.value) || 10)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="10"
+            />
+            <p className="mt-1 text-xs text-gray-500">Maximum trades per day (1-50)</p>
+          </div>
+        </div>
+
+        {/* Risk Management */}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-red-900 mb-4">Risk Management</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="risk_per_trade" className="block text-sm font-medium text-gray-700">
+                Risk Per Trade (%) *
+              </label>
+              <input
+                type="number"
+                id="risk_per_trade"
+                min="0.5"
+                max="10"
+                step="0.1"
+                value={getNumberValue('risk_per_trade', 2.0)}
+                onChange={e => updateConfig('risk_per_trade', parseFloat(e.target.value) || 2.0)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="2.0"
+              />
+              <p className="mt-1 text-xs text-gray-500">Risk as % of balance per trade</p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="stop_loss_percent"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Stop Loss (%) *
+              </label>
+              <input
+                type="number"
+                id="stop_loss_percent"
+                min="0.5"
+                max="20"
+                step="0.1"
+                value={getNumberValue('stop_loss_percent', 3.0)}
+                onChange={e => updateConfig('stop_loss_percent', parseFloat(e.target.value) || 3.0)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="3.0"
+              />
+              <p className="mt-1 text-xs text-gray-500">Stop loss percentage</p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="take_profit_percent"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Take Profit (%) *
+              </label>
+              <input
+                type="number"
+                id="take_profit_percent"
+                min="1"
+                max="50"
+                step="0.1"
+                value={getNumberValue('take_profit_percent', 5.0)}
+                onChange={e =>
+                  updateConfig('take_profit_percent', parseFloat(e.target.value) || 5.0)
+                }
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                placeholder="5.0"
+              />
+              <p className="mt-1 text-xs text-gray-500">Take profit percentage</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="text-sm text-blue-800">
+            <strong>Strategy Overview:</strong> AI Signal Strategy uses advanced artificial
+            intelligence to analyze trading charts and technical indicators. It generates
+            high-probability trading signals by combining chart pattern recognition, technical
+            analysis, and market sentiment. The AI scans multiple timeframes and applies
+            sophisticated risk management to identify the best trading opportunities.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Default/Custom Strategy Configuration
   return (
     <div className="space-y-4">
