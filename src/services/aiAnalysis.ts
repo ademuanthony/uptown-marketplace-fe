@@ -1,14 +1,6 @@
 import api from './api';
 import { isAxiosError } from 'axios';
 
-// API response wrapper
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 // AI Analysis Log types based on backend entities
 export interface AIAnalysisLog {
   id: string;
@@ -91,10 +83,12 @@ export interface AIAnalysisFilter {
 }
 
 export interface AnalysisLogsResponse {
-  data: AIAnalysisLog[] | AIAnalysisLogSummary[];
+  analysis_logs: AIAnalysisLog[];
+  data?: AIAnalysisLog[]; // For backward compatibility
   total: number;
   limit: number;
   offset: number;
+  has_more: boolean;
 }
 
 // Performance Statistics
@@ -171,37 +165,33 @@ class AIAnalysisService {
    */
   async getAnalysisLogs(filter: AIAnalysisFilter = {}): Promise<AnalysisLogsResponse> {
     try {
+      if (!filter.bot_id) {
+        throw new Error('Bot ID is required');
+      }
+
       // Build query parameters
       const params = new URLSearchParams();
 
-      if (filter.bot_id) params.append('bot_id', filter.bot_id);
       if (filter.symbol) params.append('symbol', filter.symbol);
-      if (filter.analysis_type) params.append('analysis_type', filter.analysis_type);
-      if (filter.signal_action) params.append('signal_action', filter.signal_action);
-      if (filter.start_date) params.append('start_date', filter.start_date);
-      if (filter.end_date) params.append('end_date', filter.end_date);
-      if (filter.trade_executed !== undefined)
-        params.append('trade_executed', filter.trade_executed.toString());
-      if (filter.has_error !== undefined) params.append('has_error', filter.has_error.toString());
-      if (filter.min_signal_strength !== undefined)
-        params.append('min_signal_strength', filter.min_signal_strength.toString());
-      if (filter.max_signal_strength !== undefined)
-        params.append('max_signal_strength', filter.max_signal_strength.toString());
       if (filter.limit) params.append('limit', filter.limit.toString());
       if (filter.offset) params.append('offset', filter.offset.toString());
-      if (filter.sort_by) params.append('sort_by', filter.sort_by);
-      if (filter.sort_order) params.append('sort_order', filter.sort_order);
-      if (filter.summary) params.append('summary', filter.summary.toString());
 
-      const response = await api.get<ApiResponse<AnalysisLogsResponse>>(
-        `/ai-analysis/logs?${params.toString()}`,
+      // Use the correct backend endpoint
+      const response = await api.get<AnalysisLogsResponse>(
+        `/bots/${filter.bot_id}/analysis?${params.toString()}`,
       );
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
+      // The backend returns the data directly, not wrapped in a success object
+      if (response.data) {
+        // Ensure both analysis_logs and data fields are populated for compatibility
+        return {
+          ...response.data,
+          data: response.data.analysis_logs || [],
+          analysis_logs: response.data.analysis_logs || [],
+        };
       }
 
-      throw new Error(response.data.error || 'Failed to get analysis logs');
+      throw new Error('Failed to get analysis logs');
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.error || error.message);
@@ -215,13 +205,14 @@ class AIAnalysisService {
    */
   async getAnalysisLogById(id: string): Promise<AIAnalysisLog> {
     try {
-      const response = await api.get<ApiResponse<AIAnalysisLog>>(`/ai-analysis/logs/${id}`);
+      // Use the correct backend endpoint
+      const response = await api.get<{ AnalysisLog: AIAnalysisLog }>(`/analysis/${id}`);
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
+      if (response.data && response.data.AnalysisLog) {
+        return response.data.AnalysisLog;
       }
 
-      throw new Error(response.data.error || 'Failed to get analysis log');
+      throw new Error('Failed to get analysis log');
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.error || error.message);
@@ -235,15 +226,17 @@ class AIAnalysisService {
    */
   async getBotAnalysisStats(botId: string, days: number = 7): Promise<BotAnalysisStats> {
     try {
-      const response = await api.get<ApiResponse<BotAnalysisStats>>(
-        `/ai-analysis/bots/${botId}/stats?days=${days}`,
+      // Note: This endpoint may not exist in the backend yet
+      // Using a placeholder endpoint structure
+      const response = await api.get<BotAnalysisStats>(
+        `/bots/${botId}/analysis/stats?days=${days}`,
       );
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
+      if (response.data) {
+        return response.data;
       }
 
-      throw new Error(response.data.error || 'Failed to get bot analysis statistics');
+      throw new Error('Failed to get bot analysis statistics');
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.error || error.message);
@@ -261,15 +254,24 @@ class AIAnalysisService {
     limit: number = 50,
   ): Promise<RecentAnalysisResponse> {
     try {
-      const response = await api.get<ApiResponse<RecentAnalysisResponse>>(
-        `/ai-analysis/bots/${botId}/recent?hours=${hours}&limit=${limit}`,
+      // This can use the main analysis endpoint with proper filtering
+      const response = await api.get<AnalysisLogsResponse>(
+        `/bots/${botId}/analysis?limit=${limit}`,
       );
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
+      if (response.data) {
+        // Transform to RecentAnalysisResponse format
+        return {
+          bot_id: botId,
+          hours_back: hours,
+          limit: limit,
+          count: response.data.total || 0,
+          data: (response.data.analysis_logs || response.data.data || []) as AIAnalysisLog[],
+          retrieved_at: new Date().toISOString(),
+        };
       }
 
-      throw new Error(response.data.error || 'Failed to get recent analysis');
+      throw new Error('Failed to get recent analysis');
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.error || error.message);
@@ -288,15 +290,24 @@ class AIAnalysisService {
     offset: number = 0,
   ): Promise<AnalysisBySymbolResponse> {
     try {
-      const response = await api.get<ApiResponse<AnalysisBySymbolResponse>>(
-        `/ai-analysis/bots/${botId}/symbols/${symbol}?limit=${limit}&offset=${offset}`,
+      // Use the main analysis endpoint with symbol filter
+      const response = await api.get<AnalysisLogsResponse>(
+        `/bots/${botId}/analysis?symbol=${symbol}&limit=${limit}&offset=${offset}`,
       );
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
+      if (response.data) {
+        // Transform to AnalysisBySymbolResponse format
+        return {
+          bot_id: botId,
+          symbol: symbol,
+          limit: limit,
+          offset: offset,
+          count: response.data.total || 0,
+          data: (response.data.analysis_logs || response.data.data || []) as AIAnalysisLog[],
+        };
       }
 
-      throw new Error(response.data.error || 'Failed to get analysis logs by symbol');
+      throw new Error('Failed to get analysis logs by symbol');
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.error || error.message);

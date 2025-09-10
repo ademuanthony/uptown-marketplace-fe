@@ -51,13 +51,8 @@ function DialogPortal() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [context]);
 
-  if (!context?.open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/80" onClick={() => context.onOpenChange(false)} />
-    </div>
-  );
+  // Don't render anything here - the DialogContent will handle the portal
+  return null;
 }
 
 export interface DialogTriggerProps extends HTMLAttributes<HTMLButtonElement> {
@@ -92,22 +87,53 @@ export type DialogContentProps = HTMLAttributes<HTMLDivElement>;
 
 function DialogContent({ className = '', children, ...props }: DialogContentProps) {
   const context = useContext(DialogContext);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (context?.open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [context?.open]);
+
   if (!context?.open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/80" onClick={() => context.onOpenChange(false)} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop */}
       <div
-        className={`relative z-50 grid w-full max-w-lg gap-4 border border-slate-200 bg-white p-6 shadow-lg rounded-lg ${className}`}
+        className="fixed inset-0 bg-black/80"
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          context.onOpenChange(false);
+        }}
+        aria-hidden="true"
+      />
+      {/* Modal Content */}
+      <div
+        className={`relative z-[101] grid w-full max-w-lg gap-4 border border-slate-200 bg-white p-6 shadow-lg rounded-lg ${className}`}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
         {...props}
       >
         {children}
+        {/* Close Button */}
         <button
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
-          onClick={() => context.onOpenChange(false)}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 z-10"
+          onClick={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            context.onOpenChange(false);
+          }}
+          aria-label="Close dialog"
         >
-          <span className="sr-only">Close</span>
           <svg
             width="15"
             height="15"
@@ -140,7 +166,10 @@ export type DialogTitleProps = HTMLAttributes<HTMLHeadingElement>;
 
 function DialogTitle({ className = '', ...props }: DialogTitleProps) {
   return (
-    <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`} {...props} />
+    <h3
+      className={`text-xl font-bold leading-none tracking-tight text-gray-900 ${className}`}
+      {...props}
+    />
   );
 }
 

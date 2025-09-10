@@ -19,7 +19,6 @@ import {
 
 import {
   AIAnalysisLog,
-  AIAnalysisLogSummary,
   AIAnalysisFilter,
   BotAnalysisStats,
   aiAnalysisService,
@@ -39,18 +38,23 @@ import { DetailedAnalysisView } from '@/components/ai-analysis/DetailedAnalysisV
 
 // Analysis Log Card Component
 interface AnalysisLogCardProps {
-  log: AIAnalysisLog | AIAnalysisLogSummary;
-  isSummary: boolean;
-  onViewDetails: (logId: string) => void;
+  log: AIAnalysisLog;
+  onViewDetails: (log: AIAnalysisLog) => void;
 }
 
-const AnalysisLogCard: React.FC<AnalysisLogCardProps> = ({ log, isSummary, onViewDetails }) => {
+const AnalysisLogCard: React.FC<AnalysisLogCardProps> = ({ log, onViewDetails }) => {
   const signalDisplay = aiAnalysisService.getSignalActionDisplay(log.signal_action);
   const analysisTypeDisplay = aiAnalysisService.getAnalysisTypeDisplay(log.analysis_type);
-  const hasError = aiAnalysisService.hasError(log);
+  const hasError = !!log.error_message;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+    <div
+      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={e => {
+        e.preventDefault();
+        onViewDetails(log);
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Timestamp */}
@@ -91,9 +95,7 @@ const AnalysisLogCard: React.FC<AnalysisLogCardProps> = ({ log, isSummary, onVie
               <CheckCircleIcon className="h-4 w-4 text-green-600" title="Trade Executed" />
             )}
             {hasError && <XCircleIcon className="h-4 w-4 text-red-600" title="Has Error" />}
-            {('chart_available' in log
-              ? log.chart_available
-              : (log as AIAnalysisLog).chart_url) && (
+            {log.chart_url && (
               <ChartBarIcon className="h-4 w-4 text-blue-600" title="Chart Available" />
             )}
           </div>
@@ -104,26 +106,28 @@ const AnalysisLogCard: React.FC<AnalysisLogCardProps> = ({ log, isSummary, onVie
           </span>
 
           {/* View Details Button */}
-          {isSummary && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewDetails(log.id)}
-              className="flex items-center gap-1"
-            >
-              <EyeIcon className="h-3 w-3" />
-              Details
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onViewDetails(log);
+            }}
+            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 font-medium"
+          >
+            <EyeIcon className="h-3 w-3" />
+            Details
+          </Button>
         </div>
       </div>
 
-      {/* Additional Details for Full View */}
-      {!isSummary && (log as AIAnalysisLog).reason_analysis && (
+      {/* Additional Details Preview */}
+      {log.reason_analysis && (
         <div className="mt-3 pt-3 border-t">
           <p className="text-sm text-gray-700">
-            <strong>Reason:</strong> {(log as AIAnalysisLog).reason_analysis.substring(0, 200)}
-            {(log as AIAnalysisLog).reason_analysis.length > 200 && '...'}
+            <strong>Reason:</strong> {log.reason_analysis.substring(0, 200)}
+            {log.reason_analysis.length > 200 && '...'}
           </p>
         </div>
       )}
@@ -138,7 +142,7 @@ const AnalysisPage: React.FC = () => {
 
   // State management
   const [bot, setBot] = useState<TradingBot | null>(null);
-  const [analysisLogs, setAnalysisLogs] = useState<(AIAnalysisLog | AIAnalysisLogSummary)[]>([]);
+  const [analysisLogs, setAnalysisLogs] = useState<AIAnalysisLog[]>([]);
   const [analysisStats, setAnalysisStats] = useState<BotAnalysisStats | null>(null);
   const [selectedLog, setSelectedLog] = useState<AIAnalysisLog | null>(null);
 
@@ -154,7 +158,6 @@ const AnalysisPage: React.FC = () => {
     offset: 0,
     sort_by: 'timestamp',
     sort_order: 'desc',
-    summary: true, // Start with summary view for better performance
   });
   const [totalLogs, setTotalLogs] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
@@ -181,8 +184,8 @@ const AnalysisPage: React.FC = () => {
     try {
       setLoadingLogs(true);
       const response = await aiAnalysisService.getAnalysisLogs(filter);
-      setAnalysisLogs(response.data);
-      setTotalLogs(response.total);
+      setAnalysisLogs(response.data || response.analysis_logs || []);
+      setTotalLogs(response.total || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load analysis logs');
     } finally {
@@ -204,14 +207,9 @@ const AnalysisPage: React.FC = () => {
     }
   }, [botId]);
 
-  // Load detailed analysis log
-  const loadDetailedLog = useCallback(async (logId: string) => {
-    try {
-      const detailedLog = await aiAnalysisService.getAnalysisLogById(logId);
-      setSelectedLog(detailedLog);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load detailed log');
-    }
+  // Handle viewing detailed analysis log
+  const handleViewDetails = useCallback((log: AIAnalysisLog) => {
+    setSelectedLog(log);
   }, []);
 
   // Initial data loading
@@ -314,23 +312,30 @@ const AnalysisPage: React.FC = () => {
               <div className="flex items-center gap-6">
                 <div>
                   <p className="text-sm text-gray-600">Status</p>
-                  <Badge variant={bot?.status === 'running' ? 'success' : 'secondary'}>
+                  <Badge
+                    variant={bot?.status === 'running' ? 'success' : 'secondary'}
+                    className={
+                      bot?.status === 'running'
+                        ? 'bg-green-100 text-green-800 font-semibold'
+                        : 'font-semibold'
+                    }
+                  >
                     {bot?.status?.toUpperCase()}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Strategy</p>
-                  <p className="font-medium">
+                  <p className="font-semibold text-gray-900">
                     {bot?.strategy.type.replace('_', ' ').toUpperCase()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Symbols</p>
-                  <p className="font-medium">{bot?.symbols.join(', ')}</p>
+                  <p className="font-semibold text-gray-900">{bot?.symbols.join(', ')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Total Trades</p>
-                  <p className="font-medium">{bot?.total_trades}</p>
+                  <p className="font-semibold text-gray-900">{bot?.total_trades}</p>
                 </div>
               </div>
 
@@ -349,16 +354,25 @@ const AnalysisPage: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="logs" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+            <TabsTrigger
+              value="logs"
+              className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
+            >
               <ChartBarIcon className="h-4 w-4" />
               Analysis Logs
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
+            <TabsTrigger
+              value="stats"
+              className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
+            >
               <ChartBarIcon className="h-4 w-4" />
               Performance Stats
             </TabsTrigger>
-            <TabsTrigger value="charts" className="flex items-center gap-2">
+            <TabsTrigger
+              value="charts"
+              className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
+            >
               <CpuChipIcon className="h-4 w-4" />
               Chart Gallery
             </TabsTrigger>
@@ -373,27 +387,21 @@ const AnalysisPage: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
                   >
                     <FunnelIcon className="h-4 w-4" />
                     Filters
                   </Button>
 
-                  <Select
-                    value={filter.summary ? 'summary' : 'detailed'}
-                    onValueChange={value => handleFilterChange('summary', value === 'summary')}
-                  >
-                    <option value="summary">Summary View</option>
-                    <option value="detailed">Detailed View</option>
-                  </Select>
+                  <span className="text-sm text-gray-600">{totalLogs} Total Logs</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     onClick={handleExport}
-                    disabled={!analysisLogs.length || filter.summary}
-                    className="flex items-center gap-2"
+                    disabled={!analysisLogs.length}
+                    className="flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4" />
                     Export CSV
@@ -402,6 +410,7 @@ const AnalysisPage: React.FC = () => {
                   <Button
                     onClick={loadAnalysisLogs}
                     disabled={loadingLogs}
+                    variant="default"
                     className="flex items-center gap-2"
                   >
                     <MagnifyingGlassIcon className="h-4 w-4" />
@@ -481,12 +490,7 @@ const AnalysisPage: React.FC = () => {
               ) : (
                 <>
                   {analysisLogs.map(log => (
-                    <AnalysisLogCard
-                      key={log.id}
-                      log={log}
-                      isSummary={filter.summary || false}
-                      onViewDetails={loadDetailedLog}
-                    />
+                    <AnalysisLogCard key={log.id} log={log} onViewDetails={handleViewDetails} />
                   ))}
 
                   {/* Pagination */}
@@ -561,9 +565,11 @@ const AnalysisPage: React.FC = () => {
         {/* Detailed Log Modal */}
         {selectedLog && (
           <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-7xl w-[95vw] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Analysis Log Details</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  Analysis Log Details
+                </DialogTitle>
               </DialogHeader>
               <DetailedAnalysisView log={selectedLog} />
             </DialogContent>

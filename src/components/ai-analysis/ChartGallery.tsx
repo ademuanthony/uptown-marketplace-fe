@@ -373,7 +373,8 @@ export const ChartGallery: React.FC<ChartGalleryProps> = ({ botId }) => {
       const response = await aiAnalysisService.getAnalysisLogs(filter);
 
       // Filter only logs that have chart URLs
-      const chartsWithImages = (response.data as AIAnalysisLog[]).filter(
+      const allLogs = (response.analysis_logs || response.data || []) as AIAnalysisLog[];
+      const chartsWithImages = allLogs.filter(
         log => log.chart_url || log.main_tf_chart_url || log.higher_tf_chart_url,
       );
 
