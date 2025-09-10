@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ImageViewer } from '@/components/ui/image-viewer';
 
 interface ChartGalleryProps {
   botId: string;
@@ -224,6 +225,21 @@ interface ChartDetailViewProps {
 const ChartDetailView: React.FC<ChartDetailViewProps> = ({ chart, onDownload }) => {
   const signalDisplay = aiAnalysisService.getSignalActionDisplay(chart.signal_action);
 
+  // Image viewer state
+  const [imageViewer, setImageViewer] = useState<{
+    isOpen: boolean;
+    imageUrl: string;
+    imageAlt: string;
+  }>({ isOpen: false, imageUrl: '', imageAlt: '' });
+
+  const openImageViewer = (imageUrl: string, imageAlt: string) => {
+    setImageViewer({ isOpen: true, imageUrl, imageAlt });
+  };
+
+  const closeImageViewer = () => {
+    setImageViewer({ isOpen: false, imageUrl: '', imageAlt: '' });
+  };
+
   return (
     <div className="space-y-4">
       {/* Chart Info Header */}
@@ -272,13 +288,26 @@ const ChartDetailView: React.FC<ChartDetailViewProps> = ({ chart, onDownload }) 
                 Download
               </Button>
             </div>
-            <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            <div
+              className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in hover:ring-2 hover:ring-blue-500 transition-all"
+              onClick={() =>
+                openImageViewer(
+                  chart.chart_url || chart.main_tf_chart_url!,
+                  `Main chart for ${chart.symbol} (${chart.main_timeframe})`,
+                )
+              }
+              title="Click to view fullscreen"
+            >
               <Image
                 src={chart.chart_url || chart.main_tf_chart_url!}
                 alt={`Main chart for ${chart.symbol}`}
                 fill
-                className="object-contain"
+                className="object-contain hover:scale-105 transition-transform"
               />
+              {/* Zoom indicator */}
+              <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs opacity-0 hover:opacity-100 transition-opacity">
+                Click to zoom
+              </div>
             </div>
           </div>
         )}
@@ -303,13 +332,26 @@ const ChartDetailView: React.FC<ChartDetailViewProps> = ({ chart, onDownload }) 
                   Download
                 </Button>
               </div>
-              <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <div
+                className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in hover:ring-2 hover:ring-blue-500 transition-all"
+                onClick={() =>
+                  openImageViewer(
+                    chart.higher_tf_chart_url!,
+                    `Higher timeframe chart for ${chart.symbol} (${chart.higher_timeframe})`,
+                  )
+                }
+                title="Click to view fullscreen"
+              >
                 <Image
                   src={chart.higher_tf_chart_url}
                   alt={`Higher timeframe chart for ${chart.symbol}`}
                   fill
-                  className="object-contain"
+                  className="object-contain hover:scale-105 transition-transform"
                 />
+                {/* Zoom indicator */}
+                <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs opacity-0 hover:opacity-100 transition-opacity">
+                  Click to zoom
+                </div>
               </div>
             </div>
           )}
@@ -343,6 +385,14 @@ const ChartDetailView: React.FC<ChartDetailViewProps> = ({ chart, onDownload }) 
           </div>
         </div>
       </div>
+
+      {/* Image Viewer Modal */}
+      <ImageViewer
+        isOpen={imageViewer.isOpen}
+        imageUrl={imageViewer.imageUrl}
+        imageAlt={imageViewer.imageAlt}
+        onClose={closeImageViewer}
+      />
     </div>
   );
 };

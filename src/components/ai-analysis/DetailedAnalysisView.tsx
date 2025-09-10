@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ImageViewer } from '@/components/ui/image-viewer';
 
 interface DetailedAnalysisViewProps {
   log: AIAnalysisLog;
@@ -33,6 +34,21 @@ export const DetailedAnalysisView: React.FC<DetailedAnalysisViewProps> = ({ log 
     aiResponse: false,
     execution: false,
   });
+
+  // Image viewer state
+  const [imageViewer, setImageViewer] = useState<{
+    isOpen: boolean;
+    imageUrl: string;
+    imageAlt: string;
+  }>({ isOpen: false, imageUrl: '', imageAlt: '' });
+
+  const openImageViewer = (imageUrl: string, imageAlt: string) => {
+    setImageViewer({ isOpen: true, imageUrl, imageAlt });
+  };
+
+  const closeImageViewer = () => {
+    setImageViewer({ isOpen: false, imageUrl: '', imageAlt: '' });
+  };
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -243,13 +259,26 @@ export const DetailedAnalysisView: React.FC<DetailedAnalysisViewProps> = ({ log 
 
             <TabsContent value="main" className="mt-4">
               {log.chart_url || log.main_tf_chart_url ? (
-                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <div
+                  className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in hover:ring-2 hover:ring-blue-500 transition-all"
+                  onClick={() =>
+                    openImageViewer(
+                      log.chart_url || log.main_tf_chart_url!,
+                      `Main chart for ${log.symbol} (${log.main_timeframe})`,
+                    )
+                  }
+                  title="Click to view fullscreen"
+                >
                   <Image
                     src={log.chart_url || log.main_tf_chart_url!}
                     alt={`Main chart for ${log.symbol}`}
                     fill
-                    className="object-contain"
+                    className="object-contain hover:scale-105 transition-transform"
                   />
+                  {/* Zoom indicator */}
+                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs opacity-0 hover:opacity-100 transition-opacity">
+                    Click to zoom
+                  </div>
                 </div>
               ) : (
                 <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
@@ -263,13 +292,26 @@ export const DetailedAnalysisView: React.FC<DetailedAnalysisViewProps> = ({ log 
 
             <TabsContent value="higher" className="mt-4">
               {log.higher_tf_chart_url ? (
-                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <div
+                  className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in hover:ring-2 hover:ring-blue-500 transition-all"
+                  onClick={() =>
+                    openImageViewer(
+                      log.higher_tf_chart_url!,
+                      `Higher timeframe chart for ${log.symbol} (${log.higher_timeframe})`,
+                    )
+                  }
+                  title="Click to view fullscreen"
+                >
                   <Image
                     src={log.higher_tf_chart_url}
                     alt={`Higher timeframe chart for ${log.symbol}`}
                     fill
-                    className="object-contain"
+                    className="object-contain hover:scale-105 transition-transform"
                   />
+                  {/* Zoom indicator */}
+                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs opacity-0 hover:opacity-100 transition-opacity">
+                    Click to zoom
+                  </div>
                 </div>
               ) : (
                 <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
@@ -432,6 +474,14 @@ export const DetailedAnalysisView: React.FC<DetailedAnalysisViewProps> = ({ log 
           </div>
         </div>
       </Card>
+
+      {/* Image Viewer Modal */}
+      <ImageViewer
+        isOpen={imageViewer.isOpen}
+        imageUrl={imageViewer.imageUrl}
+        imageAlt={imageViewer.imageAlt}
+        onClose={closeImageViewer}
+      />
     </div>
   );
 };
