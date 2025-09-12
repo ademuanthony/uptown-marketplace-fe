@@ -86,6 +86,28 @@ const getDefaultStrategies = (): SupportedStrategy[] =>
       min_balance: 25,
       recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
     },
+    {
+      type: 'ai_signal',
+      name: 'AI Signal Strategy',
+      description:
+        'Advanced AI-powered trading using chart analysis and technical indicators for high-confidence signals',
+      risk_level: 'medium',
+      supported_modes: ['spot', 'futures'],
+      configuration_schema: {
+        main_timeframe: { required: true, type: 'string' },
+        higher_timeframe: { required: true, type: 'string' },
+        min_signal_strength: { required: true, type: 'number', min: 0.1, max: 1.0 },
+        max_positions_count: { required: true, type: 'number', min: 1, max: 10 },
+        risk_per_trade: { required: true, type: 'number', min: 0.5, max: 10 },
+        enable_long_signals: { required: false, type: 'boolean' },
+        enable_short_signals: { required: false, type: 'boolean' },
+        enable_trailing_stop: { required: false, type: 'boolean' },
+        trailing_trigger_percent: { required: false, type: 'number', min: 0.5, max: 50 },
+        trailing_stop_percent: { required: false, type: 'number', min: 0.1, max: 20 },
+      },
+      min_balance: 100,
+      recommended_symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'],
+    },
   ].map(
     strategy =>
       ({
@@ -298,6 +320,37 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
           toast.error(
             `Take profit percentage must be greater than pull back percentage for ${symbolConfig.symbol}`,
           );
+          return;
+        }
+      }
+    } else if (selectedStrategy.type === 'ai_signal') {
+      // Validate AI signal strategy configuration
+      const config = formData.strategy.config;
+
+      // Validate that at least one signal type is enabled
+      const enableLongSignals = config.enable_long_signals !== false; // Default to true
+      const enableShortSignals = config.enable_short_signals !== false; // Default to true
+
+      if (!enableLongSignals && !enableShortSignals) {
+        toast.error('At least one signal type (long or short) must be enabled');
+        return;
+      }
+
+      // Validate trailing stop configuration if enabled
+      if (config.enable_trailing_stop) {
+        const trailingTrigger = Number(config.trailing_trigger_percent) || 0;
+        const trailingStop = Number(config.trailing_stop_percent) || 0;
+
+        if (trailingTrigger <= 0 || trailingTrigger > 50) {
+          toast.error('Trailing trigger percentage must be between 0 and 50');
+          return;
+        }
+        if (trailingStop <= 0 || trailingStop > 20) {
+          toast.error('Trailing stop percentage must be between 0 and 20');
+          return;
+        }
+        if (trailingStop >= trailingTrigger) {
+          toast.error('Trailing stop percentage must be less than trailing trigger percentage');
           return;
         }
       }

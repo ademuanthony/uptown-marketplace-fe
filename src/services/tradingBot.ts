@@ -162,6 +162,10 @@ export interface TradingPosition {
   opened_at: string;
   closed_at?: string;
   metadata?: Record<string, unknown>;
+  // Trailing stop fields
+  trailing_stop_active?: boolean;
+  trailing_high_price?: number;
+  trailing_trigger_price?: number;
   created_at: string;
   updated_at: string;
 }
@@ -242,12 +246,19 @@ export interface AISignalConfig {
   // Signal Generation
   min_signal_strength: number; // Minimum signal strength (0.0-1.0)
   max_positions_count: number; // Max concurrent positions
+  enable_long_signals: boolean; // Enable long (buy) signals
+  enable_short_signals: boolean; // Enable short (sell) signals
 
   // Risk Management
   risk_per_trade: number; // Risk per trade as % of balance
   stop_loss_percent: number; // Stop loss percentage
   take_profit_percent: number; // Take profit percentage
   max_leverage: number; // Maximum leverage (1-100)
+
+  // Trailing Stop Configuration
+  enable_trailing_stop: boolean; // Enable trailing stop functionality
+  trailing_trigger_percent: number; // Percentage gain to start trailing (e.g., 2.0)
+  trailing_stop_percent: number; // Percentage pullback to close position (e.g., 1.0)
 
   // Symbol Configuration
   scan_all_symbols: boolean; // Whether to scan all supported symbols

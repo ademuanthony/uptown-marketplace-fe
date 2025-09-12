@@ -540,6 +540,11 @@ export default function StrategyConfigForm({
       return typeof value === 'string' ? value : defaultValue;
     };
 
+    const getBooleanValue = (key: string, defaultValue: boolean): boolean => {
+      const value = config[key];
+      return typeof value === 'boolean' ? value : defaultValue;
+    };
+
     return (
       <div className="space-y-6">
         {/* Timeframe Configuration */}
@@ -612,6 +617,41 @@ export default function StrategyConfigForm({
         {/* Signal Configuration */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-green-900 mb-4">Signal Generation</h3>
+
+          {/* Signal Type Controls */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Signal Types *</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enable_long_signals"
+                  checked={config.enable_long_signals !== false} // Default to true
+                  onChange={e => updateConfig('enable_long_signals', e.target.checked)}
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enable_long_signals" className="ml-2 block text-sm text-gray-700">
+                  Enable Long Signals (Buy)
+                </label>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enable_short_signals"
+                  checked={config.enable_short_signals !== false} // Default to true
+                  onChange={e => updateConfig('enable_short_signals', e.target.checked)}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enable_short_signals" className="ml-2 block text-sm text-gray-700">
+                  Enable Short Signals (Sell)
+                </label>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Control which signal types the AI can generate. At least one must be enabled.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -743,6 +783,99 @@ export default function StrategyConfigForm({
                 placeholder="5.0"
               />
               <p className="mt-1 text-xs text-gray-500">Take profit percentage</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Trailing Stop Configuration */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-purple-900 mb-4">Trailing Stop</h3>
+
+          {/* Enable Trailing Stop */}
+          <div className="mb-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="enable_trailing_stop"
+                checked={getBooleanValue('enable_trailing_stop', false)}
+                onChange={e => updateConfig('enable_trailing_stop', e.target.checked)}
+                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="enable_trailing_stop"
+                className="ml-2 block text-sm font-medium text-gray-700"
+              >
+                Enable Trailing Stop
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Automatically adjust stop loss to lock in profits as the position moves favorably
+            </p>
+          </div>
+
+          {/* Trailing Stop Parameters */}
+          {getBooleanValue('enable_trailing_stop', false) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="trailing_trigger_percent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Trailing Trigger (%) *
+                </label>
+                <input
+                  type="number"
+                  id="trailing_trigger_percent"
+                  min="0.5"
+                  max="50"
+                  step="0.1"
+                  value={getNumberValue('trailing_trigger_percent', 3.0)}
+                  onChange={e =>
+                    updateConfig('trailing_trigger_percent', parseFloat(e.target.value) || 3.0)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="3.0"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Percentage gain required to activate trailing stop
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="trailing_stop_percent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Trailing Stop (%) *
+                </label>
+                <input
+                  type="number"
+                  id="trailing_stop_percent"
+                  min="0.1"
+                  max="20"
+                  step="0.1"
+                  value={getNumberValue('trailing_stop_percent', 1.5)}
+                  onChange={e =>
+                    updateConfig('trailing_stop_percent', parseFloat(e.target.value) || 1.5)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="1.5"
+                />
+                <p className="mt-1 text-xs text-gray-500">Percentage pullback to close position</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 bg-purple-100 border border-purple-200 rounded-md p-3">
+            <div className="text-sm text-purple-800">
+              <strong>How Trailing Stop Works:</strong>
+              <ul className="mt-2 space-y-1 text-xs">
+                <li>• Position opens normally with regular stop loss</li>
+                <li>• When profit reaches trigger percentage, trailing stop activates</li>
+                <li>• Stop loss automatically follows price at the trailing distance</li>
+                <li>• Position closes if price reverses by trailing stop percentage</li>
+                <li>• Helps lock in profits while allowing further upside potential</li>
+              </ul>
             </div>
           </div>
         </div>
