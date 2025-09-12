@@ -143,12 +143,14 @@ const AnalysisPage: React.FC = () => {
   // State management
   const [bot, setBot] = useState<TradingBot | null>(null);
   const [analysisLogs, setAnalysisLogs] = useState<AIAnalysisLog[]>([]);
+  const [parentAnalysisLogs, setParentAnalysisLogs] = useState<AIAnalysisLog[]>([]);
   const [analysisStats, setAnalysisStats] = useState<BotAnalysisStats | null>(null);
   const [selectedLog, setSelectedLog] = useState<AIAnalysisLog | null>(null);
 
   // Loading states
   const [loadingBot, setLoadingBot] = useState(true);
   const [loadingLogs, setLoadingLogs] = useState(true);
+  const [loadingParentLogs, setLoadingParentLogs] = useState(false);
   const [loadingStats, setLoadingStats] = useState(true);
 
   // Filter and pagination state
@@ -193,6 +195,27 @@ const AnalysisPage: React.FC = () => {
     }
   }, [filter]);
 
+  // Load parent analysis logs (for child bots)
+  const loadParentAnalysisLogs = useCallback(async () => {
+    if (!bot?.parent_id) return;
+    
+    try {
+      setLoadingParentLogs(true);
+      const response = await aiAnalysisService.getAnalysisLogs({
+        bot_id: bot.parent_id,
+        limit: 20,
+        offset: 0,
+        sort_by: 'timestamp',
+        sort_order: 'desc',
+      });
+      setParentAnalysisLogs(response.data || response.analysis_logs || []);
+    } catch (err) {
+      console.warn('Failed to load parent analysis logs:', err);
+    } finally {
+      setLoadingParentLogs(false);
+    }
+  }, [bot?.parent_id]);
+
   // Load analysis statistics
   const loadAnalysisStats = useCallback(async () => {
     try {
@@ -226,6 +249,13 @@ const AnalysisPage: React.FC = () => {
       loadAnalysisStats();
     }
   }, [activeTab, loadAnalysisStats]);
+
+  // Load parent logs when bot is loaded (for child bots)
+  useEffect(() => {
+    if (bot?.parent_id) {
+      loadParentAnalysisLogs();
+    }
+  }, [bot?.parent_id, loadParentAnalysisLogs]);
 
   // Filter handlers
   const handleFilterChange = (key: keyof AIAnalysisFilter, value: unknown) => {
@@ -308,6 +338,24 @@ const AnalysisPage: React.FC = () => {
 
           {/* Bot Status Section */}
           <div className="px-6 py-4">
+            {/* Child Bot Indicator */}
+            {bot?.parent_id && (
+              <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <CpuChipIcon className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-800">
+                    Child Bot - Follows Parent Bot Strategy
+                  </span>
+                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                    Copy Trading
+                  </Badge>
+                </div>
+                <p className="text-xs text-blue-700 mt-1">
+                  This bot automatically executes trades based on its parent bot's AI analysis decisions.
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div>
@@ -354,14 +402,23 @@ const AnalysisPage: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className={`grid w-full ${bot?.parent_id ? 'grid-cols-4' : 'grid-cols-3'} bg-gray-100`}>
             <TabsTrigger
               value="logs"
               className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
             >
               <ChartBarIcon className="h-4 w-4" />
-              Analysis Logs
+              My Analysis
             </TabsTrigger>
+            {bot?.parent_id && (
+              <TabsTrigger
+                value="parent-logs"
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
+              >
+                <CpuChipIcon className="h-4 w-4" />
+                Parent Analysis
+              </TabsTrigger>
+            )}
             <TabsTrigger
               value="stats"
               className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
@@ -536,6 +593,100 @@ const AnalysisPage: React.FC = () => {
               )}
             </div>
           </TabsContent>
+
+          {/* Parent Analysis Logs Tab (for child bots) */}
+          {bot?.parent_id && (
+            <TabsContent value="parent-logs" className="space-y-6">
+              {/* Parent Bot Info Header */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <CpuChipIcon className="h-6 w-6 text-blue-600" />
+                  <h3 className="text-lg font-medium text-blue-900">Parent Bot Analysis</h3>
+                </div>
+                <p className="text-sm text-blue-800">
+                  This child bot follows decisions made by its parent bot. View the parent bot's AI analysis logs below to understand the strategy decisions being implemented.
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-sm text-blue-700">
+                  <span><strong>Parent Bot ID:</strong> {bot.parent_id}</span>
+                  <span><strong>Analysis Type:</strong> Strategic Decision Making</span>
+                </div>
+              </div>
+
+              {/* Parent Analysis Logs */}
+              <div className="space-y-4">
+                {loadingParentLogs ? (
+                  <div className="flex items-center justify-center h-32">
+                    <LoadingSpinner size="md" />
+                  </div>
+                ) : parentAnalysisLogs.length === 0 ? (
+                  <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <CpuChipIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Parent Analysis Logs Found</h3>
+                    <p className="text-gray-600">
+                      The parent bot hasn't generated any analysis logs yet, or they may not be available.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-medium text-gray-700">
+                            📊 Showing {parentAnalysisLogs.length} recent parent analysis logs
+                          </span>
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            Strategic Insights
+                          </Badge>
+                        </div>
+                        <Button
+                          onClick={loadParentAnalysisLogs}
+                          disabled={loadingParentLogs}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2"
+                        >
+                          <MagnifyingGlassIcon className="h-4 w-4" />
+                          Refresh
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {parentAnalysisLogs.map(log => (
+                      <div key={log.id} className="relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-full"></div>
+                        <div className="ml-4">
+                          <AnalysisLogCard 
+                            log={{
+                              ...log,
+                              // Add visual indicator that this is from parent
+                              reason_analysis: `[PARENT BOT ANALYSIS] ${log.reason_analysis}`
+                            }} 
+                            onViewDetails={handleViewDetails} 
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Parent Analysis Info */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5" />
+                        <div>
+                          <h4 className="text-sm font-medium text-amber-900 mb-1">Understanding Parent Analysis</h4>
+                          <ul className="text-sm text-amber-800 space-y-1">
+                            <li>• These are the AI analysis decisions made by your parent bot</li>
+                            <li>• Your child bot automatically follows these strategic decisions</li>
+                            <li>• Position opening/closing signals from parent are executed on your account</li>
+                            <li>• This provides transparency into the decision-making process you're following</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </TabsContent>
+          )}
 
           {/* Performance Stats Tab */}
           <TabsContent value="stats" className="space-y-6">
