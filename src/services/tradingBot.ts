@@ -260,6 +260,9 @@ export interface AISignalConfig {
   trailing_trigger_percent: number; // Percentage gain to start trailing (e.g., 2.0)
   trailing_stop_percent: number; // Percentage pullback to close position (e.g., 1.0)
 
+  // Active Position Management
+  enable_active_management: boolean; // Enable continuous analysis of open positions for close signals
+
   // Symbol Configuration
   scan_all_symbols: boolean; // Whether to scan all supported symbols
   whitelisted_symbols: string[]; // Specific symbols to analyze

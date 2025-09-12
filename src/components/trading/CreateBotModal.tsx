@@ -104,6 +104,7 @@ const getDefaultStrategies = (): SupportedStrategy[] =>
         enable_trailing_stop: { required: false, type: 'boolean' },
         trailing_trigger_percent: { required: false, type: 'number', min: 0.5, max: 50 },
         trailing_stop_percent: { required: false, type: 'number', min: 0.1, max: 20 },
+        enable_active_management: { required: false, type: 'boolean' },
       },
       min_balance: 100,
       recommended_symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'],

@@ -880,6 +880,46 @@ export default function StrategyConfigForm({
           </div>
         </div>
 
+        {/* Active Position Management Configuration */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-orange-900 mb-4">Active Position Management</h3>
+
+          {/* Enable Active Management */}
+          <div className="mb-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="enable_active_management"
+                checked={getBooleanValue('enable_active_management', false)}
+                onChange={e => updateConfig('enable_active_management', e.target.checked)}
+                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="enable_active_management"
+                className="ml-2 block text-sm font-medium text-gray-700"
+              >
+                Enable Active Position Management
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Continuously analyze open positions and suggest when to close them based on AI signals
+            </p>
+          </div>
+
+          <div className="mt-4 bg-orange-100 border border-orange-200 rounded-md p-3">
+            <div className="text-sm text-orange-800">
+              <strong>How Active Management Works:</strong>
+              <ul className="mt-2 space-y-1 text-xs">
+                <li>• AI continuously monitors your open positions</li>
+                <li>• Analyzes market conditions and position performance</li>
+                <li>• Generates close signals when optimal exit conditions are met</li>
+                <li>• Parent bot coordinates position closing across all child bots</li>
+                <li>• Helps optimize exit timing beyond basic stop/take profit levels</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="text-sm text-blue-800">
             <strong>Strategy Overview:</strong> AI Signal Strategy uses advanced artificial
