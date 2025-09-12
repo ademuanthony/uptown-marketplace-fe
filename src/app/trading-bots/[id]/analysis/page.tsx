@@ -198,7 +198,7 @@ const AnalysisPage: React.FC = () => {
   // Load parent analysis logs (for child bots)
   const loadParentAnalysisLogs = useCallback(async () => {
     if (!bot?.parent_id) return;
-    
+
     try {
       setLoadingParentLogs(true);
       const response = await aiAnalysisService.getAnalysisLogs({
@@ -346,12 +346,16 @@ const AnalysisPage: React.FC = () => {
                   <span className="text-sm font-medium text-blue-800">
                     Child Bot - Follows Parent Bot Strategy
                   </span>
-                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-100 text-blue-700 border-blue-300 text-xs"
+                  >
                     Copy Trading
                   </Badge>
                 </div>
                 <p className="text-xs text-blue-700 mt-1">
-                  This bot automatically executes trades based on its parent bot's AI analysis decisions.
+                  This bot automatically executes trades based on its parent bot&apos;s AI analysis
+                  decisions.
                 </p>
               </div>
             )}
@@ -402,7 +406,9 @@ const AnalysisPage: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${bot?.parent_id ? 'grid-cols-4' : 'grid-cols-3'} bg-gray-100`}>
+          <TabsList
+            className={`grid w-full ${bot?.parent_id ? 'grid-cols-4' : 'grid-cols-3'} bg-gray-100`}
+          >
             <TabsTrigger
               value="logs"
               className="flex items-center gap-2 font-medium data-[state=active]:bg-white data-[state=active]:text-gray-900"
@@ -604,11 +610,17 @@ const AnalysisPage: React.FC = () => {
                   <h3 className="text-lg font-medium text-blue-900">Parent Bot Analysis</h3>
                 </div>
                 <p className="text-sm text-blue-800">
-                  This child bot follows decisions made by its parent bot. View the parent bot's AI analysis logs below to understand the strategy decisions being implemented.
+                  This child bot follows decisions made by its parent bot. View the parent
+                  bot&apos;s AI analysis logs below to understand the strategy decisions being
+                  implemented.
                 </p>
                 <div className="mt-3 flex items-center gap-4 text-sm text-blue-700">
-                  <span><strong>Parent Bot ID:</strong> {bot.parent_id}</span>
-                  <span><strong>Analysis Type:</strong> Strategic Decision Making</span>
+                  <span>
+                    <strong>Parent Bot ID:</strong> {bot.parent_id}
+                  </span>
+                  <span>
+                    <strong>Analysis Type:</strong> Strategic Decision Making
+                  </span>
                 </div>
               </div>
 
@@ -621,9 +633,12 @@ const AnalysisPage: React.FC = () => {
                 ) : parentAnalysisLogs.length === 0 ? (
                   <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                     <CpuChipIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Parent Analysis Logs Found</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No Parent Analysis Logs Found
+                    </h3>
                     <p className="text-gray-600">
-                      The parent bot hasn't generated any analysis logs yet, or they may not be available.
+                      The parent bot hasn&apos;t generated any analysis logs yet, or they may not be
+                      available.
                     </p>
                   </div>
                 ) : (
@@ -634,7 +649,10 @@ const AnalysisPage: React.FC = () => {
                           <span className="text-sm font-medium text-gray-700">
                             📊 Showing {parentAnalysisLogs.length} recent parent analysis logs
                           </span>
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 text-blue-700 border-blue-200"
+                          >
                             Strategic Insights
                           </Badge>
                         </div>
@@ -650,18 +668,18 @@ const AnalysisPage: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {parentAnalysisLogs.map(log => (
                       <div key={log.id} className="relative">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-full"></div>
                         <div className="ml-4">
-                          <AnalysisLogCard 
+                          <AnalysisLogCard
                             log={{
                               ...log,
                               // Add visual indicator that this is from parent
-                              reason_analysis: `[PARENT BOT ANALYSIS] ${log.reason_analysis}`
-                            }} 
-                            onViewDetails={handleViewDetails} 
+                              reason_analysis: `[PARENT BOT ANALYSIS] ${log.reason_analysis}`,
+                            }}
+                            onViewDetails={handleViewDetails}
                           />
                         </div>
                       </div>
@@ -672,12 +690,22 @@ const AnalysisPage: React.FC = () => {
                       <div className="flex items-start gap-3">
                         <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5" />
                         <div>
-                          <h4 className="text-sm font-medium text-amber-900 mb-1">Understanding Parent Analysis</h4>
+                          <h4 className="text-sm font-medium text-amber-900 mb-1">
+                            Understanding Parent Analysis
+                          </h4>
                           <ul className="text-sm text-amber-800 space-y-1">
                             <li>• These are the AI analysis decisions made by your parent bot</li>
-                            <li>• Your child bot automatically follows these strategic decisions</li>
-                            <li>• Position opening/closing signals from parent are executed on your account</li>
-                            <li>• This provides transparency into the decision-making process you're following</li>
+                            <li>
+                              • Your child bot automatically follows these strategic decisions
+                            </li>
+                            <li>
+                              • Position opening/closing signals from parent are executed on your
+                              account
+                            </li>
+                            <li>
+                              • This provides transparency into the decision-making process
+                              you&apos;re following
+                            </li>
                           </ul>
                         </div>
                       </div>
