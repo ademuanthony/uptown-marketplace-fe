@@ -95,6 +95,13 @@ export interface CopyBotInput {
   risk_per_trade?: number; // Override parent's risk per trade %
 }
 
+export interface InitializeDefaultBotInput {
+  exchange_credentials_id: string;
+  bot_type: 'alpha-compounder' | 'xpat-trader';
+  name: string;
+  starting_balance?: number;
+}
+
 export interface UpdateBotConfigInput {
   name?: string;
   description?: string;
@@ -704,6 +711,50 @@ class TradingBotService {
       throw new Error(response.data.error || 'Failed to copy trading bot');
     } catch (error) {
       if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error || error.message);
+      }
+      throw error;
+    }
+  }
+
+  async initializeDefaultBot(input: InitializeDefaultBotInput): Promise<TradingBot> {
+    try {
+      const response = await api.post<ApiResponse<TradingBot>>('/trading-bots/initialize-default', input);
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      throw new Error(response.data.error || 'Failed to initialize default bot');
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          const errorMessage = errorData.error.message || errorData.error.details || 'Failed to initialize default bot';
+          throw new Error(errorMessage);
+        }
+        throw new Error(error.response?.data?.error || error.message);
+      }
+      throw error;
+    }
+  }
+
+  async getUserDefaultBot(botType: 'alpha-compounder' | 'xpat-trader'): Promise<TradingBot | null> {
+    try {
+      const response = await api.get<ApiResponse<TradingBot>>(`/trading-bots/default?bot_type=${botType}`);
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        // Return null for 404 (not found) - user doesn't have this default bot yet
+        if (error.response?.status === 404) {
+          return null;
+        }
+        const errorData = error.response?.data;
+        if (errorData?.error && typeof errorData.error === 'object') {
+          const errorMessage = errorData.error.message || errorData.error.details || 'Failed to get default bot';
+          throw new Error(errorMessage);
+        }
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;

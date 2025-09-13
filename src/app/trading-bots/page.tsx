@@ -27,6 +27,7 @@ import CreateBotModal from '@/components/trading/CreateBotModal';
 import CopyBotModal from '@/components/trading/CopyBotModal';
 import ConfigureBotModal from '@/components/trading/ConfigureBotModal';
 import DeleteBotModal from '@/components/trading/DeleteBotModal';
+import DefaultBotWidgets from '@/components/trading/DefaultBotWidgets';
 
 export default function TradingBotsPage() {
   const [bots, setBots] = useState<TradingBot[]>([]);
@@ -331,6 +332,9 @@ export default function TradingBotsPage() {
             </div>
           </div>
         )}
+
+        {/* Default Bot Widgets */}
+        <DefaultBotWidgets />
 
         {/* Bots List */}
         <div className="bg-white rounded-lg shadow-sm">
