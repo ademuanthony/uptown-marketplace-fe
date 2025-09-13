@@ -32,13 +32,13 @@ interface DefaultBotWidgetProps {
   onStartStop: () => void;
 }
 
-const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({ 
-  bot, 
-  userBot, 
-  loading, 
-  onViewDetails, 
-  onAnalysis, 
-  onStartStop 
+const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
+  bot,
+  userBot,
+  loading,
+  onViewDetails,
+  onAnalysis,
+  onStartStop,
 }) => {
   const isAlpha = bot.id === 'alpha-compounder';
   const icon = isAlpha ? (
@@ -161,7 +161,10 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
 
         {/* Action Buttons */}
         {loading ? (
-          <Button disabled className="w-full bg-gray-400 text-white flex items-center justify-center gap-2">
+          <Button
+            disabled
+            className="w-full bg-gray-400 text-white flex items-center justify-center gap-2"
+          >
             <LoadingSpinner size="sm" />
             Loading...
           </Button>
@@ -258,7 +261,7 @@ const DefaultBotWidgets: React.FC = () => {
   const handleStartStop = async (botId: string) => {
     const bot = botId === 'alpha-compounder' ? alphaBot : xpatBot;
     const setBotState = botId === 'alpha-compounder' ? setAlphaBot : setXpatBot;
-    
+
     if (!bot) return;
 
     try {

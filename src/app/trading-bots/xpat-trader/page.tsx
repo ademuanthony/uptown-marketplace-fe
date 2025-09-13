@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { XPAT_TRADER, DefaultBot, defaultBotsService } from '@/services/defaultBots';
-import { exchangeService } from '@/services/exchange';
+import { exchangeService, MaskedExchangeCredentials } from '@/services/exchange';
 import { tradingBotService, TradingBot } from '@/services/tradingBot';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,13 @@ interface CopyBotModalProps {
   isConfigMode?: boolean;
 }
 
-const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title, isConfigMode = false }) => {
+const CopyBotModal: React.FC<CopyBotModalProps> = ({
+  isOpen,
+  onClose,
+  bot,
+  title,
+  isConfigMode = false,
+}) => {
   const [exchanges, setExchanges] = useState<ExchangeCredentials[]>([]);
   const [selectedExchange, setSelectedExchange] = useState('');
   const [initialBalance, setInitialBalance] = useState(250);
@@ -57,7 +63,16 @@ const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title
   const loadExchanges = async () => {
     try {
       const response = await exchangeService.getExchangeCredentials();
-      setExchanges(response);
+      // Map MaskedExchangeCredentials to ExchangeCredentials
+      const mappedExchanges: ExchangeCredentials[] = response.map(
+        (ex: MaskedExchangeCredentials) => ({
+          id: ex.id,
+          exchange_name: ex.exchange ?? '',
+          label: ex.account_name ?? '',
+          is_active: ex.is_active,
+        }),
+      );
+      setExchanges(mappedExchanges);
     } catch (error) {
       console.error('Failed to load exchanges:', error);
     }
@@ -86,10 +101,16 @@ const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title
       // Success - close modal and redirect
       onClose();
       // Show success message
-      toast.success('Xpat Trader initialized successfully! You can now access it from your trading bots.');
+      toast.success(
+        'Xpat Trader initialized successfully! You can now access it from your trading bots.',
+      );
     } catch (error) {
       console.error('Failed to initialize bot:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to initialize Xpat Trader. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to initialize Xpat Trader. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -730,10 +751,10 @@ const XpatTraderPage: React.FC = () => {
         </Tabs>
 
         {/* Initialize Bot Modal */}
-        <CopyBotModal 
-          isOpen={showInitializeModal} 
-          onClose={() => setShowInitializeModal(false)} 
-          bot={bot} 
+        <CopyBotModal
+          isOpen={showInitializeModal}
+          onClose={() => setShowInitializeModal(false)}
+          bot={bot}
           title={`Initialize ${bot.name}`}
           isConfigMode={true}
         />

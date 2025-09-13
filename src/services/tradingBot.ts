@@ -719,7 +719,10 @@ class TradingBotService {
 
   async initializeDefaultBot(input: InitializeDefaultBotInput): Promise<TradingBot> {
     try {
-      const response = await api.post<ApiResponse<TradingBot>>('/trading-bots/initialize-default', input);
+      const response = await api.post<ApiResponse<TradingBot>>(
+        '/trading-bots/initialize-default',
+        input,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -728,7 +731,10 @@ class TradingBotService {
       if (isAxiosError(error)) {
         const errorData = error.response?.data;
         if (errorData?.error && typeof errorData.error === 'object') {
-          const errorMessage = errorData.error.message || errorData.error.details || 'Failed to initialize default bot';
+          const errorMessage =
+            errorData.error.message ||
+            errorData.error.details ||
+            'Failed to initialize default bot';
           throw new Error(errorMessage);
         }
         throw new Error(error.response?.data?.error || error.message);
@@ -739,7 +745,9 @@ class TradingBotService {
 
   async getUserDefaultBot(botType: 'alpha-compounder' | 'xpat-trader'): Promise<TradingBot | null> {
     try {
-      const response = await api.get<ApiResponse<TradingBot>>(`/trading-bots/default?bot_type=${botType}`);
+      const response = await api.get<ApiResponse<TradingBot>>(
+        `/trading-bots/default?bot_type=${botType}`,
+      );
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
@@ -752,7 +760,8 @@ class TradingBotService {
         }
         const errorData = error.response?.data;
         if (errorData?.error && typeof errorData.error === 'object') {
-          const errorMessage = errorData.error.message || errorData.error.details || 'Failed to get default bot';
+          const errorMessage =
+            errorData.error.message || errorData.error.details || 'Failed to get default bot';
           throw new Error(errorMessage);
         }
         throw new Error(error.response?.data?.error || error.message);

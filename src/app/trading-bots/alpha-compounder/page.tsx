@@ -45,7 +45,13 @@ interface CopyBotModalProps {
   isConfigMode?: boolean;
 }
 
-const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title, isConfigMode = false }) => {
+const CopyBotModal: React.FC<CopyBotModalProps> = ({
+  isOpen,
+  onClose,
+  bot,
+  title,
+  isConfigMode = false,
+}) => {
   const [exchanges, setExchanges] = useState<ExchangeCredentials[]>([]);
   const [selectedExchange, setSelectedExchange] = useState('');
   const [initialBalance, setInitialBalance] = useState(100);
@@ -58,14 +64,15 @@ const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title
       const response = await exchangeService.getExchangeCredentials();
       // Map MaskedExchangeCredentials to ExchangeCredentials
       // Define MaskedExchangeCredentials type for mapping
-      
 
-      const mappedExchanges: ExchangeCredentials[] = response.map((ex: MaskedExchangeCredentials) => ({
-        id: ex.id,
-        exchange_name: ex.exchange ?? '',
-        label: ex.account_name ?? '',
-        is_active: ex.is_active,
-      }));
+      const mappedExchanges: ExchangeCredentials[] = response.map(
+        (ex: MaskedExchangeCredentials) => ({
+          id: ex.id,
+          exchange_name: ex.exchange ?? '',
+          label: ex.account_name ?? '',
+          is_active: ex.is_active,
+        }),
+      );
       setExchanges(mappedExchanges);
     } catch (error) {
       console.error('Failed to load exchanges:', error);
@@ -95,10 +102,16 @@ const CopyBotModal: React.FC<CopyBotModalProps> = ({ isOpen, onClose, bot, title
       // Success - close modal and redirect
       onClose();
       // Show success message
-      toast.success('Alpha Compounder initialized successfully! You can now access it from your trading bots.');
+      toast.success(
+        'Alpha Compounder initialized successfully! You can now access it from your trading bots.',
+      );
     } catch (error) {
       console.error('Failed to initialize bot:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to initialize Alpha Compounder. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to initialize Alpha Compounder. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -663,7 +676,7 @@ const AlphaCompounderPage: React.FC = () => {
                       <Input
                         type="number"
                         value={startingCapital}
-                        onChange={(e) => setStartingCapital(Math.max(1, Number(e.target.value)))}
+                        onChange={e => setStartingCapital(Math.max(1, Number(e.target.value)))}
                         min={1}
                         max={1000000}
                         className="w-32 text-center font-semibold"
@@ -693,7 +706,8 @@ const AlphaCompounderPage: React.FC = () => {
                         <p className="text-sm text-gray-600">Expected balance</p>
                         {startingCapital !== 100 && (
                           <p className="text-xs text-green-500">
-                            ({((milestone.expectedBalance / startingCapital - 1) * 100).toFixed(0)}% gain)
+                            ({((milestone.expectedBalance / startingCapital - 1) * 100).toFixed(0)}%
+                            gain)
                           </p>
                         )}
                       </div>
@@ -764,10 +778,10 @@ const AlphaCompounderPage: React.FC = () => {
         </Tabs>
 
         {/* Initialize Bot Modal */}
-        <CopyBotModal 
-          isOpen={showInitializeModal} 
-          onClose={() => setShowInitializeModal(false)} 
-          bot={bot} 
+        <CopyBotModal
+          isOpen={showInitializeModal}
+          onClose={() => setShowInitializeModal(false)}
+          bot={bot}
           title={`Initialize ${bot.name}`}
           isConfigMode={true}
         />
