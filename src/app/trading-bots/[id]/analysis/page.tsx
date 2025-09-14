@@ -24,6 +24,7 @@ import {
   aiAnalysisService,
 } from '@/services/aiAnalysis';
 import { TradingBot, tradingBotService } from '@/services/tradingBot';
+import fuelService, { FuelBalance } from '@/services/fuel';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -168,6 +169,10 @@ const AnalysisPage: React.FC = () => {
   // Error handling
   const [error, setError] = useState<string | null>(null);
 
+  // Fuel balance state
+  const [fuelBalance, setFuelBalance] = useState<FuelBalance | null>(null);
+  const [loadingFuel, setLoadingFuel] = useState(true);
+
   // Load bot data
   const loadBot = useCallback(async () => {
     try {
@@ -230,6 +235,20 @@ const AnalysisPage: React.FC = () => {
     }
   }, [botId]);
 
+  // Load fuel balance
+  const loadFuelBalance = useCallback(async () => {
+    try {
+      setLoadingFuel(true);
+      const balance = await fuelService.getFuelBalance();
+      setFuelBalance(balance);
+    } catch (err) {
+      console.warn('Failed to load fuel balance:', err);
+      setFuelBalance(null);
+    } finally {
+      setLoadingFuel(false);
+    }
+  }, []);
+
   // Handle viewing detailed analysis log
   const handleViewDetails = useCallback((log: AIAnalysisLog) => {
     setSelectedLog(log);
@@ -256,6 +275,11 @@ const AnalysisPage: React.FC = () => {
       loadParentAnalysisLogs();
     }
   }, [bot?.parent_id, loadParentAnalysisLogs]);
+
+  // Load fuel balance on mount
+  useEffect(() => {
+    loadFuelBalance();
+  }, [loadFuelBalance]);
 
   // Filter handlers
   const handleFilterChange = (key: keyof AIAnalysisFilter, value: unknown) => {
@@ -403,6 +427,27 @@ const AnalysisPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Fuel Balance Warning */}
+        {!loadingFuel && fuelBalance && fuelBalance.balance <= 0 && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <ExclamationTriangleIcon className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <span className="font-semibold">Insufficient Fuel Balance</span>
+              <br />
+              You have {fuelBalance.balance} fuel units remaining. Analysis operations require fuel
+              to run.
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-2 text-orange-800 border-orange-300 hover:bg-orange-100"
+                onClick={() => window.open('/fuel', '_blank')}
+              >
+                Get Fuel
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
