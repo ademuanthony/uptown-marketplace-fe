@@ -290,14 +290,16 @@ const WalletPage: React.FC = () => {
                   lifetimeSpent={loyaltyAccount.lifetime_spent / 1e2}
                   isLoading={loading}
                   refreshTrigger={refreshTrigger}
-                  onBalanceUpdate={newBalance => {
-                    if (loyaltyAccount) {
-                      setLoyaltyAccount({
-                        ...loyaltyAccount,
-                        available_points: Math.round(newBalance),
-                        total_points: Math.round(newBalance),
-                      });
-                    }
+                  onBalanceUpdate={() => {
+                    // refresh loyalty account balance after check-in - fetch from server
+                    loadWalletData();
+                    // if (loyaltyAccount) {
+                    //   setLoyaltyAccount({
+                    //     ...loyaltyAccount,
+                    //     available_points: Math.round(newBalance),
+                    //     total_points: Math.round(newBalance),
+                    //   });
+                    // }
                   }}
                 />
               </div>
