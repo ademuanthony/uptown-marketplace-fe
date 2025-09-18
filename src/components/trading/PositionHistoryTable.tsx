@@ -38,6 +38,8 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
   };
 
   const formatDateTime = (dateString: string) => {
+    console.log('Formatting date:', dateString);
+    if (!dateString) return '-';
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
