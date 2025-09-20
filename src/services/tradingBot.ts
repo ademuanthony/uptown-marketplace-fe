@@ -464,6 +464,14 @@ class TradingBotService {
             errorData.error.message || errorData.error.details || 'Failed to start trading bot';
           throw new Error(errorMessage);
         }
+
+        // Handle specific error for exchange credential conflicts
+        if (error.response?.status === 409 || error.response?.data?.error?.includes('exchange')) {
+          throw new Error(
+            'Cannot start bot: Another bot is already running with the same exchange credentials. Please stop the other bot first or use different exchange credentials.',
+          );
+        }
+
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
@@ -508,6 +516,14 @@ class TradingBotService {
             errorData.error.message || errorData.error.details || 'Failed to resume trading bot';
           throw new Error(errorMessage);
         }
+
+        // Handle specific error for exchange credential conflicts
+        if (error.response?.status === 409 || error.response?.data?.error?.includes('exchange')) {
+          throw new Error(
+            'Cannot resume bot: Another bot is already running with the same exchange credentials. Please stop the other bot first or use different exchange credentials.',
+          );
+        }
+
         throw new Error(error.response?.data?.error || error.message);
       }
       throw error;
