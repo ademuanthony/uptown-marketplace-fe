@@ -748,8 +748,8 @@ class TradingBotService {
         const errorData = error.response?.data;
         if (errorData?.error && typeof errorData.error === 'object') {
           const errorMessage =
-            errorData.error.message ||
             errorData.error.details ||
+            errorData.error.message ||
             'Failed to initialize default bot';
           throw new Error(errorMessage);
         }
