@@ -722,25 +722,106 @@ export default function StrategyConfigForm({
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-red-900 mb-4">Risk Management</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="risk_per_trade" className="block text-sm font-medium text-gray-700">
-                Risk Per Trade (%) *
-              </label>
-              <input
-                type="number"
-                id="risk_per_trade"
-                min="0.5"
-                max="10"
-                step="0.1"
-                value={getNumberValue('risk_per_trade', 2.0)}
-                onChange={e => updateConfig('risk_per_trade', parseFloat(e.target.value) || 2.0)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                placeholder="2.0"
-              />
-              <p className="mt-1 text-xs text-gray-500">Risk as % of balance per trade</p>
+          {/* Position Sizing Method */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Position Sizing Method *
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                <input
+                  type="radio"
+                  id="ai_sizing_method_risk"
+                  name="ai_sizing_method"
+                  checked={
+                    config.risk_per_trade !== undefined &&
+                    config.position_size_percent === undefined
+                  }
+                  onChange={() => {
+                    updateConfig('risk_per_trade', config.risk_per_trade || 2.0);
+                    updateConfig('position_size_percent', undefined);
+                  }}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                />
+                <label htmlFor="ai_sizing_method_risk" className="text-sm text-gray-700">
+                  Risk-based sizing (% risk per trade)
+                </label>
+              </div>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="radio"
+                  id="ai_sizing_method_position"
+                  name="ai_sizing_method"
+                  checked={
+                    config.position_size_percent !== undefined &&
+                    config.risk_per_trade === undefined
+                  }
+                  onChange={() => {
+                    updateConfig('position_size_percent', config.position_size_percent || 10.0);
+                    updateConfig('risk_per_trade', undefined);
+                  }}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                />
+                <label htmlFor="ai_sizing_method_position" className="text-sm text-gray-700">
+                  Fixed position size (% of balance per trade)
+                </label>
+              </div>
             </div>
 
+            {/* Risk-based configuration */}
+            {config.risk_per_trade !== undefined && (
+              <div className="mt-4">
+                <label htmlFor="risk_per_trade" className="block text-sm font-medium text-gray-700">
+                  Risk Per Trade (%) *
+                </label>
+                <input
+                  type="number"
+                  id="risk_per_trade"
+                  min="0"
+                  max="50"
+                  step="0.1"
+                  value={getNumberValue('risk_per_trade', 2.0)}
+                  onChange={e => updateConfig('risk_per_trade', parseFloat(e.target.value) || 0)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="2.0"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Risk as % of balance per trade. Position size calculated based on stop loss
+                  distance.
+                </p>
+              </div>
+            )}
+
+            {/* Position size configuration */}
+            {config.position_size_percent !== undefined && (
+              <div className="mt-4">
+                <label
+                  htmlFor="position_size_percent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Position Size (%) *
+                </label>
+                <input
+                  type="number"
+                  id="position_size_percent"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={getNumberValue('position_size_percent', 10.0)}
+                  onChange={e =>
+                    updateConfig('position_size_percent', parseFloat(e.target.value) || 0)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="10.0"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Fixed % of balance per trade, regardless of stop loss distance.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="stop_loss_percent"

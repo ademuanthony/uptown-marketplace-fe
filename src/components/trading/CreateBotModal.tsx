@@ -98,7 +98,8 @@ const getDefaultStrategies = (): SupportedStrategy[] =>
         higher_timeframe: { required: true, type: 'string' },
         min_signal_strength: { required: true, type: 'number', min: 0.1, max: 1.0 },
         max_positions_count: { required: true, type: 'number', min: 1, max: 10 },
-        risk_per_trade: { required: true, type: 'number', min: 0.5, max: 10 },
+        risk_per_trade: { required: false, type: 'number', min: 0, max: 50 },
+        position_size_percent: { required: false, type: 'number', min: 0, max: 100 },
         enable_long_signals: { required: false, type: 'boolean' },
         enable_short_signals: { required: false, type: 'boolean' },
         enable_trailing_stop: { required: false, type: 'boolean' },
@@ -241,22 +242,25 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
         toast.error('Leverage must be between 1 and 100');
         return;
       }
-      if (
-        formData.position_size_percent &&
-        (formData.position_size_percent < 0.1 || formData.position_size_percent > 100)
-      ) {
-        toast.error('Position size percentage must be between 0.1% and 100%');
+      // Validate position sizing configuration
+      if (formData.position_size_percent !== undefined && formData.position_size_percent < 0) {
+        toast.error('Position size percentage cannot be negative');
+        return;
+      }
+      if (formData.position_size_percent !== undefined && formData.position_size_percent > 100) {
+        toast.error('Position size percentage cannot exceed 100%');
+        return;
+      }
+      if (formData.risk_per_trade !== undefined && formData.risk_per_trade < 0) {
+        toast.error('Risk per trade cannot be negative');
+        return;
+      }
+      if (formData.risk_per_trade !== undefined && formData.risk_per_trade > 100) {
+        toast.error('Risk per trade cannot exceed 100%');
         return;
       }
       if (formData.max_position_size && formData.max_position_size < 0) {
-        toast.error('Maximum position size must be greater than 0');
-        return;
-      }
-      if (
-        formData.risk_per_trade &&
-        (formData.risk_per_trade < 0.1 || formData.risk_per_trade > 100)
-      ) {
-        toast.error('Risk per trade must be between 0.1% and 100%');
+        toast.error('Maximum position size cannot be negative');
         return;
       }
     }
@@ -801,34 +805,156 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                   </p>
                                 </div>
 
-                                <div>
-                                  <label
-                                    htmlFor="position_size_percent"
-                                    className="block text-sm font-medium text-gray-700"
-                                  >
-                                    Position Size %
+                                {/* Position Sizing Configuration */}
+                                <div className="col-span-full">
+                                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    Position Sizing Method
                                   </label>
-                                  <input
-                                    type="number"
-                                    id="position_size_percent"
-                                    min="0.1"
-                                    max="100"
-                                    step="0.1"
-                                    value={formData.position_size_percent || ''}
-                                    onChange={e =>
-                                      setFormData(prev => ({
-                                        ...prev,
-                                        position_size_percent: e.target.value
-                                          ? parseFloat(e.target.value)
-                                          : undefined,
-                                      }))
-                                    }
-                                    placeholder="0.1-100"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                  />
-                                  <p className="mt-1 text-xs text-gray-500">
-                                    % of balance per trade
-                                  </p>
+                                  <div className="space-y-4">
+                                    <div className="flex items-center space-x-4">
+                                      <input
+                                        type="radio"
+                                        id="sizing_method_risk"
+                                        name="sizing_method"
+                                        checked={
+                                          formData.risk_per_trade !== undefined &&
+                                          formData.position_size_percent === undefined
+                                        }
+                                        onChange={() => {
+                                          setFormData(prev => ({
+                                            ...prev,
+                                            risk_per_trade: prev.risk_per_trade || 2.0,
+                                            position_size_percent: undefined,
+                                          }));
+                                        }}
+                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                      />
+                                      <label
+                                        htmlFor="sizing_method_risk"
+                                        className="text-sm text-gray-700"
+                                      >
+                                        Risk-based sizing (% risk per trade)
+                                      </label>
+                                    </div>
+                                    <div className="flex items-center space-x-4">
+                                      <input
+                                        type="radio"
+                                        id="sizing_method_position"
+                                        name="sizing_method"
+                                        checked={
+                                          formData.position_size_percent !== undefined &&
+                                          formData.risk_per_trade === undefined
+                                        }
+                                        onChange={() => {
+                                          setFormData(prev => ({
+                                            ...prev,
+                                            position_size_percent:
+                                              prev.position_size_percent || 10.0,
+                                            risk_per_trade: undefined,
+                                          }));
+                                        }}
+                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                      />
+                                      <label
+                                        htmlFor="sizing_method_position"
+                                        className="text-sm text-gray-700"
+                                      >
+                                        Fixed position size (% of balance per trade)
+                                      </label>
+                                    </div>
+                                    <div className="flex items-center space-x-4">
+                                      <input
+                                        type="radio"
+                                        id="sizing_method_strategy"
+                                        name="sizing_method"
+                                        checked={
+                                          formData.risk_per_trade === undefined &&
+                                          formData.position_size_percent === undefined
+                                        }
+                                        onChange={() => {
+                                          setFormData(prev => ({
+                                            ...prev,
+                                            risk_per_trade: undefined,
+                                            position_size_percent: undefined,
+                                          }));
+                                        }}
+                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                      />
+                                      <label
+                                        htmlFor="sizing_method_strategy"
+                                        className="text-sm text-gray-700"
+                                      >
+                                        Use strategy defaults
+                                      </label>
+                                    </div>
+                                  </div>
+
+                                  {/* Risk-based configuration */}
+                                  {formData.risk_per_trade !== undefined &&
+                                    formData.risk_per_trade >= 0 && (
+                                      <div className="mt-3">
+                                        <label
+                                          htmlFor="risk_per_trade"
+                                          className="block text-sm font-medium text-gray-700"
+                                        >
+                                          Risk per Trade (%) *
+                                        </label>
+                                        <input
+                                          type="number"
+                                          id="risk_per_trade"
+                                          min="0"
+                                          max="100"
+                                          step="0.1"
+                                          value={formData.risk_per_trade}
+                                          onChange={e =>
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              risk_per_trade: parseFloat(e.target.value) || 0,
+                                            }))
+                                          }
+                                          placeholder="0-100"
+                                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        />
+                                        <p className="mt-1 text-xs text-gray-500">
+                                          Risk as % of balance per trade. Position size calculated
+                                          based on stop loss distance.
+                                        </p>
+                                      </div>
+                                    )}
+
+                                  {/* Position size configuration */}
+                                  {formData.position_size_percent !== undefined &&
+                                    formData.position_size_percent >= 0 && (
+                                      <div className="mt-3">
+                                        <label
+                                          htmlFor="position_size_percent"
+                                          className="block text-sm font-medium text-gray-700"
+                                        >
+                                          Position Size (%) *
+                                        </label>
+                                        <input
+                                          type="number"
+                                          id="position_size_percent"
+                                          min="0"
+                                          max="100"
+                                          step="0.1"
+                                          value={formData.position_size_percent}
+                                          onChange={e =>
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              position_size_percent:
+                                                parseFloat(e.target.value) || 0,
+                                            }))
+                                          }
+                                          placeholder="0-100"
+                                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        />
+                                        <p className="mt-1 text-xs text-gray-500">
+                                          Fixed % of balance per trade, regardless of stop loss
+                                          distance.
+                                        </p>
+                                      </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -856,37 +982,7 @@ export default function CreateBotModal({ isOpen, onClose, onSuccess }: CreateBot
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                   />
                                   <p className="mt-1 text-xs text-gray-500">
-                                    Maximum position size in USDT
-                                  </p>
-                                </div>
-
-                                <div>
-                                  <label
-                                    htmlFor="risk_per_trade"
-                                    className="block text-sm font-medium text-gray-700"
-                                  >
-                                    Risk per Trade %
-                                  </label>
-                                  <input
-                                    type="number"
-                                    id="risk_per_trade"
-                                    min="0.1"
-                                    max="100"
-                                    step="0.1"
-                                    value={formData.risk_per_trade || ''}
-                                    onChange={e =>
-                                      setFormData(prev => ({
-                                        ...prev,
-                                        risk_per_trade: e.target.value
-                                          ? parseFloat(e.target.value)
-                                          : undefined,
-                                      }))
-                                    }
-                                    placeholder="0.1-100"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                                  />
-                                  <p className="mt-1 text-xs text-gray-500">
-                                    Risk as % of balance per trade
+                                    Maximum position size in USDT (optional limit)
                                   </p>
                                 </div>
 
