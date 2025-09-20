@@ -166,7 +166,7 @@ export interface TradingPosition {
   realized_pnl: number;
   unrealized_pnl: number;
   status: PositionStatus;
-  opened_at: string;
+  entry_time: string;
   closed_at?: string;
   metadata?: Record<string, unknown>;
   // Trailing stop fields

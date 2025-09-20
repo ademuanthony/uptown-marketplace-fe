@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { TradingPosition } from '@/services/tradingBot';
 import {
-  ArrowUpIcon,
   ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronUpDownIcon,
   ClockIcon,
   FunnelIcon,
-  ChevronUpDownIcon,
 } from '@heroicons/react/24/outline';
-import { TradingPosition } from '@/services/tradingBot';
+import { useState } from 'react';
 
 interface PositionHistoryTableProps {
   positions: TradingPosition[] | null;
 }
 
 type SortField =
-  | 'opened_at'
+  | 'entry_time'
   | 'closed_at'
   | 'total_pnl'
   | 'quantity'
@@ -24,7 +24,7 @@ type SortField =
 type SortOrder = 'asc' | 'desc';
 
 export default function PositionHistoryTable({ positions }: PositionHistoryTableProps) {
-  const [sortField, setSortField] = useState<SortField>('opened_at');
+  const [sortField, setSortField] = useState<SortField>('entry_time');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -207,7 +207,7 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <SortableHeader field="opened_at">Opened</SortableHeader>
+              <SortableHeader field="entry_time">Opened</SortableHeader>
               <SortableHeader field="closed_at">Closed</SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Hold Time
@@ -241,8 +241,10 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col space-y-1">
-                    <div className={`text-sm font-medium ${getPnlColor(position.total_pnl)}`}>
-                      {formatCurrency(position.total_pnl)}
+                    <div
+                      className={`text-sm font-medium ${getPnlColor(position.unrealized_pnl + position.realized_pnl)}`}
+                    >
+                      {formatCurrency(position.unrealized_pnl + position.realized_pnl)}
                     </div>
                     {position.status === 'open' && position.unrealized_pnl !== 0 && (
                       <div className={`text-xs ${getPnlColor(position.unrealized_pnl)}`}>
@@ -253,13 +255,13 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(position.status)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDateTime(position.opened_at)}
+                  {formatDateTime(position.entry_time)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {position.closed_at ? formatDateTime(position.closed_at) : '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {calculateHoldTime(position.opened_at, position.closed_at)}
+                  {calculateHoldTime(position.entry_time, position.closed_at)}
                 </td>
               </tr>
             ))}
