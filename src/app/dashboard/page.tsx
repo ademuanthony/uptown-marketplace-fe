@@ -12,6 +12,9 @@ import ExchangeConnectionModal from '@/components/trading/ExchangeConnectionModa
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 
+// Prevent static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function TradingBotDashboard() {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [selectedBotType, setSelectedBotType] = useState<'alpha-compounder' | 'xpat-trader' | null>(
