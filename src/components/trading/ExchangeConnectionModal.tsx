@@ -13,12 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-// Form validation schema
+// Form validation schema - conditional validation based on whether using existing exchange
 const exchangeConnectionSchema = z.object({
   exchange: z.enum(['binance', 'bybit', 'okx', 'bitget', 'hyperliquid']),
-  accountName: z.string().min(1, 'Account name is required'),
-  apiKey: z.string().min(1, 'API Key is required'),
-  apiSecret: z.string().min(1, 'API Secret is required'),
+  accountName: z.string().optional(),
+  apiKey: z.string().optional(),
+  apiSecret: z.string().optional(),
   passphrase: z.string().optional(),
   isTestnet: z.boolean().default(false),
   startingBalance: z.number().min(1, 'Starting balance must be at least $1').default(100),
@@ -118,9 +118,13 @@ export default function ExchangeConnectionModal({
   };
 
   const handleExistingExchangeSelect = (credentials: MaskedExchangeCredentials) => {
+    console.info('Selecting existing exchange:', credentials);
     setSelectedExchangeCredentials(credentials);
     setSelectedExchange(credentials.exchange);
+    setUseExistingExchange(true); // Make sure this flag is set
     setValue('exchange', credentials.exchange);
+    // Set default starting balance when using existing exchange
+    setValue('startingBalance', 100);
     setStep('setup');
   };
 
@@ -131,7 +135,19 @@ export default function ExchangeConnectionModal({
   };
 
   const handleBotInitialization = async (data: ExchangeConnectionForm) => {
-    if (!botType) return;
+    console.info('Initializing bot with data:', data);
+    console.info('useExistingExchange:', useExistingExchange);
+    console.info('selectedExchangeCredentials:', selectedExchangeCredentials);
+
+    if (!botType) {
+      console.error('No bot type selected');
+      return;
+    }
+
+    if (!data.startingBalance || data.startingBalance < 1) {
+      toast.error('Please enter a valid starting balance of at least $1');
+      return;
+    }
 
     setIsInitializing(true);
     try {
@@ -139,9 +155,15 @@ export default function ExchangeConnectionModal({
 
       if (useExistingExchange && selectedExchangeCredentials) {
         // Use existing exchange credentials
+        console.info('Using existing exchange credentials:', selectedExchangeCredentials.id);
         credentialsId = selectedExchangeCredentials.id;
       } else {
-        // Create new exchange credentials
+        // Create new exchange credentials - validate required fields
+        if (!data.accountName || !data.apiKey || !data.apiSecret) {
+          toast.error('Missing required credentials for new exchange');
+          return;
+        }
+
         const newCredentials = await exchangeService.createExchangeCredentials({
           account_name: data.accountName,
           exchange: data.exchange,
@@ -193,6 +215,14 @@ export default function ExchangeConnectionModal({
 
   const handleCredentialsSubmit = async (data: ExchangeConnectionForm) => {
     if (step === 'credentials') {
+      // Validate required fields for new exchanges
+      if (!useExistingExchange) {
+        if (!data.accountName || !data.apiKey || !data.apiSecret) {
+          toast.error('Please fill in all required fields');
+          return;
+        }
+      }
+
       setStep('testing');
       setIsConnecting(true);
 
@@ -445,12 +475,13 @@ export default function ExchangeConnectionModal({
             {/* Account Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Account Name
+                Account Name *
               </label>
               <input
-                {...register('accountName')}
+                {...register('accountName', { required: 'Account name is required' })}
                 type="text"
                 placeholder="My Trading Account"
+                required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
               {errors.accountName && (
@@ -461,12 +492,13 @@ export default function ExchangeConnectionModal({
             {/* API Key */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                API Key
+                API Key *
               </label>
               <input
-                {...register('apiKey')}
+                {...register('apiKey', { required: 'API Key is required' })}
                 type="text"
                 placeholder="Enter your API key"
+                required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
               {errors.apiKey && (
@@ -477,12 +509,13 @@ export default function ExchangeConnectionModal({
             {/* API Secret */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                API Secret
+                API Secret *
               </label>
               <input
-                {...register('apiSecret')}
+                {...register('apiSecret', { required: 'API Secret is required' })}
                 type="password"
                 placeholder="Enter your API secret"
+                required
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
               {errors.apiSecret && (
