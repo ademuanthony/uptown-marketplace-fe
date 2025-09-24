@@ -202,7 +202,7 @@ export default function ExchangeConnectionModal({
       // Optionally redirect to the bot page
       if (bot?.id) {
         setTimeout(() => {
-          window.location.href = `/trading-bots/${bot.id}`;
+          window.location.href = `/trading-bots/${bot.id}/history`;
         }, 1000);
       }
     } catch (error) {
