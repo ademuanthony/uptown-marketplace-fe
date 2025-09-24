@@ -1,13 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  CreditCardIcon,
-  BanknotesIcon,
-  CurrencyDollarIcon,
-  WalletIcon,
-  CheckCircleIcon,
-} from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, WalletIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export type PaymentMethod = 'wallet' | 'crypto' | 'bank_transfer' | 'card';
 
@@ -43,22 +37,22 @@ const paymentMethods: PaymentMethodOption[] = [
     processingTime: 'Instant confirmation',
     fees: 'Low network fees (~$0.01)',
   },
-  {
-    id: 'bank_transfer',
-    name: 'Bank Transfer',
-    description: 'Direct bank transfer via Paystack',
-    icon: BanknotesIcon,
-    processingTime: '5-10 minutes',
-    fees: 'No additional fees',
-  },
-  {
-    id: 'card',
-    name: 'Debit/Credit Card',
-    description: 'Pay with your debit or credit card',
-    icon: CreditCardIcon,
-    processingTime: 'Instant confirmation',
-    fees: 'Standard processing fees',
-  },
+  // {
+  //   id: 'bank_transfer',
+  //   name: 'Bank Transfer',
+  //   description: 'Direct bank transfer via Paystack',
+  //   icon: BanknotesIcon,
+  //   processingTime: '5-10 minutes',
+  //   fees: 'No additional fees',
+  // },
+  // {
+  //   id: 'card',
+  //   name: 'Debit/Credit Card',
+  //   description: 'Pay with your debit or credit card',
+  //   icon: CreditCardIcon,
+  //   processingTime: 'Instant confirmation',
+  //   fees: 'Standard processing fees',
+  // },
 ];
 
 export default function PaymentMethodSelector({
