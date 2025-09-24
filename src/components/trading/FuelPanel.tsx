@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import fuelService, { FuelBalance } from '@/services/fuel';
+import { FuelBalance } from '@/services/fuel';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import FuelPackagesModal from './FuelPackagesModal';
@@ -16,18 +15,6 @@ interface FuelPanelProps {
 
 export default function FuelPanel({ balance, isLoading, className = '' }: FuelPanelProps) {
   const [isFuelModalOpen, setIsFuelModalOpen] = useState(false);
-
-  // Fetch recent transactions
-  const { data: transactionData, isLoading: isTransactionsLoading } = useQuery({
-    queryKey: ['fuel', 'transactions', 'recent'],
-    queryFn: () => fuelService.getTransactionHistory(1, 5),
-  });
-
-  // Fetch transaction summary
-  const { data: summary, isLoading: isSummaryLoading } = useQuery({
-    queryKey: ['fuel', 'summary'],
-    queryFn: () => fuelService.getTransactionSummary(),
-  });
 
   const handleBuyFuel = () => {
     setIsFuelModalOpen(true);
@@ -117,106 +104,6 @@ export default function FuelPanel({ balance, isLoading, className = '' }: FuelPa
             </svg>
             Buy Fuel
           </Button>
-        </div>
-
-        {/* Quick Stats */}
-        {summary && !isSummaryLoading && (
-          <div className="mb-6 grid grid-cols-2 gap-4">
-            <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                Total Spent
-              </p>
-              <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {formatBalance(summary?.total_spending)}
-              </p>
-            </div>
-            <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                Total Purchased
-              </p>
-              <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {formatBalance(summary?.total_purchases)}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Recent Transactions */}
-        <div>
-          <h3 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Recent Activity
-          </h3>
-          <div className="space-y-2">
-            {isTransactionsLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <LoadingSpinner size="sm" />
-              </div>
-            ) : transactionData?.transactions && transactionData.transactions.length > 0 ? (
-              transactionData.transactions.slice(0, 3).map(transaction => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between rounded-md bg-gray-50 p-3 dark:bg-gray-700"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`h-2 w-2 rounded-full ${
-                        transaction.transaction_type === 'purchase'
-                          ? 'bg-green-500'
-                          : transaction.transaction_type === 'spend'
-                            ? 'bg-red-500'
-                            : 'bg-blue-500'
-                      }`}
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {transaction.transaction_type === 'purchase'
-                          ? 'Fuel Purchase'
-                          : transaction.transaction_type === 'spend'
-                            ? 'Fuel Used'
-                            : 'Fuel Refund'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(transaction.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`text-sm font-medium ${
-                        transaction.transaction_type === 'purchase'
-                          ? 'text-green-600 dark:text-green-400'
-                          : transaction.transaction_type === 'spend'
-                            ? 'text-red-600 dark:text-red-400'
-                            : 'text-blue-600 dark:text-blue-400'
-                      }`}
-                    >
-                      {transaction.transaction_type === 'spend' ? '-' : '+'}
-                      {formatBalance(transaction?.amount)}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-md bg-gray-50 p-4 text-center dark:bg-gray-700">
-                <p className="text-sm text-gray-500 dark:text-gray-400">No recent transactions</p>
-              </div>
-            )}
-          </div>
-
-          {/* View All Transactions Link */}
-          {transactionData?.transactions && transactionData.transactions.length > 0 && (
-            <div className="mt-3 text-center">
-              <button
-                onClick={() => {
-                  // Navigate to fuel transactions page
-                  window.location.href = '/fuel/transactions';
-                }}
-                className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                View all transactions
-              </button>
-            </div>
-          )}
         </div>
       </motion.div>
 
