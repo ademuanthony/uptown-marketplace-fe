@@ -33,7 +33,10 @@ export default function FuelPanel({ balance, isLoading, className = '' }: FuelPa
     setIsFuelModalOpen(true);
   };
 
-  const formatBalance = (amount: number) => {
+  const formatBalance = (amount: number | undefined | null) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0';
+    }
     return amount.toLocaleString('en-US', { maximumFractionDigits: 0 });
   };
 
@@ -124,7 +127,7 @@ export default function FuelPanel({ balance, isLoading, className = '' }: FuelPa
                 Total Spent
               </p>
               <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {formatBalance(summary.total_spending)}
+                {formatBalance(summary?.total_spending)}
               </p>
             </div>
             <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
@@ -132,7 +135,7 @@ export default function FuelPanel({ balance, isLoading, className = '' }: FuelPa
                 Total Purchased
               </p>
               <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                {formatBalance(summary.total_purchases)}
+                {formatBalance(summary?.total_purchases)}
               </p>
             </div>
           </div>
@@ -188,7 +191,7 @@ export default function FuelPanel({ balance, isLoading, className = '' }: FuelPa
                       }`}
                     >
                       {transaction.transaction_type === 'spend' ? '-' : '+'}
-                      {formatBalance(transaction.amount)}
+                      {formatBalance(transaction?.amount)}
                     </p>
                   </div>
                 </div>

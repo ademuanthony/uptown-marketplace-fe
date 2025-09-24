@@ -63,7 +63,10 @@ export default function FuelPackagesModal({ isOpen, onClose }: FuelPackagesModal
     }
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
+  const formatCurrency = (amount: number | undefined | null, currency: string) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return currency === 'NGN' ? '₦0' : '$0';
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency === 'NGN' ? 'NGN' : 'USD',
@@ -72,7 +75,10 @@ export default function FuelPackagesModal({ isOpen, onClose }: FuelPackagesModal
     }).format(amount);
   };
 
-  const formatFuelAmount = (amount: number) => {
+  const formatFuelAmount = (amount: number | undefined | null) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0';
+    }
     return amount.toLocaleString('en-US', { maximumFractionDigits: 0 });
   };
 
