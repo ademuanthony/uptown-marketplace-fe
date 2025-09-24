@@ -67,12 +67,14 @@ export default function FuelPackagesModal({ isOpen, onClose }: FuelPackagesModal
     if (amount === null || amount === undefined || isNaN(amount)) {
       return currency === 'NGN' ? '₦0' : '$0';
     }
+    // Divide by 1e4 (10,000) since prices are stored multiplied by 1e4
+    const actualAmount = amount / 1e4;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency === 'NGN' ? 'NGN' : 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(actualAmount);
   };
 
   const formatFuelAmount = (amount: number | undefined | null) => {
@@ -199,8 +201,9 @@ export default function FuelPackagesModal({ isOpen, onClose }: FuelPackagesModal
                         {formatCurrency(pkg.price.amount, pkg.price.currency)}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        ≈ {(pkg.price.amount / (pkg.fuel_amount + pkg.bonus_fuel)).toFixed(2)} per
-                        fuel
+                        ≈ $
+                        {(pkg.price.amount / 1e4 / (pkg.fuel_amount + pkg.bonus_fuel)).toFixed(4)}{' '}
+                        per fuel
                       </p>
                     </div>
 
