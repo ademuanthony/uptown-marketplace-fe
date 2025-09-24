@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { tradingBotService, ExchangeName } from '@/services/tradingBot';
+import { exchangeService, MaskedExchangeCredentials } from '@/services/exchange';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -29,6 +30,7 @@ interface ExchangeConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   botType: 'alpha-compounder' | 'xpat-trader' | null;
+  existingExchangeCredentials: MaskedExchangeCredentials[];
 }
 
 const exchanges = [
@@ -73,11 +75,17 @@ export default function ExchangeConnectionModal({
   isOpen,
   onClose,
   botType,
+  existingExchangeCredentials,
 }: ExchangeConnectionModalProps) {
-  const [step, setStep] = useState<'exchange' | 'credentials' | 'testing' | 'setup'>('exchange');
+  const [step, setStep] = useState<
+    'select-mode' | 'select-existing' | 'exchange' | 'credentials' | 'testing' | 'setup'
+  >('select-mode');
   const [selectedExchange, setSelectedExchange] = useState<ExchangeName | null>(null);
+  const [selectedExchangeCredentials, setSelectedExchangeCredentials] =
+    useState<MaskedExchangeCredentials | null>(null);
   const [, setIsConnecting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [useExistingExchange, setUseExistingExchange] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -97,6 +105,25 @@ export default function ExchangeConnectionModal({
   // const watchedExchange = watch('exchange');
   // const watchedIsTestnet = watch('isTestnet');
 
+  const handleModeSelect = (useExisting: boolean) => {
+    setUseExistingExchange(useExisting);
+    if (useExisting && existingExchangeCredentials.length > 0) {
+      setStep('select-existing');
+    } else if (useExisting && existingExchangeCredentials.length === 0) {
+      // No existing exchanges, fallback to new exchange flow
+      setStep('exchange');
+    } else {
+      setStep('exchange');
+    }
+  };
+
+  const handleExistingExchangeSelect = (credentials: MaskedExchangeCredentials) => {
+    setSelectedExchangeCredentials(credentials);
+    setSelectedExchange(credentials.exchange);
+    setValue('exchange', credentials.exchange);
+    setStep('setup');
+  };
+
   const handleExchangeSelect = (exchange: ExchangeName) => {
     setSelectedExchange(exchange);
     setValue('exchange', exchange);
@@ -108,13 +135,27 @@ export default function ExchangeConnectionModal({
 
     setIsInitializing(true);
     try {
-      // First, create exchange credentials (this would need to be implemented)
-      // For now, we'll simulate this step
-      const mockCredentialsId = 'mock-credentials-id';
+      let credentialsId: string;
+
+      if (useExistingExchange && selectedExchangeCredentials) {
+        // Use existing exchange credentials
+        credentialsId = selectedExchangeCredentials.id;
+      } else {
+        // Create new exchange credentials
+        const newCredentials = await exchangeService.createExchangeCredentials({
+          account_name: data.accountName,
+          exchange: data.exchange,
+          api_key: data.apiKey,
+          api_secret: data.apiSecret,
+          passphrase: data.passphrase,
+          is_testnet: data.isTestnet,
+        });
+        credentialsId = newCredentials.id;
+      }
 
       // Initialize the default bot
       const bot = await tradingBotService.initializeDefaultBot({
-        exchange_credentials_id: mockCredentialsId,
+        exchange_credentials_id: credentialsId,
         bot_type: botType,
         name: `My ${botType === 'alpha-compounder' ? 'Alpha Compounder' : 'XPat Trader'}`,
         starting_balance: data.startingBalance,
@@ -127,11 +168,14 @@ export default function ExchangeConnectionModal({
       // Refresh queries
       queryClient.invalidateQueries({ queryKey: ['trading-bots'] });
       queryClient.invalidateQueries({ queryKey: ['trading-bots', 'default'] });
+      queryClient.invalidateQueries({ queryKey: ['exchange-credentials'] });
 
       onClose();
       reset();
-      setStep('exchange');
+      setStep('select-mode');
       setSelectedExchange(null);
+      setSelectedExchangeCredentials(null);
+      setUseExistingExchange(false);
 
       // Optionally redirect to the bot page
       if (bot?.id) {
@@ -169,19 +213,31 @@ export default function ExchangeConnectionModal({
   };
 
   const handleBack = () => {
-    if (step === 'credentials') {
+    if (step === 'select-existing') {
+      setStep('select-mode');
+      setSelectedExchangeCredentials(null);
+    } else if (step === 'exchange') {
+      setStep('select-mode');
+      setSelectedExchange(null);
+    } else if (step === 'credentials') {
       setStep('exchange');
       setSelectedExchange(null);
     } else if (step === 'setup') {
-      setStep('credentials');
+      if (useExistingExchange) {
+        setStep('select-existing');
+      } else {
+        setStep('credentials');
+      }
     }
   };
 
   const handleModalClose = () => {
     onClose();
     reset();
-    setStep('exchange');
+    setStep('select-mode');
     setSelectedExchange(null);
+    setSelectedExchangeCredentials(null);
+    setUseExistingExchange(false);
   };
 
   const selectedExchangeInfo = exchanges.find(ex => ex.id === selectedExchange);
@@ -198,6 +254,8 @@ export default function ExchangeConnectionModal({
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {step === 'select-mode' && 'Exchange Connection'}
+            {step === 'select-existing' && 'Select Exchange Account'}
             {step === 'exchange' && 'Choose Exchange'}
             {step === 'credentials' && 'Connect Exchange'}
             {step === 'testing' && 'Testing Connection'}
@@ -205,6 +263,8 @@ export default function ExchangeConnectionModal({
               `Setup ${botType === 'alpha-compounder' ? 'Alpha Compounder' : 'XPat Trader'}`}
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
+            {step === 'select-mode' && 'Choose to use existing exchange or add a new one'}
+            {step === 'select-existing' && 'Select from your existing exchange accounts'}
             {step === 'exchange' && 'Select your preferred cryptocurrency exchange'}
             {step === 'credentials' &&
               'Enter your API credentials to connect your exchange account'}
@@ -213,47 +273,149 @@ export default function ExchangeConnectionModal({
           </p>
         </div>
 
-        {/* Step Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {['exchange', 'credentials', 'testing', 'setup'].map((stepName, index) => (
-              <div key={stepName} className="flex items-center">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                    step === stepName
-                      ? 'bg-blue-600 text-white'
-                      : index < ['exchange', 'credentials', 'testing', 'setup'].indexOf(step)
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                  }`}
-                >
-                  {index < ['exchange', 'credentials', 'testing', 'setup'].indexOf(step) ? (
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                {index < 3 && (
-                  <div
-                    className={`h-1 w-16 ${
-                      index < ['exchange', 'credentials', 'testing', 'setup'].indexOf(step)
-                        ? 'bg-green-600'
-                        : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
-                  />
-                )}
+        {/* Step Indicator - Simplified */}
+        {step !== 'select-mode' && (
+          <div className="mb-8">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
+                {step === 'setup' ? '3' : step === 'testing' ? '2' : '1'}
               </div>
-            ))}
+              <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded">
+                <div
+                  className="h-full bg-blue-600 rounded transition-all duration-300"
+                  style={{
+                    width: step === 'setup' ? '100%' : step === 'testing' ? '66%' : '33%',
+                  }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Step Content */}
+        {step === 'select-mode' && (
+          <div className="space-y-4">
+            {existingExchangeCredentials.length > 0 && (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleModeSelect(true)}
+                className="cursor-pointer rounded-lg border-2 border-gray-200 p-6 transition-all hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-600"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20">
+                    <svg
+                      className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Use Existing Exchange
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Select from {existingExchangeCredentials.length} configured exchange
+                      {existingExchangeCredentials.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleModeSelect(false)}
+              className="cursor-pointer rounded-lg border-2 border-gray-200 p-6 transition-all hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-600"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+                  <svg
+                    className="h-6 w-6 text-green-600 dark:text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Add New Exchange
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Connect a new exchange account with API credentials
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {step === 'select-existing' && (
+          <div className="space-y-4">
+            {existingExchangeCredentials.map(credentials => {
+              const exchangeInfo = exchanges.find(ex => ex.id === credentials.exchange);
+              return (
+                <motion.div
+                  key={credentials.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleExistingExchangeSelect(credentials)}
+                  className="cursor-pointer rounded-lg border-2 border-gray-200 p-4 transition-all hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-600"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="text-2xl">{exchangeInfo?.logo || '🔗'}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {credentials.account_name}
+                        </h3>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            credentials.connection_status === 'connected'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                              : credentials.connection_status === 'error'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          }`}
+                        >
+                          {credentials.connection_status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {exchangeInfo?.name} • {credentials.masked_api_key} •{' '}
+                        {credentials.is_testnet ? 'Testnet' : 'Mainnet'}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* Back button for select-existing step */}
+            <div className="mt-6 flex justify-start">
+              <Button type="button" variant="outline" onClick={handleBack}>
+                Back
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === 'exchange' && (
           <div className="grid gap-4 sm:grid-cols-2">
             {exchanges.map(exchange => (
@@ -382,6 +544,31 @@ export default function ExchangeConnectionModal({
 
         {step === 'setup' && (
           <form onSubmit={handleSubmit(handleCredentialsSubmit)} className="space-y-6">
+            {/* Exchange Information - Only show for existing exchanges */}
+            {useExistingExchange && selectedExchangeCredentials && (
+              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                <h4 className="font-medium text-gray-900 dark:text-gray-300 mb-2">
+                  Selected Exchange
+                </h4>
+                <div className="flex items-center space-x-3">
+                  <div className="text-lg">
+                    {exchanges.find(ex => ex.id === selectedExchangeCredentials.exchange)?.logo ||
+                      '🔗'}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {selectedExchangeCredentials.account_name}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {exchanges.find(ex => ex.id === selectedExchangeCredentials.exchange)?.name} •{' '}
+                      {selectedExchangeCredentials.masked_api_key} •{' '}
+                      {selectedExchangeCredentials.is_testnet ? 'Testnet' : 'Mainnet'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Starting Balance */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

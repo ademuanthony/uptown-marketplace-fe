@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { tradingBotService } from '@/services/tradingBot';
+import { exchangeService } from '@/services/exchange';
 import fuelService from '@/services/fuel';
 import FuelPanel from '@/components/trading/FuelPanel';
 import AlphaCompounderWidget from '@/components/trading/AlphaCompounderWidget';
@@ -53,6 +54,16 @@ export default function TradingBotDashboard() {
     queryFn: () => tradingBotService.getUserDefaultBot('xpat-trader'),
   });
 
+  // Fetch user's exchange credentials
+  const {
+    data: exchangeCredentials,
+    isLoading: isExchangeLoading,
+    error: exchangeError,
+  } = useQuery({
+    queryKey: ['exchange-credentials'],
+    queryFn: () => exchangeService.getExchangeCredentials(),
+  });
+
   const handleStartTrading = (botType: 'alpha-compounder' | 'xpat-trader') => {
     setSelectedBotType(botType);
     setIsExchangeModalOpen(true);
@@ -63,7 +74,7 @@ export default function TradingBotDashboard() {
     setSelectedBotType(null);
   };
 
-  if (isFuelLoading || isBotsLoading) {
+  if (isFuelLoading || isBotsLoading || isExchangeLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -71,11 +82,16 @@ export default function TradingBotDashboard() {
     );
   }
 
-  if (fuelError || botsError) {
+  if (fuelError || botsError || exchangeError) {
     return (
       <div className="flex h-screen items-center justify-center">
         <ErrorMessage
-          message={fuelError?.message || botsError?.message || 'Failed to load dashboard data'}
+          message={
+            fuelError?.message ||
+            botsError?.message ||
+            exchangeError?.message ||
+            'Failed to load dashboard data'
+          }
         />
       </div>
     );
@@ -267,6 +283,7 @@ export default function TradingBotDashboard() {
         isOpen={isExchangeModalOpen}
         onClose={handleExchangeModalClose}
         botType={selectedBotType}
+        existingExchangeCredentials={exchangeCredentials || []}
       />
     </div>
   );
