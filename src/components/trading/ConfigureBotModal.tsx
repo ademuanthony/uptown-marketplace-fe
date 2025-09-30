@@ -70,6 +70,33 @@ const getDefaultStrategies = (): SupportedStrategy[] =>
       min_balance: 25,
       recommended_symbols: ['BTCUSDT', 'ETHUSDT'],
     },
+    {
+      type: 'ai_signal',
+      name: 'AI Signal Strategy',
+      description:
+        'Advanced AI-powered trading using chart analysis and technical indicators for high-confidence signals',
+      risk_level: 'medium',
+      supported_modes: ['spot', 'futures'],
+      configuration_schema: {
+        main_timeframe: { required: true, type: 'string' },
+        higher_timeframe: { required: true, type: 'string' },
+        min_signal_strength: { required: true, type: 'number', min: 0.1, max: 1.0 },
+        max_positions_count: { required: true, type: 'number', min: 1, max: 10 },
+        risk_per_trade: { required: false, type: 'number', min: 0, max: 50 },
+        position_size_percent: { required: false, type: 'number', min: 0, max: 100 },
+        use_ai_suggested_levels: { required: false, type: 'boolean' },
+        stop_loss_percent: { required: false, type: 'number', min: 0.5, max: 20 },
+        take_profit_percent: { required: false, type: 'number', min: 1, max: 50 },
+        enable_long_signals: { required: false, type: 'boolean' },
+        enable_short_signals: { required: false, type: 'boolean' },
+        enable_trailing_stop: { required: false, type: 'boolean' },
+        trailing_trigger_percent: { required: false, type: 'number', min: 0.5, max: 50 },
+        trailing_stop_percent: { required: false, type: 'number', min: 0.1, max: 20 },
+        enable_active_management: { required: false, type: 'boolean' },
+      },
+      min_balance: 100,
+      recommended_symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'],
+    },
   ].map(
     strategy =>
       ({

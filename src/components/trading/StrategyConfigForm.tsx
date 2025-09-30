@@ -821,51 +821,109 @@ export default function StrategyConfigForm({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="stop_loss_percent"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Stop Loss (%) *
-              </label>
-              <input
-                type="number"
-                id="stop_loss_percent"
-                min="0.5"
-                max="20"
-                step="0.1"
-                value={getNumberValue('stop_loss_percent', 3.0)}
-                onChange={e => updateConfig('stop_loss_percent', parseFloat(e.target.value) || 3.0)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                placeholder="3.0"
-              />
-              <p className="mt-1 text-xs text-gray-500">Stop loss percentage</p>
+          {/* Stop Loss & Take Profit Source */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Stop Loss & Take Profit Source *
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                <input
+                  type="radio"
+                  id="use_ai_suggested_levels_true"
+                  name="tp_sl_source"
+                  checked={getBooleanValue('use_ai_suggested_levels', false)}
+                  onChange={() => updateConfig('use_ai_suggested_levels', true)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="use_ai_suggested_levels_true" className="text-sm text-gray-700">
+                  Use AI-suggested levels (from signal analysis)
+                </label>
+              </div>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="radio"
+                  id="use_ai_suggested_levels_false"
+                  name="tp_sl_source"
+                  checked={!getBooleanValue('use_ai_suggested_levels', false)}
+                  onChange={() => updateConfig('use_ai_suggested_levels', false)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <label htmlFor="use_ai_suggested_levels_false" className="text-sm text-gray-700">
+                  Use custom percentage values (configured below)
+                </label>
+              </div>
             </div>
-
-            <div>
-              <label
-                htmlFor="take_profit_percent"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Take Profit (%) *
-              </label>
-              <input
-                type="number"
-                id="take_profit_percent"
-                min="1"
-                max="50"
-                step="0.1"
-                value={getNumberValue('take_profit_percent', 5.0)}
-                onChange={e =>
-                  updateConfig('take_profit_percent', parseFloat(e.target.value) || 5.0)
-                }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                placeholder="5.0"
-              />
-              <p className="mt-1 text-xs text-gray-500">Take profit percentage</p>
-            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Choose whether to use AI-suggested stop loss and take profit levels from the signal
+              analysis, or your custom percentage values.
+            </p>
           </div>
+
+          {/* Custom Stop Loss & Take Profit (only shown when not using AI levels) */}
+          {!getBooleanValue('use_ai_suggested_levels', false) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="stop_loss_percent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Stop Loss (%) *
+                </label>
+                <input
+                  type="number"
+                  id="stop_loss_percent"
+                  min="0.5"
+                  max="20"
+                  step="0.1"
+                  value={getNumberValue('stop_loss_percent', 3.0)}
+                  onChange={e =>
+                    updateConfig('stop_loss_percent', parseFloat(e.target.value) || 3.0)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="3.0"
+                />
+                <p className="mt-1 text-xs text-gray-500">Stop loss percentage from entry price</p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="take_profit_percent"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Take Profit (%) *
+                </label>
+                <input
+                  type="number"
+                  id="take_profit_percent"
+                  min="1"
+                  max="50"
+                  step="0.1"
+                  value={getNumberValue('take_profit_percent', 5.0)}
+                  onChange={e =>
+                    updateConfig('take_profit_percent', parseFloat(e.target.value) || 5.0)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="5.0"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Take profit percentage from entry price
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* AI Levels Information */}
+          {getBooleanValue('use_ai_suggested_levels', false) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="text-sm text-blue-800">
+                <strong>AI-Suggested Levels:</strong> The AI will analyze chart patterns,
+                support/resistance levels, and market conditions to suggest optimal stop loss and
+                take profit levels for each signal. These levels may vary per trade based on market
+                conditions.
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Trailing Stop Configuration */}
