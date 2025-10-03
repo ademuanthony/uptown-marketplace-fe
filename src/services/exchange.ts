@@ -86,7 +86,8 @@ class ExchangeService {
         return response.data.data;
       }
       const errorObj = response.data.error;
-      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to create exchange credentials';
+      const errorMessage =
+        errorObj?.details || errorObj?.message || 'Failed to create exchange credentials';
       throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
@@ -124,7 +125,8 @@ class ExchangeService {
         return response.data.data;
       }
       const errorObj = response.data.error;
-      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to get exchange credentials';
+      const errorMessage =
+        errorObj?.details || errorObj?.message || 'Failed to get exchange credentials';
       throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
@@ -141,7 +143,8 @@ class ExchangeService {
       const response = await api.put<ApiResponse<void>>(`/exchange-configs/${id}/deactivate`);
       if (!response.data.success) {
         const errorObj = response.data.error;
-        const errorMessage = errorObj?.details || errorObj?.message || 'Failed to deactivate exchange credentials';
+        const errorMessage =
+          errorObj?.details || errorObj?.message || 'Failed to deactivate exchange credentials';
         throw new Error(errorMessage);
       }
     } catch (error) {
@@ -159,7 +162,8 @@ class ExchangeService {
       const response = await api.delete<ApiResponse<void>>(`/exchange-configs/${id}`);
       if (!response.data.success) {
         const errorObj = response.data.error;
-        const errorMessage = errorObj?.details || errorObj?.message || 'Failed to delete exchange credentials';
+        const errorMessage =
+          errorObj?.details || errorObj?.message || 'Failed to delete exchange credentials';
         throw new Error(errorMessage);
       }
     } catch (error) {
@@ -181,7 +185,8 @@ class ExchangeService {
         return response.data.data;
       }
       const errorObj = response.data.error;
-      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to test exchange connection';
+      const errorMessage =
+        errorObj?.details || errorObj?.message || 'Failed to test exchange connection';
       throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
