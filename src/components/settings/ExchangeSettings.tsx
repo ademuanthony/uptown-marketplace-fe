@@ -139,16 +139,18 @@ export default function ExchangeSettings() {
               {exchanges.map(exchange => (
                 <div
                   key={exchange.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {getConnectionStatusIcon(exchange.connection_status)}
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start space-x-3 min-w-0">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {getConnectionStatusIcon(exchange.connection_status)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-medium text-gray-900 truncate">
                           {exchange.account_name}
                         </h4>
-                        <div className="flex items-center space-x-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                           <span className="text-xs text-gray-500">
                             {getExchangeDisplayName(exchange.exchange)}
                           </span>
@@ -157,10 +159,9 @@ export default function ExchangeSettings() {
                               Testnet
                             </span>
                           )}
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">
-                            API Key: {exchange.masked_api_key}
-                          </span>
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500 break-all">
+                          API Key: {exchange.masked_api_key}
                         </div>
                         {exchange.last_connected && (
                           <p className="text-xs text-gray-400 mt-1">
@@ -169,38 +170,38 @@ export default function ExchangeSettings() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2 sm:flex-shrink-0">
                       <button
                         onClick={() => handleTestConnection(exchange.id)}
                         disabled={testingId === exchange.id}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {testingId === exchange.id ? (
                           <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-700 mr-2"></div>
-                            Testing...
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-700 sm:mr-2"></div>
+                            <span className="hidden sm:inline">Testing...</span>
                           </>
                         ) : (
                           <>
-                            <BeakerIcon className="h-4 w-4 mr-1" />
-                            Test
+                            <BeakerIcon className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Test</span>
                           </>
                         )}
                       </button>
                       <button
                         onClick={() => handleDelete(exchange.id)}
                         disabled={deletingId === exchange.id}
-                        className="inline-flex items-center px-3 py-1.5 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-1.5 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {deletingId === exchange.id ? (
                           <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-700 mr-2"></div>
-                            Deleting...
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-700 sm:mr-2"></div>
+                            <span className="hidden sm:inline">Deleting...</span>
                           </>
                         ) : (
                           <>
-                            <TrashIcon className="h-4 w-4 mr-1" />
-                            Delete
+                            <TrashIcon className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Delete</span>
                           </>
                         )}
                       </button>

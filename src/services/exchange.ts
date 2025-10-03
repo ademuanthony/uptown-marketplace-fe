@@ -5,7 +5,11 @@ import { isAxiosError } from 'axios';
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
-  error?: string;
+  error?: {
+    code: string;
+    message: string;
+    details?: string;
+  };
   message?: string;
 }
 
@@ -81,10 +85,14 @@ class ExchangeService {
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
-      throw new Error(response.data.error || 'Failed to create exchange credentials');
+      const errorObj = response.data.error;
+      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to create exchange credentials';
+      throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -99,7 +107,9 @@ class ExchangeService {
       return [];
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -113,10 +123,14 @@ class ExchangeService {
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
-      throw new Error(response.data.error || 'Failed to get exchange credentials');
+      const errorObj = response.data.error;
+      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to get exchange credentials';
+      throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -126,11 +140,15 @@ class ExchangeService {
     try {
       const response = await api.put<ApiResponse<void>>(`/exchange-configs/${id}/deactivate`);
       if (!response.data.success) {
-        throw new Error(response.data.error || 'Failed to deactivate exchange credentials');
+        const errorObj = response.data.error;
+        const errorMessage = errorObj?.details || errorObj?.message || 'Failed to deactivate exchange credentials';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -140,11 +158,15 @@ class ExchangeService {
     try {
       const response = await api.delete<ApiResponse<void>>(`/exchange-configs/${id}`);
       if (!response.data.success) {
-        throw new Error(response.data.error || 'Failed to delete exchange credentials');
+        const errorObj = response.data.error;
+        const errorMessage = errorObj?.details || errorObj?.message || 'Failed to delete exchange credentials';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -158,10 +180,14 @@ class ExchangeService {
       if (response.data.success && response.data.data) {
         return response.data.data;
       }
-      throw new Error(response.data.error || 'Failed to test exchange connection');
+      const errorObj = response.data.error;
+      const errorMessage = errorObj?.details || errorObj?.message || 'Failed to test exchange connection';
+      throw new Error(errorMessage);
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
@@ -176,7 +202,9 @@ class ExchangeService {
       return [];
     } catch (error) {
       if (isAxiosError(error)) {
-        throw new Error(error.response?.data?.error || error.message);
+        const errorObj = error.response?.data?.error;
+        const errorMessage = errorObj?.details || errorObj?.message || error.message;
+        throw new Error(errorMessage);
       }
       throw error;
     }
