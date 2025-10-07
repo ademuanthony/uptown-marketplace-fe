@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { tradingBotService, TradingBot } from '@/services/tradingBot';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/dist/client/components/navigation';
 
 interface AlphaCompounderWidgetProps {
   bot?: TradingBot | null;
@@ -23,6 +24,7 @@ export default function AlphaCompounderWidget({
 }: AlphaCompounderWidgetProps) {
   const [isStarting, setIsStarting] = useState(false);
   const [isPausing, setIsPausing] = useState(false);
+  const router = useRouter();
 
   // Note: Statistics can be fetched later if needed
 
@@ -329,7 +331,7 @@ export default function AlphaCompounderWidget({
 
             <Button
               onClick={() => {
-                window.location.href = `/trading-bots/${bot.id}/history`;
+                router.push(`/trading-bots/${bot.id}`);
               }}
               variant="outline"
               className="flex-1 sm:flex-initial"
