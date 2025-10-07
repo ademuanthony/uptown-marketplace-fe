@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { ALPHA_COMPOUNDER, XPAT_TRADER, DefaultBot } from '@/services/defaultBots';
-import { tradingBotService, TradingBot } from '@/services/tradingBot';
+import { tradingBotService, TradingBot, PositionHistorySummary } from '@/services/tradingBot';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import toast from 'react-hot-toast';
 interface DefaultBotWidgetProps {
   bot: DefaultBot;
   userBot: TradingBot | null;
+  summary: PositionHistorySummary | null;
   loading: boolean;
   onViewDetails: () => void;
   onAnalysis: () => void;
@@ -34,6 +35,7 @@ interface DefaultBotWidgetProps {
 const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
   bot,
   userBot,
+  summary,
   loading,
   onViewDetails,
   onAnalysis,
@@ -51,6 +53,40 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
   const buttonColor = isAlpha
     ? 'bg-blue-600 hover:bg-blue-700'
     : 'bg-purple-600 hover:bg-purple-700';
+
+  // Helper functions
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatPercentage = (percentage: number) => {
+    return `${percentage.toFixed(1)}%`;
+  };
+
+  const formatDuration = (hours: number) => {
+    if (hours < 24) {
+      return `${hours.toFixed(1)}h`;
+    }
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    if (days < 7) {
+      return `${days}d ${remainingHours.toFixed(0)}h`;
+    }
+    const weeks = Math.floor(days / 7);
+    const remainingDays = days % 7;
+    return `${weeks}w ${remainingDays}d`;
+  };
+
+  const getPnlColor = (pnl: number) => {
+    if (pnl > 0) return 'text-green-600';
+    if (pnl < 0) return 'text-red-600';
+    return 'text-gray-600';
+  };
 
   return (
     <Card className={`${bgColor} ${borderColor} hover:shadow-lg transition-shadow`}>
@@ -82,48 +118,96 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Key Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <ChartBarIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">
-                {userBot ? 'Total Trades' : 'Followers'}
-              </span>
+        {/* Main Stats - Match bot history page */}
+        {summary ? (
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <CurrencyDollarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Total P&L</span>
+              </div>
+              <p className={`text-lg font-bold ${getPnlColor(summary.total_pnl)}`}>
+                {formatCurrency(summary.total_pnl)}
+              </p>
             </div>
-            <p className="text-lg font-bold text-gray-900">
-              {userBot ? userBot.total_trades.toLocaleString() : bot.followerCount.toLocaleString()}
-            </p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <ShieldCheckIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">Win Rate</span>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <CurrencyDollarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Realized P&L</span>
+              </div>
+              <p className={`text-lg font-bold ${getPnlColor(summary.realized_pnl)}`}>
+                {formatCurrency(summary.realized_pnl)}
+              </p>
             </div>
-            <p className="text-lg font-bold text-green-600">
-              {userBot && userBot.total_trades > 0
-                ? `${((userBot.winning_trades / userBot.total_trades) * 100).toFixed(1)}%`
-                : `${bot.winRate}%`}
-            </p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">
-                {userBot ? 'Total Return' : 'Avg Return'}
-              </span>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ChartBarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Unrealized P&L</span>
+              </div>
+              <p className={`text-lg font-bold ${getPnlColor(summary.unrealized_pnl)}`}>
+                {formatCurrency(summary.unrealized_pnl)}
+              </p>
             </div>
-            <p
-              className={`text-lg font-bold ${userBot && userBot.starting_balance > 0 && ((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100 >= 0 ? 'text-green-600' : userBot ? 'text-red-600' : 'text-blue-600'}`}
-            >
-              {userBot && userBot.starting_balance > 0
-                ? `${((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100 >= 0 ? '+' : ''}${(((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100).toFixed(2)}%`
-                : `${bot.avgReturnPerTrade}%`}
-            </p>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ShieldCheckIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Win Rate</span>
+              </div>
+              <p
+                className={`text-lg font-bold ${summary.win_rate >= 50 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {formatPercentage(summary.win_rate)}
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ChartBarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Total Positions</span>
+              </div>
+              <p className="text-lg font-bold text-gray-900">{summary.total_positions}</p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Open Positions</span>
+              </div>
+              <p className="text-lg font-bold text-blue-600">{summary.open_positions}</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ChartBarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Followers</span>
+              </div>
+              <p className="text-lg font-bold text-gray-900">
+                {bot.followerCount.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ShieldCheckIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Win Rate</span>
+              </div>
+              <p className="text-lg font-bold text-green-600">{bot.winRate}%</p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Avg Return</span>
+              </div>
+              <p className="text-lg font-bold text-blue-600">{bot.avgReturnPerTrade}%</p>
+            </div>
+          </div>
+        )}
 
         {/* Strategy Highlights */}
         <div className="space-y-2">
@@ -148,34 +232,46 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
           </div>
         </div>
 
-        {/* Recent Performance */}
-        <div className="bg-white/60 rounded-lg p-3 space-y-1">
-          {userBot ? (
-            <>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Current Balance:</span>
-                <span className="font-bold text-gray-900">
-                  ${userBot.current_balance.toFixed(2)}
-                </span>
+        {/* Performance Details - Match bot history page */}
+        <div className="bg-white/60 rounded-lg p-3">
+          {summary ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900">
+                    {formatDuration(summary.average_hold_time_hours)}
+                  </div>
+                  <div className="text-xs text-gray-500">Avg Hold Time</div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total P&L:</span>
-                <span
-                  className={`font-bold ${userBot.total_profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {userBot.total_profit_loss >= 0 ? '+' : ''}${userBot.total_profit_loss.toFixed(2)}
-                </span>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className={`text-sm font-medium ${getPnlColor(summary.best_trade_pnl)}`}>
+                    {formatCurrency(summary.best_trade_pnl)}
+                  </div>
+                  <div className="text-xs text-gray-500">Best Trade</div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Starting Balance:</span>
-                <span className="font-semibold text-gray-700">
-                  ${userBot.starting_balance.toFixed(2)}
-                </span>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className={`text-sm font-medium ${getPnlColor(summary.worst_trade_pnl)}`}>
+                    {formatCurrency(summary.worst_trade_pnl)}
+                  </div>
+                  <div className="text-xs text-gray-500">Worst Trade</div>
+                </div>
               </div>
-            </>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900">
+                    {formatCurrency(summary.total_volume)}
+                  </div>
+                  <div className="text-xs text-gray-500">Total Volume</div>
+                </div>
+              </div>
+            </div>
           ) : (
             <>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-1">
                 <span className="text-sm text-gray-600">Total Return:</span>
                 <span className="font-bold text-green-600">+{bot.performance.totalReturn}%</span>
               </div>
@@ -255,16 +351,28 @@ const DefaultBotWidgets: React.FC = () => {
   const router = useRouter();
   const [alphaBot, setAlphaBot] = useState<TradingBot | null>(null);
   const [xpatBot, setXpatBot] = useState<TradingBot | null>(null);
+  const [alphaSummary, setAlphaSummary] = useState<PositionHistorySummary | null>(null);
+  const [xpatSummary, setXpatSummary] = useState<PositionHistorySummary | null>(null);
   const [loadingAlpha, setLoadingAlpha] = useState(true);
   const [loadingXpat, setLoadingXpat] = useState(true);
 
-  // Load user's default bots
+  // Load user's default bots and position history
   useEffect(() => {
     const loadUserBots = async () => {
       try {
         // Load Alpha Compounder bot
         const alphaUserBot = await tradingBotService.getUserDefaultBot('alpha-compounder');
         setAlphaBot(alphaUserBot);
+
+        // Load position history summary if bot exists
+        if (alphaUserBot) {
+          try {
+            const historyData = await tradingBotService.getBotPositionHistory(alphaUserBot.id);
+            setAlphaSummary(historyData.summary);
+          } catch (error) {
+            console.error('Failed to load Alpha Compounder position history:', error);
+          }
+        }
       } catch (error) {
         console.error('Failed to load Alpha Compounder bot:', error);
       } finally {
@@ -275,6 +383,16 @@ const DefaultBotWidgets: React.FC = () => {
         // Load Xpat Trader bot
         const xpatUserBot = await tradingBotService.getUserDefaultBot('xpat-trader');
         setXpatBot(xpatUserBot);
+
+        // Load position history summary if bot exists
+        if (xpatUserBot) {
+          try {
+            const historyData = await tradingBotService.getBotPositionHistory(xpatUserBot.id);
+            setXpatSummary(historyData.summary);
+          } catch (error) {
+            console.error('Failed to load Xpat Trader position history:', error);
+          }
+        }
       } catch (error) {
         console.error('Failed to load Xpat Trader bot:', error);
       } finally {
@@ -348,6 +466,7 @@ const DefaultBotWidgets: React.FC = () => {
         <DefaultBotWidget
           bot={ALPHA_COMPOUNDER}
           userBot={alphaBot}
+          summary={alphaSummary}
           loading={loadingAlpha}
           onViewDetails={() => handleViewDetails('alpha-compounder')}
           onAnalysis={() => handleAnalysis('alpha-compounder')}
@@ -356,6 +475,7 @@ const DefaultBotWidgets: React.FC = () => {
         <DefaultBotWidget
           bot={XPAT_TRADER}
           userBot={xpatBot}
+          summary={xpatSummary}
           loading={loadingXpat}
           onViewDetails={() => handleViewDetails('xpat-trader')}
           onAnalysis={() => handleAnalysis('xpat-trader')}
