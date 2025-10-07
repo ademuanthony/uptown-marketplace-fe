@@ -331,7 +331,7 @@ export default function AlphaCompounderWidget({
 
             <Button
               onClick={() => {
-                router.push(`/trading-bots/${bot.id}`);
+                router.push(`/trading-bots/${bot.id}/history`);
               }}
               variant="outline"
               className="flex-1 sm:flex-initial"
