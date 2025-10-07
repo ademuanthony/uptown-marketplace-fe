@@ -118,9 +118,17 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Main Stats - Match bot history page */}
+        {/* Key Stats - Total, P&L, Win Rate */}
         {summary ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <ChartBarIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">Total Positions</span>
+              </div>
+              <p className="text-lg font-bold text-gray-900">{summary.total_positions}</p>
+            </div>
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <CurrencyDollarIcon className="h-4 w-4 text-gray-500" />
@@ -128,26 +136,6 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
               </div>
               <p className={`text-lg font-bold ${getPnlColor(summary.total_pnl)}`}>
                 {formatCurrency(summary.total_pnl)}
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <CurrencyDollarIcon className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Realized P&L</span>
-              </div>
-              <p className={`text-lg font-bold ${getPnlColor(summary.realized_pnl)}`}>
-                {formatCurrency(summary.realized_pnl)}
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <ChartBarIcon className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Unrealized P&L</span>
-              </div>
-              <p className={`text-lg font-bold ${getPnlColor(summary.unrealized_pnl)}`}>
-                {formatCurrency(summary.unrealized_pnl)}
               </p>
             </div>
 
@@ -161,22 +149,6 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
               >
                 {formatPercentage(summary.win_rate)}
               </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <ChartBarIcon className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Total Positions</span>
-              </div>
-              <p className="text-lg font-bold text-gray-900">{summary.total_positions}</p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-600">Open Positions</span>
-              </div>
-              <p className="text-lg font-bold text-blue-600">{summary.open_positions}</p>
             </div>
           </div>
         ) : (
