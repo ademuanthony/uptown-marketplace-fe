@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowTrendingUpIcon,
   BoltIcon,
-  UserGroupIcon,
   ChartBarIcon,
   ArrowRightIcon,
   ShieldCheckIcon,
@@ -87,10 +86,14 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
-              <UserGroupIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">Followers</span>
+              <ChartBarIcon className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-600">
+                {userBot ? 'Total Trades' : 'Followers'}
+              </span>
             </div>
-            <p className="text-lg font-bold text-gray-900">{bot.followerCount.toLocaleString()}</p>
+            <p className="text-lg font-bold text-gray-900">
+              {userBot ? userBot.total_trades.toLocaleString() : bot.followerCount.toLocaleString()}
+            </p>
           </div>
 
           <div className="text-center">
@@ -98,15 +101,27 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
               <ShieldCheckIcon className="h-4 w-4 text-gray-500" />
               <span className="text-sm font-medium text-gray-600">Win Rate</span>
             </div>
-            <p className="text-lg font-bold text-green-600">{bot.winRate}%</p>
+            <p className="text-lg font-bold text-green-600">
+              {userBot && userBot.total_trades > 0
+                ? `${((userBot.winning_trades / userBot.total_trades) * 100).toFixed(1)}%`
+                : `${bot.winRate}%`}
+            </p>
           </div>
 
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-600">Avg Return</span>
+              <span className="text-sm font-medium text-gray-600">
+                {userBot ? 'Total Return' : 'Avg Return'}
+              </span>
             </div>
-            <p className="text-lg font-bold text-blue-600">{bot.avgReturnPerTrade}%</p>
+            <p
+              className={`text-lg font-bold ${userBot && userBot.starting_balance > 0 && ((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100 >= 0 ? 'text-green-600' : userBot ? 'text-red-600' : 'text-blue-600'}`}
+            >
+              {userBot && userBot.starting_balance > 0
+                ? `${((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100 >= 0 ? '+' : ''}${(((userBot.current_balance - userBot.starting_balance) / userBot.starting_balance) * 100).toFixed(2)}%`
+                : `${bot.avgReturnPerTrade}%`}
+            </p>
           </div>
         </div>
 
@@ -134,15 +149,42 @@ const DefaultBotWidget: React.FC<DefaultBotWidgetProps> = ({
         </div>
 
         {/* Recent Performance */}
-        <div className="bg-white/60 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Total Return:</span>
-            <span className="font-bold text-green-600">+{bot.performance.totalReturn}%</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Max Drawdown:</span>
-            <span className="font-semibold text-red-600">{bot.performance.maxDrawdown}%</span>
-          </div>
+        <div className="bg-white/60 rounded-lg p-3 space-y-1">
+          {userBot ? (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Current Balance:</span>
+                <span className="font-bold text-gray-900">
+                  ${userBot.current_balance.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total P&L:</span>
+                <span
+                  className={`font-bold ${userBot.total_profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  {userBot.total_profit_loss >= 0 ? '+' : ''}${userBot.total_profit_loss.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Starting Balance:</span>
+                <span className="font-semibold text-gray-700">
+                  ${userBot.starting_balance.toFixed(2)}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total Return:</span>
+                <span className="font-bold text-green-600">+{bot.performance.totalReturn}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Max Drawdown:</span>
+                <span className="font-semibold text-red-600">{bot.performance.maxDrawdown}%</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Tags */}
