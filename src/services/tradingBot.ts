@@ -173,8 +173,24 @@ export interface TradingPosition {
   trailing_stop_active?: boolean;
   trailing_high_price?: number;
   trailing_trigger_price?: number;
+  // DCA (Dollar Cost Averaging) fields
+  dca_level?: number; // Current DCA level (0 = initial entry)
+  dca_entries?: DCAEntry[]; // Array of DCA entries
+  last_dca_price?: number; // Price of last DCA entry
+  next_dca_threshold?: number; // Price threshold for next DCA entry
+  initial_entry_price?: number; // Initial entry price
+  initial_quantity?: number; // Initial position quantity
   created_at: string;
   updated_at: string;
+}
+
+export interface DCAEntry {
+  level: number; // DCA level (1, 2, 3, etc.)
+  price: number; // Entry price at this level
+  quantity: number; // Quantity added at this level
+  timestamp: string; // When this DCA entry was made
+  ai_confidence: number; // AI confidence score at entry
+  order_id: string; // Exchange order ID
 }
 
 export interface PositionHistorySummary {
@@ -269,6 +285,13 @@ export interface AISignalConfig {
 
   // Active Position Management
   enable_active_management: boolean; // Enable continuous analysis of open positions for close signals
+
+  // DCA (Dollar Cost Averaging) Configuration
+  enable_dca: boolean; // Enable DCA functionality
+  dca_level: number; // Percentage drop to trigger next DCA entry (e.g., 2.0 for 2%)
+  dca_entry_multiplier: number; // Multiplier for position size at each level (e.g., 2.0 for 2x)
+  max_dca_levels: number; // Maximum number of DCA levels (e.g., 5)
+  dca_stop_loss_percent: number; // Stop loss percentage after max DCA levels reached
 
   // Symbol Configuration
   scan_all_symbols: boolean; // Whether to scan all supported symbols

@@ -205,6 +205,9 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
               <SortableHeader field="exit_price">Exit Price</SortableHeader>
               <SortableHeader field="total_pnl">P&L</SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                DCA
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <SortableHeader field="entry_time">Opened</SortableHeader>
@@ -250,6 +253,30 @@ export default function PositionHistoryTable({ positions }: PositionHistoryTable
                       <div className={`text-xs ${getPnlColor(position.unrealized_pnl)}`}>
                         Unrealized: {formatCurrency(position.unrealized_pnl)}
                       </div>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {position.dca_level !== undefined && position.dca_level > 0 ? (
+                      <div className="flex flex-col space-y-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                          Level {position.dca_level}
+                        </span>
+                        {position.dca_entries && position.dca_entries.length > 0 && (
+                          <span className="text-xs text-gray-500">
+                            {position.dca_entries.length}{' '}
+                            {position.dca_entries.length === 1 ? 'entry' : 'entries'}
+                          </span>
+                        )}
+                        {position.initial_entry_price && position.entry_price && (
+                          <span className="text-xs text-gray-500">
+                            Avg: {formatCurrency(position.entry_price)}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
                     )}
                   </div>
                 </td>

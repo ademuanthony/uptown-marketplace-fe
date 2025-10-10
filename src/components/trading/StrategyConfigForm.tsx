@@ -1059,6 +1059,181 @@ export default function StrategyConfigForm({
           </div>
         </div>
 
+        {/* DCA (Dollar Cost Averaging) Configuration */}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-indigo-900 mb-4">DCA (Dollar Cost Averaging)</h3>
+
+          {/* Enable DCA */}
+          <div className="mb-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="enable_dca"
+                checked={getBooleanValue('enable_dca', false)}
+                onChange={e => updateConfig('enable_dca', e.target.checked)}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="enable_dca" className="ml-2 block text-sm font-medium text-gray-700">
+                Enable DCA
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Automatically add to losing positions at predetermined levels with AI confirmation
+            </p>
+          </div>
+
+          {/* DCA Parameters */}
+          {getBooleanValue('enable_dca', false) && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="dca_level" className="block text-sm font-medium text-gray-700">
+                    DCA Level (%) *
+                  </label>
+                  <input
+                    type="number"
+                    id="dca_level"
+                    min="0.5"
+                    max="10"
+                    step="0.1"
+                    value={getNumberValue('dca_level', 2.0)}
+                    onChange={e => updateConfig('dca_level', parseFloat(e.target.value) || 2.0)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="2.0"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Percentage drop to trigger next DCA entry (e.g., 2.0 = 2%)
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="dca_entry_multiplier"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Entry Multiplier *
+                  </label>
+                  <input
+                    type="number"
+                    id="dca_entry_multiplier"
+                    min="1.0"
+                    max="5.0"
+                    step="0.1"
+                    value={getNumberValue('dca_entry_multiplier', 2.0)}
+                    onChange={e =>
+                      updateConfig('dca_entry_multiplier', parseFloat(e.target.value) || 2.0)
+                    }
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="2.0"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Position size multiplier at each level (e.g., 2.0 = 2x)
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="max_dca_levels"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Max DCA Levels *
+                  </label>
+                  <input
+                    type="number"
+                    id="max_dca_levels"
+                    min="1"
+                    max="10"
+                    value={getIntValue('max_dca_levels', 5)}
+                    onChange={e => updateConfig('max_dca_levels', parseInt(e.target.value) || 5)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="5"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Maximum number of DCA entries (1-10)</p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="dca_stop_loss_percent"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    DCA Stop Loss (%) *
+                  </label>
+                  <input
+                    type="number"
+                    id="dca_stop_loss_percent"
+                    min="0.5"
+                    max="50"
+                    step="0.1"
+                    value={getNumberValue('dca_stop_loss_percent', 5.0)}
+                    onChange={e =>
+                      updateConfig('dca_stop_loss_percent', parseFloat(e.target.value) || 5.0)
+                    }
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="5.0"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Stop loss applied after max DCA levels reached
+                  </p>
+                </div>
+              </div>
+
+              {/* DCA Example Calculation */}
+              <div className="mt-4 bg-indigo-100 border border-indigo-200 rounded-md p-3">
+                <div className="text-sm text-indigo-800">
+                  <strong>Example with current settings:</strong>
+                  <ul className="mt-2 space-y-1 text-xs">
+                    <li>• Level 0 (Initial): $100 position at entry price</li>
+                    <li>
+                      • Level 1 ({getNumberValue('dca_level', 2.0).toFixed(1)}% drop): $200 position
+                      ($100 × {getNumberValue('dca_entry_multiplier', 2.0).toFixed(1)})
+                    </li>
+                    <li>
+                      • Level 2 ({(getNumberValue('dca_level', 2.0) * 2).toFixed(1)}% drop): $400
+                      position ($100 × {getNumberValue('dca_entry_multiplier', 2.0).toFixed(1)}²)
+                    </li>
+                    <li>
+                      • Level 3 ({(getNumberValue('dca_level', 2.0) * 3).toFixed(1)}% drop): $800
+                      position ($100 × {getNumberValue('dca_entry_multiplier', 2.0).toFixed(1)}³)
+                    </li>
+                    <li className="mt-2 font-medium">
+                      • Max Exposure: $
+                      {(() => {
+                        const initial = 100;
+                        const multiplier = getNumberValue('dca_entry_multiplier', 2.0);
+                        const maxLevels = getIntValue('max_dca_levels', 5);
+                        let total = initial;
+                        for (let i = 1; i <= maxLevels; i++) {
+                          total += initial * Math.pow(multiplier, i);
+                        }
+                        return total.toLocaleString();
+                      })()}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 bg-indigo-100 border border-indigo-200 rounded-md p-3">
+            <div className="text-sm text-indigo-800">
+              <strong>How DCA Works:</strong>
+              <ul className="mt-2 space-y-1 text-xs">
+                <li>• Position opens normally with initial size</li>
+                <li>• When price drops by DCA level %, AI analyzes the market</li>
+                <li>• If AI confirms the original direction, a DCA entry is made</li>
+                <li>• Each DCA entry is larger than the previous (exponential sizing)</li>
+                <li>• Average entry price improves, lowering breakeven point</li>
+                <li>• After max levels, a final stop loss is applied</li>
+                <li className="text-red-700 font-medium">
+                  ⚠️ Warning: DCA significantly increases position exposure and risk
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="text-sm text-blue-800">
             <strong>Strategy Overview:</strong> AI Signal Strategy uses advanced artificial
